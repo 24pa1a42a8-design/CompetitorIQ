@@ -178,15 +178,7 @@ When Hindsight Cloud API key and credits are active:
 - **RECALL**: Strategic historical context is semantically recalled during agent queries and Connect-the-Dots pattern detection.
 - **REFLECT**: Deep macro-trajectory reflection is performed for strategic comparison and executive report generation.
 
-> **Truthful Hindsight Status**: If Hindsight credits are exhausted (`UNAVAILABLE_INSUFFICIENT_CREDITS`), CompetitorIQ reports an accurate DEGRADED status while allowing Ollama local LLM reasoning to operate on PostgreSQL evidence.
 
 ---
 
-## ⏱️ 60-Second Hackathon Demo Flow
 
-1. **0–10s (Dashboard & Continuous Monitoring)**: Open Dashboard view showing live system metrics, continuous monitoring status, and active competitor tracking.
-2. **10–20s (Signal Ingestion & Adaptation)**: Trigger manual source check for a public competitor page (`POST /api/monitoring/run/oracle_press`).
-3. **20–30s (Alert Engine)**: Navigate to Alerts view to inspect the high-severity alert created for the new signal.
-4. **30–40s (Hindsight & Ollama Status)**: Open Hindsight Memory view and Agent Workspace to observe Hindsight stage logs and local Ollama (`qwen2.5:3b`) reachability badges.
-5. **40–50s (Connect-the-Dots & Strategic Analysis)**: View the cross-event pattern visualization and 5-part Strategic Analysis (Fact, Observation, Inference, Implication, Unknown).
-6. **50–60s (Executive Report & AI Agent)**: Generate an Executive Strategy Report and ask the CompetitorIQ Agent a strategic query grounded by local Ollama reasoning and verifiable evidence links.

@@ -1,0 +1,455 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum PlanTier {
+  FREE
+  DEVELOPMENT
+  PRO
+  ENTERPRISE
+}
+
+enum UserRole {
+  ADMIN
+  ANALYST
+  VIEWER
+}
+
+enum CompetitorStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum SourceType {
+  OFFICIAL_WEBSITE
+  PRODUCT_PAGE
+  PRICING_PAGE
+  BLOG
+  PRESS_RELEASE
+  CAREERS
+  RSS
+  PUBLIC_ANNOUNCEMENT
+  OTHER
+}
+
+enum EventType {
+  PRICING
+  PRODUCT
+  FEATURE
+  MESSAGING
+  HIRING
+  FUNDING
+  PARTNERSHIP
+  LEADERSHIP
+  EXPANSION
+  ANNOUNCEMENT
+  OTHER
+}
+
+enum ImportanceLevel {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum EvidenceType {
+  PRIMARY_SOURCE
+  SECONDARY_SOURCE
+  EXTRACTED_TEXT
+  OTHER
+}
+
+enum ProductSignalType {
+  NEW_PRODUCT
+  NEW_FEATURE
+  PRODUCT_UPDATE
+  PRODUCT_DEPRECATION
+  OTHER
+}
+
+enum AlertType {
+  PRICE_CHANGE
+  NEW_PRODUCT
+  NEW_FEATURE
+  HIRING_SPIKE
+  MESSAGING_CHANGE
+  FUNDING
+  PARTNERSHIP
+  COMPETITOR_ACTIVITY_SPIKE
+  IMPORTANT_PATTERN
+}
+
+enum AlertSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum AlertStatus {
+  UNREAD
+  READ
+  ACKNOWLEDGED
+  RESOLVED
+}
+
+enum AnalysisType {
+  STRATEGIC
+  CONNECT_DOTS
+  COMPARISON
+  EXECUTIVE
+  TIMELINE
+  OTHER
+}
+
+enum AgentMessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+}
+
+enum MemoryStage {
+  RETAIN
+  RECALL
+  REFLECT
+}
+
+enum MemoryStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+model Organization {
+  id               String              @id @default(uuid())
+  name             String
+  planTier         PlanTier            @default(FREE)
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  users            User[]
+  competitors      Competitor[]
+  sources          Source[]
+  events           CompetitorEvent[]
+  alerts           Alert[]
+  analyses         Analysis[]
+  conversations    AgentConversation[]
+  memoryOperations MemoryOperation[]
+  auditLogs        AuditLog[]
+}
+
+model User {
+  id             String              @id @default(uuid())
+  organizationId String
+  email          String              @unique
+  passwordHash   String
+  name           String
+  role           UserRole            @default(ANALYST)
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  organization   Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  conversations  AgentConversation[]
+  auditLogs      AuditLog[]
+
+  @@index([organizationId])
+}
+
+model Competitor {
+  id               String            @id @default(uuid())
+  organizationId   String
+  name             String
+  slug             String
+  website          String?
+  description      String?           @db.Text
+  industry         String?
+  location         String?
+  foundedYear      Int?
+  logo             String?
+  status           CompetitorStatus  @default(ACTIVE)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  organization     Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  events           CompetitorEvent[]
+  pricingSignals   PricingSignal[]
+  productSignals   ProductSignal[]
+  messagingSignals MessagingSignal[]
+  hiringSignals    HiringSignal[]
+  fundingSignals   FundingSignal[]
+  alerts           Alert[]
+  analyses         Analysis[]
+  memoryOperations MemoryOperation[]
+
+  @@unique([organizationId, slug])
+  @@index([organizationId])
+}
+
+model Source {
+  id             String            @id @default(uuid())
+  organizationId String
+  url            String
+  sourceType     SourceType        @default(OTHER)
+  publisher      String?
+  title          String?
+  publishedAt    DateTime?
+  collectedAt    DateTime          @default(now())
+  contentHash    String?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  organization   Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  events         CompetitorEvent[]
+  evidence       EventEvidence[]
+
+  @@unique([organizationId, url])
+  @@index([organizationId])
+  @@index([contentHash])
+}
+
+model CompetitorEvent {
+  id               String            @id @default(uuid())
+  organizationId   String
+  competitorId     String
+  sourceId         String?
+  eventType        EventType         @default(ANNOUNCEMENT)
+  title            String
+  summary          String            @db.Text
+  description      String?           @db.Text
+  eventDate        DateTime          @default(now())
+  detectedAt       DateTime          @default(now())
+  importance       ImportanceLevel   @default(MEDIUM)
+  confidence       Float?
+  contentHash      String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  organization     Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  competitor       Competitor        @relation(fields: [competitorId], references: [id], onDelete: Cascade)
+  source           Source?           @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+  evidence         EventEvidence[]
+  pricingSignals   PricingSignal[]
+  productSignals   ProductSignal[]
+  messagingSignals MessagingSignal[]
+  hiringSignals    HiringSignal[]
+  fundingSignals   FundingSignal[]
+  alerts           Alert[]
+  memoryOperations MemoryOperation[]
+
+  @@index([organizationId])
+  @@index([competitorId])
+  @@index([eventType])
+  @@index([eventDate])
+  @@index([detectedAt])
+  @@index([sourceId])
+}
+
+model EventEvidence {
+  id           String          @id @default(uuid())
+  eventId      String
+  sourceId     String?
+  excerpt      String          @db.Text
+  evidenceType EvidenceType    @default(PRIMARY_SOURCE)
+  capturedAt   DateTime        @default(now())
+  createdAt    DateTime        @default(now())
+  event        CompetitorEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  source       Source?         @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+
+  @@index([eventId])
+  @@index([sourceId])
+}
+
+model PricingSignal {
+  id            String           @id @default(uuid())
+  eventId       String?
+  competitorId  String
+  previousPrice Decimal?         @db.Decimal(12, 2)
+  newPrice      Decimal          @db.Decimal(12, 2)
+  currency      String           @default("USD")
+  billingPeriod String?
+  tierName      String
+  effectiveDate DateTime         @default(now())
+  createdAt     DateTime         @default(now())
+  event         CompetitorEvent? @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  competitor    Competitor       @relation(fields: [competitorId], references: [id], onDelete: Cascade)
+
+  @@index([competitorId])
+  @@index([eventId])
+}
+
+model ProductSignal {
+  id            String            @id @default(uuid())
+  eventId       String?
+  competitorId  String
+  productName   String
+  featureName   String?
+  signalType    ProductSignalType @default(NEW_FEATURE)
+  effectiveDate DateTime          @default(now())
+  createdAt     DateTime          @default(now())
+  event         CompetitorEvent?  @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  competitor    Competitor        @relation(fields: [competitorId], references: [id], onDelete: Cascade)
+
+  @@index([competitorId])
+  @@index([eventId])
+}
+
+model MessagingSignal {
+  id                String           @id @default(uuid())
+  eventId           String?
+  competitorId      String
+  messageTheme      String
+  previousMessaging String?          @db.Text
+  newMessaging      String           @db.Text
+  createdAt         DateTime         @default(now())
+  event             CompetitorEvent? @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  competitor        Competitor       @relation(fields: [competitorId], references: [id], onDelete: Cascade)
+
+  @@index([competitorId])
+  @@index([eventId])
+}
+
+model HiringSignal {
+  id            String           @id @default(uuid())
+  eventId       String?
+  competitorId  String
+  role          String
+  department    String?
+  location      String?
+  detectedCount Int              @default(1)
+  createdAt     DateTime         @default(now())
+  event         CompetitorEvent? @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  competitor    Competitor       @relation(fields: [competitorId], references: [id], onDelete: Cascade)
+
+  @@index([competitorId])
+  @@index([eventId])
+}
+
+model FundingSignal {
+  id            String           @id @default(uuid())
+  eventId       String?
+  competitorId  String
+  fundingType   String
+  amount        Decimal          @db.Decimal(15, 2)
+  currency      String           @default("USD")
+  announcedDate DateTime         @default(now())
+  createdAt     DateTime         @default(now())
+  event         CompetitorEvent? @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  competitor    Competitor       @relation(fields: [competitorId], references: [id], onDelete: Cascade)
+
+  @@index([competitorId])
+  @@index([eventId])
+}
+
+model Alert {
+  id             String           @id @default(uuid())
+  organizationId String
+  competitorId   String?
+  eventId        String?
+  type           AlertType
+  severity       AlertSeverity    @default(MEDIUM)
+  title          String
+  message        String           @db.Text
+  status         AlertStatus      @default(UNREAD)
+  createdAt      DateTime         @default(now())
+  readAt         DateTime?
+  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  competitor     Competitor?      @relation(fields: [competitorId], references: [id], onDelete: SetNull)
+  event          CompetitorEvent? @relation(fields: [eventId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId])
+  @@index([competitorId])
+  @@index([status])
+}
+
+model Analysis {
+  id             String          @id @default(uuid())
+  organizationId String
+  competitorId   String?
+  type           AnalysisType    @default(STRATEGIC)
+  title          String
+  summary        String          @db.Text
+  facts          Json?
+  observations   Json?
+  inferences     Json?
+  unknowns       Json?
+  confidence     String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  competitor     Competitor?     @relation(fields: [competitorId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId])
+  @@index([competitorId])
+}
+
+model AgentConversation {
+  id             String         @id @default(uuid())
+  organizationId String
+  userId         String?
+  title          String
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+  messages       AgentMessage[]
+
+  @@index([organizationId])
+  @@index([userId])
+}
+
+model AgentMessage {
+  id             String            @id @default(uuid())
+  conversationId String
+  role           AgentMessageRole
+  content        String            @db.Text
+  createdAt      DateTime          @default(now())
+  conversation   AgentConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+}
+
+model MemoryOperation {
+  id             String           @id @default(uuid())
+  organizationId String?
+  competitorId   String?
+  eventId        String?
+  requestId      String?
+  stage          MemoryStage
+  status         MemoryStatus     @default(PENDING)
+  startedAt      DateTime         @default(now())
+  completedAt    DateTime?
+  durationMs     Int?
+  query          String?          @db.Text
+  memoryCount    Int?
+  errorCode      String?
+  metadata       Json?
+  createdAt      DateTime         @default(now())
+  organization   Organization?    @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  competitor     Competitor?      @relation(fields: [competitorId], references: [id], onDelete: SetNull)
+  event          CompetitorEvent? @relation(fields: [eventId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId])
+  @@index([competitorId])
+  @@index([stage])
+  @@index([status])
+}
+
+model AuditLog {
+  id             String        @id @default(uuid())
+  organizationId String?
+  userId         String?
+  action         String
+  targetEntity   String
+  targetId       String?
+  ipAddress      String?
+  userAgent      String?
+  metadata       Json?
+  createdAt      DateTime      @default(now())
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  user           User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId])
+  @@index([userId])
+}

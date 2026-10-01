@@ -152,4 +152,16 @@ describe('Hindsight Memory Service Integration Unit & Mock Tests', () => {
       assert.strictEqual(err.statusCode, 400);
     }
   });
+
+  test('14. Insufficient credits 402 error handling', () => {
+    try {
+      handleHindsightApiError(new Error('Insufficient credits. Please add credits to continue.'));
+      assert.fail('Should have thrown insufficient credits error');
+    } catch (err) {
+      assert.strictEqual(err.code, 'HINDSIGHT_INSUFFICIENT_CREDITS');
+      assert.strictEqual(err.statusCode, 402);
+      assert.strictEqual(err.details?.insufficientCredits, true);
+    }
+  });
 });
+

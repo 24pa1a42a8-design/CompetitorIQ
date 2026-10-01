@@ -50,6 +50,19 @@ export function handleHindsightApiError(err) {
     throw new HindsightAppError('HINDSIGHT_TIMEOUT', 'Hindsight operation timed out.', 504);
   }
 
+  if (
+    message.includes('402') ||
+    message.toLowerCase().includes('insufficient credits') ||
+    message.toLowerCase().includes('credit')
+  ) {
+    throw new HindsightAppError(
+      'HINDSIGHT_INSUFFICIENT_CREDITS',
+      'Hindsight API credit limit reached or insufficient credits.',
+      402,
+      { insufficientCredits: true }
+    );
+  }
+
   if (message.includes('401') || message.includes('403') || message.includes('Unauthorized') || message.includes('Forbidden')) {
     throw new HindsightAppError('HINDSIGHT_AUTH_FAILED', 'Hindsight API authorization failed.', 401);
   }

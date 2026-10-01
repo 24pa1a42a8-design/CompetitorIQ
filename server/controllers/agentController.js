@@ -10,7 +10,8 @@ const queryBodySchema = z.object({
     .max(4000, 'Query cannot exceed 4000 characters.'),
   competitorId: z.string().optional(),
   conversationId: z.string().optional(),
-  mode: z.enum(['RECALL', 'REFLECT', 'AUTO']).optional()
+  mode: z.enum(['RECALL', 'REFLECT', 'AUTO']).optional(),
+  timeoutMs: z.number().int().positive().optional()
 });
 
 export const agentController = {
@@ -27,6 +28,7 @@ export const agentController = {
         competitorId: parsed.competitorId,
         conversationId: parsed.conversationId,
         mode: parsed.mode,
+        timeoutMs: parsed.timeoutMs,
         organizationId,
         userId,
         requestId

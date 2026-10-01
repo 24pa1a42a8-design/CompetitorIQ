@@ -87,12 +87,40 @@ export async function statusHandler(req, res, next) {
   try {
     const configured = hindsightService.isConfigured();
     const bankId = hindsightService.getBankId();
+    let creditLimitReached = false;
+    let fallbackMode = false;
+
+    try {
+      const { memoryOperationRepository } = await import('../repositories/memoryOperationRepository.js');
+      const recentOps = await memoryOperationRepository.findRecent({ limit: 15 });
+      creditLimitReached = recentOps.some(op => 
+        op.status === 'FAILED' && 
+        (op.errorCode === 'INSUFFICIENT_CREDITS' ||
+         op.errorMessage?.toLowerCase().includes('credit') ||
+         op.errorMessage?.includes('402'))
+      );
+      if (creditLimitReached || !configured) {
+        fallbackMode = true;
+      }
+    } catch {
+      // ignore
+    }
+
+    const isDegraded = !configured || creditLimitReached;
+
     return res.status(200).json({
       success: true,
       data: {
-        status: configured ? 'ok' : 'degraded',
+        status: isDegraded ? 'degraded' : 'ok',
         bankId,
-        isConfigured: configured
+        isConfigured: configured,
+        creditLimitReached,
+        fallbackMode,
+        message: creditLimitReached
+          ? 'Hindsight Cloud credits insufficient — PostgreSQL database fallback active.'
+          : configured
+            ? 'Hindsight memory connected.'
+            : 'Hindsight not configured — PostgreSQL database fallback active.'
       },
       error: null,
       meta: {

@@ -95,4 +95,39 @@ describe('Competitor Intelligence Agent Unit & Integration Tests', () => {
     assert.ok(stages.includes('RETAIN') || stages.includes('RECALL') || stages.includes('REFLECT'));
   });
 
+  test('6. Input validation throws on empty string or overly long query', async () => {
+    await assert.rejects(
+      async () => agentService.executeQuery('', { organizationId: testOrgId }),
+      /required/i
+    );
+    await assert.rejects(
+      async () => agentService.executeQuery('a'.repeat(4001), { organizationId: testOrgId }),
+      /4000 characters/i
+    );
+  });
+
+  test('7. Multi-turn conversation preserves conversationId and context', async () => {
+    const turn1 = await agentService.executeQuery('What are TestCorp pricing plans?', {
+      organizationId: testOrgId
+    });
+    assert.ok(turn1.conversationId);
+
+    const turn2 = await agentService.executeQuery('What was the price drop amount?', {
+      organizationId: testOrgId,
+      conversationId: turn1.conversationId
+    });
+    assert.strictEqual(turn2.conversationId, turn1.conversationId);
+    assert.ok(turn2.answer);
+  });
+
+  test('8. General knowledge query executes via local Ollama or fallback', async () => {
+    const result = await agentService.executeQuery('What is Retrieval-Augmented Generation?', {
+      organizationId: testOrgId
+    });
+    assert.ok(result);
+    assert.strictEqual(typeof result.answer, 'string');
+    assert.ok(result.answer.length > 0);
+  });
+
 });
+

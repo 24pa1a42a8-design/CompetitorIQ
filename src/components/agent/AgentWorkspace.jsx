@@ -103,7 +103,8 @@ export default function AgentWorkspace({ onNavigate, onOpenEvidence }) {
             : "CompetitorIQ Autonomous Agent grounded in verified facts and Hindsight memory bank"
         }
         memoriesCount={agentResponse?.events?.length || 0}
-        confidenceScore="95%"
+        confidenceScore={agentResponse?.hindsightStatus?.creditLimitReached ? "PostgreSQL Verified" : "95%"}
+        onNavigate={onNavigate}
       />
 
       {/* Top Hero Box */}
@@ -348,27 +349,56 @@ export default function AgentWorkspace({ onNavigate, onOpenEvidence }) {
           {/* Evidence Traceability */}
           {agentResponse.evidence?.length > 0 && (
             <div className="pt-4 border-t border-stone-100 space-y-3">
-              <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-                Evidence Traceability & Citations ({agentResponse.evidence.length})
-              </h3>
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                  Evidence Traceability & Citations ({agentResponse.evidence.length})
+                </h3>
+                {onOpenEvidence && (
+                  <span className="text-[11px] text-slate-400">Click any card to inspect full citation evidence</span>
+                )}
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {agentResponse.evidence.map((ev, i) => (
-                  <div key={i} className="p-3 bg-slate-50 rounded-lg border border-stone-200 text-xs space-y-1">
+                  <div 
+                    key={i} 
+                    onClick={() => onOpenEvidence && onOpenEvidence(ev)}
+                    className={`p-3 bg-slate-50 rounded-lg border border-stone-200 text-xs space-y-1.5 transition ${
+                      onOpenEvidence ? 'cursor-pointer hover:bg-orange-50/50 hover:border-orange-300' : ''
+                    }`}
+                  >
                     <div className="flex items-center justify-between">
                       <span className="font-bold text-slate-900">{ev.competitorName || 'Competitor'}</span>
                       <span className="text-[10px] text-slate-400">{ev.date}</span>
                     </div>
                     <p className="text-slate-700 font-semibold">{ev.title}</p>
-                    {ev.sourceUrl && (
-                      <a 
-                        href={ev.sourceUrl} 
-                        target="_blank" 
-                        rel="noreferrer"
-                        className="text-[11px] font-bold text-orange-600 hover:underline inline-flex items-center gap-1 mt-1"
-                      >
-                        Source Link <ExternalLink className="w-3 h-3" />
-                      </a>
+                    {ev.excerpt && (
+                      <p className="text-[11px] text-slate-500 line-clamp-2 italic">"{ev.excerpt}"</p>
                     )}
+                    <div className="flex items-center justify-between pt-1">
+                      {ev.sourceUrl ? (
+                        <a 
+                          href={ev.sourceUrl} 
+                          target="_blank" 
+                          rel="noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="text-[11px] font-bold text-orange-600 hover:underline inline-flex items-center gap-1"
+                        >
+                          Source Link <ExternalLink className="w-3 h-3" />
+                        </a>
+                      ) : <span />}
+                      {onOpenEvidence && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onOpenEvidence(ev);
+                          }}
+                          className="text-[10px] font-bold text-slate-500 hover:text-orange-600 uppercase tracking-wider"
+                        >
+                          Inspect Evidence →
+                        </button>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>

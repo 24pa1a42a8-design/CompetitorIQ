@@ -4,6 +4,7 @@ import { memoryOperationRepository } from '../repositories/memoryOperationReposi
 import { conversationRepository } from '../repositories/conversationRepository.js';
 import hindsightService from '../hindsight/hindsightService.js';
 import ollamaService from './ollamaService.js';
+import { strategicAnalysisService, calculateCompetitiveMomentum } from './strategicAnalysisService.js';
 import { env } from '../config/env.js';
 import { getPrismaClient } from '../config/database.js';
 import { logger } from '../config/logger.js';
@@ -74,6 +75,300 @@ function isSimpleGreeting(cleanedQuery) {
   if (q.length <= 16 && /^(hi|hello|hey|thanks|thank you)[\s!.]*$/i.test(q)) return true;
   return false;
 }
+
+/**
+ * AgentToolRegistry: Formal typed internal tool suite for autonomous execution loop
+ * Tools: search_events, get_competitor_comparison, correlate_strategic_patterns, analyze_pricing_signals, recall_memory
+ */
+export const AgentToolRegistry = {
+  /**
+   * 1. search_events: Query PostgreSQL events with filters
+   */
+  async search_events({ organizationId = 'default-org', competitorId, eventType, query, limit = 15 }) {
+    const start = Date.now();
+    try {
+      let events = [];
+      if (query || eventType) {
+        events = await competitorEventRepository.searchEvents({
+          organizationId,
+          competitorId: competitorId || undefined,
+          query: query || undefined,
+          eventType: eventType || undefined,
+          limit
+        });
+      } else if (competitorId) {
+        events = await competitorEventRepository.findByCompetitor(competitorId, {
+          limit,
+          organizationId,
+          eventType
+        });
+      } else {
+        events = await competitorEventRepository.searchEvents({
+          organizationId,
+          limit
+        });
+      }
+      return {
+        tool: 'search_events',
+        status: 'completed',
+        durationMs: Date.now() - start,
+        itemCount: events.length,
+        data: events,
+        summary: `Retrieved ${events.length} events from database`
+      };
+    } catch (err) {
+      logger.warn({ err: err.message }, 'AgentToolRegistry search_events failed');
+      return {
+        tool: 'search_events',
+        status: 'failed',
+        durationMs: Date.now() - start,
+        itemCount: 0,
+        data: [],
+        summary: `Search failed: ${err.message}`
+      };
+    }
+  },
+
+  /**
+   * 2. get_competitor_comparison: Compare 2 or more competitors on momentum, velocity, and focus
+   */
+  async get_competitor_comparison({ organizationId = 'default-org', competitors = [], windowDays = 90 }) {
+    const start = Date.now();
+    try {
+      const comparisons = [];
+      const now = new Date();
+      const startDate = new Date(now.getTime() - (windowDays * 24 * 60 * 60 * 1000));
+
+      let targetList = Array.isArray(competitors) ? [...competitors] : [];
+      if (targetList.length === 0) {
+        targetList = await competitorRepository.findAll();
+      } else if (targetList.length === 1) {
+        // Pair with Microsoft for focal landscape comparison if only one competitor is passed
+        const msft = await competitorRepository.findBySlug('microsoft');
+        if (msft && msft.id !== targetList[0].id) {
+          targetList.push(msft);
+        }
+      }
+
+      for (const comp of targetList.slice(0, 4)) {
+        const events = await competitorEventRepository.findByCompetitor(comp.id, {
+          organizationId,
+          limit: 100
+        });
+        const windowEvents = events.filter(e => new Date(e.eventDate) >= startDate);
+        const momentum = calculateCompetitiveMomentum(windowEvents, [], [], windowDays);
+        
+        const categoryCounts = {};
+        windowEvents.forEach(e => {
+          categoryCounts[e.eventType] = (categoryCounts[e.eventType] || 0) + 1;
+        });
+
+        comparisons.push({
+          competitorId: comp.id,
+          competitorName: comp.name,
+          eventCount: windowEvents.length,
+          momentumScore: momentum.score,
+          momentumLevel: momentum.level,
+          categoryFocus: categoryCounts,
+          latestEvents: windowEvents.slice(0, 3).map(e => ({
+            id: e.id,
+            title: e.title,
+            eventType: e.eventType,
+            date: e.eventDate
+          }))
+        });
+      }
+
+      return {
+        tool: 'get_competitor_comparison',
+        status: 'completed',
+        durationMs: Date.now() - start,
+        itemCount: comparisons.length,
+        data: comparisons,
+        summary: `Compared ${comparisons.length} competitors across ${windowDays}-day momentum`
+      };
+    } catch (err) {
+      logger.warn({ err: err.message }, 'AgentToolRegistry get_competitor_comparison failed');
+      return {
+        tool: 'get_competitor_comparison',
+        status: 'failed',
+        durationMs: Date.now() - start,
+        itemCount: 0,
+        data: [],
+        summary: `Competitor comparison failed: ${err.message}`
+      };
+    }
+  },
+
+  /**
+   * 3. correlate_strategic_patterns: Run cross-competitor pattern correlation
+   */
+  async correlate_strategic_patterns({ organizationId = 'default-org', competitorId = null, windowDays = 90, analysisType = 'ALL' }) {
+    const start = Date.now();
+    try {
+      const result = await strategicAnalysisService.analyzeStrategicData({
+        organizationId,
+        competitorId,
+        windowDays,
+        analysisType
+      });
+      const analyses = result?.analyses || [];
+      return {
+        tool: 'correlate_strategic_patterns',
+        status: 'completed',
+        durationMs: Date.now() - start,
+        itemCount: analyses.length,
+        data: analyses,
+        summary: `Correlated ${analyses.length} strategic patterns over ${windowDays} days`
+      };
+    } catch (err) {
+      logger.warn({ err: err.message }, 'AgentToolRegistry correlate_strategic_patterns failed');
+      return {
+        tool: 'correlate_strategic_patterns',
+        status: 'failed',
+        durationMs: Date.now() - start,
+        itemCount: 0,
+        data: [],
+        summary: `Strategic pattern correlation failed: ${err.message}`
+      };
+    }
+  },
+
+  /**
+   * 4. analyze_pricing_signals: Retrieve and compare pricing changes and tier updates
+   */
+  async analyze_pricing_signals({ organizationId = 'default-org', competitorId = null, limit = 20 }) {
+    const start = Date.now();
+    try {
+      let pricingEvents = [];
+      if (competitorId) {
+        pricingEvents = await competitorEventRepository.findByCompetitor(competitorId, {
+          organizationId,
+          eventType: 'PRICING',
+          limit
+        });
+      } else {
+        pricingEvents = await competitorEventRepository.searchEvents({
+          organizationId,
+          eventType: 'PRICING',
+          limit
+        });
+      }
+
+      const extractedSignals = [];
+      for (const evt of pricingEvents) {
+        if (evt.pricingSignals && evt.pricingSignals.length > 0) {
+          for (const ps of evt.pricingSignals) {
+            extractedSignals.push({
+              eventId: evt.id,
+              competitorName: evt.competitor?.name || 'Competitor',
+              tierName: ps.tierName,
+              newPrice: ps.newPrice,
+              previousPrice: ps.previousPrice,
+              currency: ps.currency,
+              effectiveDate: ps.effectiveDate || evt.eventDate,
+              summary: evt.summary
+            });
+          }
+        } else {
+          extractedSignals.push({
+            eventId: evt.id,
+            competitorName: evt.competitor?.name || 'Competitor',
+            tierName: 'Pricing Update',
+            newPrice: null,
+            previousPrice: null,
+            currency: 'USD',
+            effectiveDate: evt.eventDate,
+            summary: evt.summary || evt.title
+          });
+        }
+      }
+
+      return {
+        tool: 'analyze_pricing_signals',
+        status: 'completed',
+        durationMs: Date.now() - start,
+        itemCount: extractedSignals.length,
+        data: extractedSignals,
+        events: pricingEvents,
+        summary: `Analyzed ${extractedSignals.length} pricing signals across recent updates`
+      };
+    } catch (err) {
+      logger.warn({ err: err.message }, 'AgentToolRegistry analyze_pricing_signals failed');
+      return {
+        tool: 'analyze_pricing_signals',
+        status: 'failed',
+        durationMs: Date.now() - start,
+        itemCount: 0,
+        data: [],
+        events: [],
+        summary: `Pricing signal analysis failed: ${err.message}`
+      };
+    }
+  },
+
+  /**
+   * 5. recall_memory: Query Hindsight vector memory bank
+   */
+  async recall_memory({ query, organizationId = 'default-org', competitorId = null, limit = 10, requestId = null }) {
+    const start = Date.now();
+    if (!hindsightService.isConfigured()) {
+      return {
+        tool: 'recall_memory',
+        status: 'degraded',
+        durationMs: Date.now() - start,
+        itemCount: 0,
+        data: [],
+        summary: 'Hindsight vector memory standby'
+      };
+    }
+
+    const recallOp = await memoryOperationRepository.recordStart({
+      stage: 'RECALL',
+      organizationId,
+      competitorId,
+      requestId,
+      query
+    }).catch(() => null);
+
+    try {
+      const recallRes = await hindsightService.recall(query, { limit });
+      const recalled = Array.isArray(recallRes) ? recallRes : (recallRes?.memories || []);
+      if (recallOp?.id) {
+        await memoryOperationRepository.recordCompletion(recallOp.id, {
+          status: 'COMPLETED',
+          memoryCount: recalled.length
+        }).catch(() => {});
+      }
+      return {
+        tool: 'recall_memory',
+        status: 'completed',
+        durationMs: Date.now() - start,
+        itemCount: recalled.length,
+        data: recalled,
+        summary: `Recalled ${recalled.length} semantic memories from Hindsight bank`
+      };
+    } catch (err) {
+      const isCreditLimit = err.message?.includes('Insufficient credits') || err.message?.includes('402');
+      if (recallOp?.id) {
+        await memoryOperationRepository.recordCompletion(recallOp.id, {
+          status: 'FAILED',
+          errorCode: isCreditLimit ? 'INSUFFICIENT_CREDITS' : (err.code || 'HINDSIGHT_ERROR'),
+          metadata: { message: err.message }
+        }).catch(() => {});
+      }
+      return {
+        tool: 'recall_memory',
+        status: 'degraded',
+        creditLimitReached: isCreditLimit,
+        durationMs: Date.now() - start,
+        itemCount: 0,
+        data: [],
+        summary: isCreditLimit ? 'Hindsight credits exhausted — fallback to PostgreSQL evidence' : err.message
+      };
+    }
+  }
+};
 
 export const agentService = {
   /**
@@ -341,12 +636,28 @@ export const agentService = {
     // =========================================================================
     // STAGE 2: REASON & PLAN
     // =========================================================================
+    const isCompareQuery = /\b(compare|vs|versus|difference between|head to head|comparison)\b/i.test(cleanedQuery) ||
+      (targetCompetitors.length >= 2);
+
+    const isPricingQuery = /\b(pricing|tier|cost|plan|subscription|discount|price cut|rate|bill|license|licensing)\b/i.test(cleanedQuery);
+
+    const isPatternQuery = /\b(pattern|patterns|connect the dots|trend|trends|strategy|strategic|trajectory|escalation|expansion|momentum)\b/i.test(cleanedQuery) || options.mode === 'REFLECT';
+
     const plan = [];
     if (isEducationalOrConcept) {
       plan.push('ollama_general_synthesis');
     } else {
-      plan.push('fetch_database_signals');
-      plan.push('hindsight_memory_recall');
+      if (isCompareQuery) {
+        plan.push('get_competitor_comparison');
+      }
+      if (isPricingQuery) {
+        plan.push('analyze_pricing_signals');
+      }
+      if (isPatternQuery) {
+        plan.push('correlate_strategic_patterns');
+      }
+      plan.push('search_events');
+      plan.push('recall_memory');
       if (options.mode === 'REFLECT' || /strategy|pattern|trend|roadmap|trajectory/i.test(cleanedQuery)) {
         plan.push('hindsight_reflect');
       }
@@ -362,10 +673,13 @@ export const agentService = {
     });
 
     // =========================================================================
-    // STAGE 3 & 4: ACT, OBSERVE, AND ITERATE
+    // STAGE 3 & 4: ACT, OBSERVE, AND ITERATE (Autonomous Tool Dispatch)
     // =========================================================================
     let pgEvents = [];
     let hindsightMemories = [];
+    let comparisonData = [];
+    let pricingData = [];
+    let patternsData = [];
     let reflectAnalysis = null;
     let hindsightStatus = {
       configured: hindsightService.isConfigured(),
@@ -377,115 +691,159 @@ export const agentService = {
     };
     let activeHindsightStage = 'UNCONFIGURED';
 
-    let currentCycle = 0;
+    // Tool: Competitor Comparison
+    if (plan.includes('get_competitor_comparison')) {
+      const compRes = await AgentToolRegistry.get_competitor_comparison({
+        organizationId: orgId,
+        competitors: targetCompetitors,
+        windowDays: 90
+      });
+      comparisonData = compRes.data || [];
+      executionSteps.push({
+        id: 'get_competitor_comparison',
+        name: 'Competitor Comparison & Momentum Analysis',
+        status: compRes.status,
+        durationMs: compRes.durationMs,
+        itemCount: compRes.itemCount,
+        tool: 'get_competitor_comparison',
+        detail: compRes.summary
+      });
+    }
 
-    // STEP A: Fetch Database Events and Typed Signals (PostgreSQL)
-    if (plan.includes('fetch_database_signals') && currentCycle < maxIterations) {
-      currentCycle++;
-      const dbStepStart = Date.now();
+    // Tool: Pricing Signals
+    if (plan.includes('analyze_pricing_signals')) {
+      const priceRes = await AgentToolRegistry.analyze_pricing_signals({
+        organizationId: orgId,
+        competitorId: targetCompetitors[0]?.id || null,
+        limit: 20
+      });
+      pricingData = priceRes.data || [];
+      if (Array.isArray(priceRes.events) && priceRes.events.length > 0) {
+        pgEvents.push(...priceRes.events);
+      }
+      executionSteps.push({
+        id: 'analyze_pricing_signals',
+        name: 'Pricing Signals & Tier Analysis',
+        status: priceRes.status,
+        durationMs: priceRes.durationMs,
+        itemCount: priceRes.itemCount,
+        tool: 'analyze_pricing_signals',
+        detail: priceRes.summary
+      });
+    }
+
+    // Tool: Strategic Pattern Correlation
+    if (plan.includes('correlate_strategic_patterns')) {
+      const patternRes = await AgentToolRegistry.correlate_strategic_patterns({
+        organizationId: orgId,
+        competitorId: targetCompetitors[0]?.id || null,
+        windowDays: 90,
+        analysisType: 'ALL'
+      });
+      patternsData = patternRes.data || [];
+      executionSteps.push({
+        id: 'correlate_strategic_patterns',
+        name: 'Strategic Pattern Correlation',
+        status: patternRes.status,
+        durationMs: patternRes.durationMs,
+        itemCount: patternRes.itemCount,
+        tool: 'correlate_strategic_patterns',
+        detail: patternRes.summary
+      });
+    }
+
+    // Tool: Search Events
+    if (plan.includes('search_events')) {
+      const searchStart = Date.now();
       try {
         await executeWithRetry(async () => {
           if (targetCompetitors.length > 0) {
             for (const comp of targetCompetitors) {
-              const events = await competitorEventRepository.findByCompetitor(comp.id, { limit: 15, organizationId: orgId });
-              pgEvents.push(...events);
+              const compEscaped = comp.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+              const topicKeywords = cleanedQuery
+                .replace(new RegExp(compEscaped, 'gi'), '')
+                .replace(/\b(what|has|been|doing|is|are|the|moves|recent|updates|on|in|about)\b/gi, '')
+                .trim();
+
+              const res = await AgentToolRegistry.search_events({
+                organizationId: orgId,
+                competitorId: comp.id,
+                query: topicKeywords.length > 2 ? topicKeywords : undefined,
+                limit: 15
+              });
+              if (res.data && res.data.length > 0) {
+                pgEvents.push(...res.data);
+              }
             }
           } else if (isPlatformQuery || isBroadCompetitorQuery) {
-            pgEvents = await competitorEventRepository.searchEvents({
+            const res = await AgentToolRegistry.search_events({
               organizationId: orgId,
               limit: 15
             });
+            if (res.data) pgEvents.push(...res.data);
           } else {
-            pgEvents = await competitorEventRepository.searchEvents({
+            const res = await AgentToolRegistry.search_events({
               organizationId: orgId,
               query: cleanedQuery,
               limit: 15
             });
+            if (res.data) pgEvents.push(...res.data);
           }
         }, { maxRetries: 2, initialDelayMs: 80 });
 
         executionSteps.push({
-          id: 'fetch_database_signals',
+          id: 'search_events',
           name: 'Retrieve PostgreSQL Signals & Evidence',
           status: 'completed',
-          durationMs: Date.now() - dbStepStart,
+          durationMs: Date.now() - searchStart,
+          itemCount: pgEvents.length,
+          tool: 'search_events',
           detail: `Retrieved ${pgEvents.length} events from database`
         });
       } catch (err) {
         logger.warn({ err: err.message }, 'Failed to query PostgreSQL events in agentService');
         executionSteps.push({
-          id: 'fetch_database_signals',
+          id: 'search_events',
           name: 'Retrieve PostgreSQL Signals & Evidence',
           status: 'failed',
-          durationMs: Date.now() - dbStepStart,
+          durationMs: Date.now() - searchStart,
+          itemCount: 0,
+          tool: 'search_events',
           detail: `Database query failed: ${err.message}`
         });
       }
     }
 
-    // STEP B: Hindsight Semantic Memory Recall
-    if (plan.includes('hindsight_memory_recall') && currentCycle < maxIterations) {
-      currentCycle++;
-      const hsStepStart = Date.now();
+    // Tool: Hindsight Memory Recall
+    if (plan.includes('hindsight_memory_recall') || plan.includes('recall_memory')) {
       if (hindsightStatus.configured && (targetCompetitors.length > 0 || isBroadCompetitorQuery)) {
-        const recallOp = await memoryOperationRepository.recordStart({
-          stage: 'RECALL',
+        activeHindsightStage = 'RECALL';
+        const recallRes = await AgentToolRegistry.recall_memory({
+          query: cleanedQuery,
           organizationId: orgId,
           competitorId: targetCompetitors[0]?.id || null,
-          requestId,
-          query: cleanedQuery
+          requestId
         });
-
-        try {
-          activeHindsightStage = 'RECALL';
-          const recallRes = await hindsightService.recall(cleanedQuery, { limit: 10 });
-          const recalled = Array.isArray(recallRes) ? recallRes : (recallRes?.memories || []);
-          hindsightMemories = recalled;
-          hindsightStatus.recalled = true;
-
-          if (recallOp?.id) {
-            await memoryOperationRepository.recordCompletion(recallOp.id, {
-              status: 'COMPLETED',
-              memoryCount: hindsightMemories.length
-            });
-          }
-
-          executionSteps.push({
-            id: 'hindsight_memory_recall',
-            name: 'Hindsight Semantic Memory Recall',
-            status: 'completed',
-            durationMs: Date.now() - hsStepStart,
-            detail: `Recalled ${hindsightMemories.length} semantic memories`
-          });
-        } catch (err) {
-          logger.warn({ err: err.message }, 'Hindsight RECALL operation failed in agentService');
-          const isCreditLimit = err.message?.includes('Insufficient credits') || err.message?.includes('402');
-          hindsightStatus.creditLimitReached = isCreditLimit;
-          hindsightStatus.message = err.message || 'Hindsight recall error';
+        hindsightMemories = recallRes.data || [];
+        hindsightStatus.recalled = recallRes.status === 'completed';
+        if (recallRes.creditLimitReached) {
+          hindsightStatus.creditLimitReached = true;
           activeHindsightStage = 'DEGRADED';
-
-          if (recallOp?.id) {
-            await memoryOperationRepository.recordCompletion(recallOp.id, {
-              status: 'FAILED',
-              errorCode: isCreditLimit ? 'INSUFFICIENT_CREDITS' : (err.code || 'HINDSIGHT_ERROR'),
-              metadata: { message: err.message }
-            });
-          }
-
-          executionSteps.push({
-            id: 'hindsight_memory_recall',
-            name: 'Hindsight Semantic Memory Recall',
-            status: isCreditLimit ? 'degraded' : 'failed',
-            durationMs: Date.now() - hsStepStart,
-            detail: isCreditLimit ? 'Hindsight credits exhausted — fallback to PostgreSQL evidence' : err.message
-          });
         }
+        executionSteps.push({
+          id: 'hindsight_memory_recall',
+          name: 'Hindsight Semantic Memory Recall',
+          status: recallRes.status,
+          durationMs: recallRes.durationMs,
+          itemCount: recallRes.itemCount,
+          tool: 'recall_memory',
+          detail: recallRes.summary
+        });
       }
     }
 
-    // STEP C: Hindsight Strategic Pattern Reflection
-    if (plan.includes('hindsight_reflect') && hindsightStatus.configured && !hindsightStatus.creditLimitReached && currentCycle < maxIterations) {
-      currentCycle++;
+    // Step: Hindsight Strategic Pattern Reflection
+    if (plan.includes('hindsight_reflect') && hindsightStatus.configured && !hindsightStatus.creditLimitReached) {
       const reflectStepStart = Date.now();
       const reflectOp = await memoryOperationRepository.recordStart({
         stage: 'REFLECT',
@@ -540,12 +898,74 @@ export const agentService = {
     }
 
     // =========================================================================
+    // STAGE 4.5: ADAPTIVE QUERY RELAXATION / SELF-CORRECTION (D-15)
+    // =========================================================================
+    const isEntitySpecific = targetCompetitors.length > 0 || looksLikeSpecificEntityQuery;
+    if (isEntitySpecific && pgEvents.length === 0 && !isPlatformQuery && !isBroadCompetitorQuery) {
+      const relaxStart = Date.now();
+      let relaxedEvents = [];
+
+      if (targetCompetitors.length > 0) {
+        for (const comp of targetCompetitors) {
+          const broader = await competitorEventRepository.findByCompetitor(comp.id, {
+            limit: 15,
+            organizationId: orgId
+          });
+          relaxedEvents.push(...broader);
+        }
+      }
+
+      if (relaxedEvents.length === 0 && targetCompetitors.length === 0) {
+        for (const landscapeComp of MONITORED_LANDSCAPE) {
+          if (landscapeComp.aliases.some(alias => qLower.includes(alias))) {
+            const foundComp = await competitorRepository.findBySlug(landscapeComp.slug);
+            if (foundComp) {
+              targetCompetitors.push(foundComp);
+              const compEvents = await competitorEventRepository.findByCompetitor(foundComp.id, {
+                limit: 15,
+                organizationId: orgId
+              });
+              relaxedEvents.push(...compEvents);
+            }
+          }
+        }
+      }
+
+      const seenRelaxIds = new Set();
+      const uniqueRelaxed = relaxedEvents.filter(e => {
+        if (!e?.id || seenRelaxIds.has(e.id)) return false;
+        seenRelaxIds.add(e.id);
+        return true;
+      });
+
+      if (uniqueRelaxed.length > 0) {
+        pgEvents = uniqueRelaxed;
+        executionSteps.push({
+          id: 'self_correct_broaden_search',
+          name: 'Adaptive Query Relaxation',
+          status: 'self_corrected',
+          durationMs: Date.now() - relaxStart,
+          itemCount: uniqueRelaxed.length,
+          tool: 'search_events',
+          detail: `Initial keyword filter returned 0 records; autonomously broadened query to retrieve ${uniqueRelaxed.length} recent signals.`
+        });
+      }
+    }
+
+    // Deduplicate pgEvents across all tools
+    const seenEventIds = new Set();
+    pgEvents = pgEvents.filter(e => {
+      if (!e?.id || seenEventIds.has(e.id)) return false;
+      seenEventIds.add(e.id);
+      return true;
+    });
+
+    // =========================================================================
     // STAGE 5: OBSERVE & VERIFY
     // =========================================================================
     const totalEvidenceCount = pgEvents.length + hindsightMemories.length;
 
     // Strict Fail-Closed Pre-Retrieval Grounding Enforcement (D-09)
-    const isEntitySpecific = targetCompetitors.length > 0 || looksLikeSpecificEntityQuery;
     if (isEntitySpecific && totalEvidenceCount === 0 && !isPlatformQuery && !isBroadCompetitorQuery) {
       const targetName = targetCompetitors.length > 0 
         ? targetCompetitors.map(c => c.name).join(', ') 
@@ -775,6 +1195,32 @@ export const agentService = {
       const memText = mem.text || mem.content || '';
       if (memText && !facts.some(f => f.includes(memText))) {
         facts.push(`Fact (Hindsight Memory): ${memText}`);
+      }
+    }
+
+    // Ground Facts & Observations from Competitor Comparison Tool
+    if (comparisonData.length > 0) {
+      for (const comp of comparisonData) {
+        facts.push(`Fact (Comparative Momentum): ${comp.competitorName} has a competitive momentum score of ${comp.momentumScore}/100 (${comp.momentumLevel}) with ${comp.eventCount} recorded events.`);
+        const focusStr = Object.entries(comp.categoryFocus || {}).map(([k, v]) => `${v} ${k}`).join(', ');
+        observations.push(`Comparative momentum analysis shows ${comp.competitorName} categorized as ${comp.momentumLevel} (${comp.momentumScore}/100)${focusStr ? ` with category focus on: ${focusStr}` : ''}.`);
+      }
+    }
+
+    // Ground Facts & Observations from Pricing Signals Tool
+    if (pricingData.length > 0) {
+      for (const ps of pricingData.slice(0, 5)) {
+        if (ps.newPrice) {
+          facts.push(`Fact (Pricing Signal): ${ps.competitorName} updated ${ps.tierName} price to ${ps.currency} ${ps.newPrice} (Previous: ${ps.previousPrice || 'N/A'}).`);
+        }
+      }
+      observations.push(`Analyzed ${pricingData.length} active pricing signals across competitors.`);
+    }
+
+    // Ground Inferences from Strategic Patterns Tool
+    if (patternsData.length > 0) {
+      for (const pat of patternsData.slice(0, 3)) {
+        inferences.push(`Inference (Strategic Pattern): ${pat.title} — ${pat.summary || pat.description || 'Coordinated competitor pattern detected'}`);
       }
     }
 

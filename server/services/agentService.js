@@ -176,6 +176,7 @@ export const agentService = {
         facts: [],
         observations: [],
         inferences: [],
+        implications: [],
         unknowns: [],
         evidence: [],
         events: [],

@@ -2,12 +2,12 @@
 gsd_state_version: "1.0"
 current_phase: 4
 current_phase_name: Hindsight Memory Orchestration & Conversational Continuity
-status: ready_to_discuss
-stopped_at: Phase 3 complete. Ready to proceed to Phase 4.
-last_updated: "2026-10-05T15:55:00.000Z"
+status: ready_to_execute
+stopped_at: Phase 4 plans generated (04-01-PLAN.md, 04-02-PLAN.md)
+last_updated: "2026-10-05T16:00:00.000Z"
 last_activity: 2026-10-05
-last_activity_desc: Phase 3 executed — 03-01 (Agent Loop & Tool Registry) and 03-02 (Ollama Prompting & UI Timeline)
-state_head: 85bf89b
+last_activity_desc: Phase 4 planned — 04-01 (Hindsight Memory Orchestration) and 04-02 (Conversational Persistence & Threaded UI)
+state_head: 0090fdb
 progress:
   total_phases: 6
   completed_phases: 3
@@ -29,8 +29,8 @@ See: `.planning/PROJECT.md` (updated 2026-10-05)
 
 Phase: 4 of 6 (Hindsight Memory Orchestration & Conversational Continuity)
 Plan: 0 of 2 in current phase
-Status: Ready to discuss (`/gsd-discuss-phase 4`)
-Last activity: 2026-10-05 — Phase 3 executed (03-01-PLAN.md, 03-02-PLAN.md)
+Status: Ready to execute (`/gsd-execute-phase 4`)
+Last activity: 2026-10-05 — Phase 4 plans generated (04-01-PLAN.md, 04-02-PLAN.md)
 
 Progress: [█████░░░░░] 54%
 
@@ -83,10 +83,13 @@ Progress: [█████░░░░░] 54%
 - [D-14]: 5-Tool Intelligence Suite (`search_events`, `get_competitor_comparison`, `correlate_strategic_patterns`, `analyze_pricing_signals`, `recall_memory`) exposed via standardized contracts.
 - [D-15]: Adaptive query relaxation autonomously broadens restrictive keyword searches on zero results before failing closed.
 - [D-16]: UI tool timeline in `AgentActivityPanel` visualizes tool badges, latencies, counts, and status indicators in real time.
+- [D-17]: Chronological multi-turn conversation thread in `AgentWorkspace` UI.
+- [D-18]: Multi-turn context grounding & pronoun resolution for Ollama with last 3 turns and inherited context.
+- [D-19]: Intelligent memory orchestration (RETAIN on ingestion, RECALL vs REFLECT routing, transparent degraded fallback to PostgreSQL with amber status pill).
 
 ### Pending Todos
 
-- Phase 4: Hindsight Memory Orchestration & Conversational Continuity (`/gsd-discuss-phase 4`).
+- Execute Phase 4 Plan 04-01 & 04-02 (`/gsd-execute-phase 4`).
 
 ### Blockers/Concerns
 
@@ -94,6 +97,6 @@ None. Local Ollama, database, agent loop, tool registry, and frontend timeline v
 
 ## Session Continuity
 
-Last session: 2026-10-05T15:55:00.000Z
-Stopped at: Phase 3 complete. Ready to proceed to Phase 4.
-Next command: `/gsd-discuss-phase 4`
+Last session: 2026-10-05T16:00:00.000Z
+Stopped at: Phase 4 plans generated (04-01-PLAN.md, 04-02-PLAN.md).
+Next command: `/gsd-execute-phase 4`

@@ -9,7 +9,12 @@ export const competitorEventRepository = {
       include: {
         competitor: true,
         source: true,
-        evidence: true
+        evidence: true,
+        pricingSignals: true,
+        productSignals: true,
+        messagingSignals: true,
+        hiringSignals: true,
+        fundingSignals: true
       }
     });
   },
@@ -17,8 +22,19 @@ export const competitorEventRepository = {
   async findByCompetitor(competitorId, options = {}) {
     const prisma = getPrismaClient();
     if (!prisma) return [];
+    const where = { competitorId };
+    if (options.organizationId) {
+      where.organizationId = options.organizationId;
+    }
+
+    if (options.startDate || options.endDate) {
+      where.eventDate = {};
+      if (options.startDate) where.eventDate.gte = new Date(options.startDate);
+      if (options.endDate) where.eventDate.lte = new Date(options.endDate);
+    }
+
     return prisma.competitorEvent.findMany({
-      where: { competitorId },
+      where,
       take: options.limit || 20,
       orderBy: { eventDate: 'desc' },
       include: {
@@ -42,6 +58,12 @@ export const competitorEventRepository = {
     if (options.organizationId) where.organizationId = options.organizationId;
     if (options.competitorId) where.competitorId = options.competitorId;
     if (options.eventType) where.eventType = options.eventType;
+
+    if (options.startDate || options.endDate) {
+      where.eventDate = {};
+      if (options.startDate) where.eventDate.gte = new Date(options.startDate);
+      if (options.endDate) where.eventDate.lte = new Date(options.endDate);
+    }
 
     if (options.query && typeof options.query === 'string' && options.query.trim()) {
       const q = options.query.trim();

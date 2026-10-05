@@ -229,6 +229,7 @@ describe('CompetitorIQ AI Agent Debugging, Lifecycle & Performance Tests (14 Req
       'facts',
       'observations',
       'inferences',
+      'implications',
       'unknowns',
       'evidence',
       'events',

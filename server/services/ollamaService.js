@@ -172,23 +172,36 @@ export const ollamaService = {
   /**
    * Helper to generate a grounded competitor intelligence brief using Ollama
    */
-  async generateGroundedBrief(userQuery, facts, observations = [], options = {}) {
+  async generateGroundedBrief(userQuery, facts, observations = [], inferences = [], implications = [], options = {}) {
+    // Graceful argument overloading if called with (userQuery, facts, observations, options)
+    if (!Array.isArray(inferences) && typeof inferences === 'object' && inferences !== null) {
+      options = inferences;
+      inferences = [];
+      implications = [];
+    } else if (!Array.isArray(implications) && typeof implications === 'object' && implications !== null) {
+      options = implications;
+      implications = [];
+    }
+
     const systemPrompt = `You are the CompetitorIQ Grounded AI Intelligence Analyst powered by qwen2.5:3b.
 Your task is to analyze competitive intelligence data and produce a structured, professional executive brief for the user query.
 
 CRITICAL GROUNDING RULES:
 1. STRICT TRUTHFULNESS: Base your brief ONLY on the provided facts and evidence below.
 2. ABSOLUTELY NO FABRICATION: Do NOT invent competitor names, dates, metrics, pricing, features, or events.
-3. SEPARATION: Clearly distinguish between:
-   - FACTS: Direct historical events and numbers from stored database records.
-   - STRATEGIC OBSERVATIONS: Patterns derived directly from the facts.
-   - LOGICAL INFERENCES: Logical deductions based on facts (explicitly labeled as inference).
-   - UNKNOWNS & DATA GAPS: What is missing or uncertain in the evidence.
+3. 5-BOX EPISTEMOLOGICAL SEPARATION: Clearly distinguish between:
+   - FACTS: Direct historical events and numbers from stored database records. Attribute sources inline with tags like [Source: Publisher Name] where available.
+   - STRATEGIC OBSERVATIONS: Empirical patterns and velocity metrics derived directly from the facts.
+   - LOGICAL INFERENCES: Logical deductions connecting observations to strategic motives.
+   - BUSINESS IMPLICATIONS: Commercial and competitive impact on Microsoft and rivals (pricing pressure, margin impact, enterprise market share, feature parity).
+   - UNKNOWNS & DATA GAPS: What is missing, unverified, or uncertain in the evidence.
 4. If evidence is missing or insufficient, state it clearly.`;
 
     // Deduplicate and cap facts to top 8 to keep local LLM inference under 10 seconds
     const uniqueFacts = [...new Set(facts)].slice(0, 8);
     const uniqueObservations = [...new Set(observations)].slice(0, 5);
+    const uniqueInferences = [...new Set(Array.isArray(inferences) ? inferences : [])].slice(0, 4);
+    const uniqueImplications = [...new Set(Array.isArray(implications) ? implications : [])].slice(0, 4);
 
     const userContent = `User Query: "${userQuery}"
 
@@ -198,7 +211,13 @@ ${uniqueFacts.length > 0 ? uniqueFacts.map(f => `- ${f}`).join('\n') : '(No dire
 Strategic Observations:
 ${uniqueObservations.length > 0 ? uniqueObservations.map(o => `- ${o}`).join('\n') : '(None)'}
 
-Please provide a concise executive brief answering the user query based strictly on the above facts. Include sections for Verified Facts, Strategic Observations, Logical Inferences, and Unknowns & Data Gaps. Keep it concise.`;
+Logical Inferences:
+${uniqueInferences.length > 0 ? uniqueInferences.map(i => `- ${i}`).join('\n') : '(None)'}
+
+Business Implications:
+${uniqueImplications.length > 0 ? uniqueImplications.map(imp => `- ${imp}`).join('\n') : '(None)'}
+
+Please provide a concise executive brief answering the user query based strictly on the above facts. Include sections for Verified Facts, Strategic Observations, Logical Inferences, Business & Strategic Implications, and Unknowns & Data Gaps. Keep it concise and embed inline citations where appropriate.`;
 
     const messages = [
       { role: 'system', content: systemPrompt }

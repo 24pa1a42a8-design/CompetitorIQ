@@ -33,7 +33,8 @@ export const AuthProvider = ({ children }) => {
       name: nameFromEmail || 'Alex Rivera',
       email: email,
       role: 'Strategic Analyst',
-      initials: initials || 'AR'
+      initials: initials || 'AR',
+      organizationId: 'default-org'
     };
 
     setUser(loggedInUser);
@@ -69,7 +70,8 @@ export const AuthProvider = ({ children }) => {
       name,
       email,
       role: 'Strategic Analyst',
-      initials: initials || 'U'
+      initials: initials || 'U',
+      organizationId: 'default-org'
     };
 
     setUser(newUser);

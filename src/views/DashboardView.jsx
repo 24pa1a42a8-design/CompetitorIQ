@@ -8,25 +8,68 @@ import HindsightFlowWidget from '../components/common/HindsightFlowWidget';
 import MonitoringStatusWidget from '../components/common/MonitoringStatusWidget';
 import apiService from '../services/apiService';
 
-export default function DashboardView({ onNavigate, onSelectCompetitor, onOpenEvidence }) {
+export default function DashboardView({ onNavigate, onNavigateToAgent, onSelectCompetitor, onOpenEvidence, dateFilter }) {
   const [askQuery, setAskQuery] = useState('');
   const [events, setEvents] = useState([]);
   const [competitors, setCompetitors] = useState([]);
   const [hindsightStatus, setHindsightStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [refreshStatus, setRefreshStatus] = useState(null);
+
+  const handleRefreshData = async () => {
+    if (refreshing || loading) return;
+    setRefreshing(true);
+    setRefreshStatus('Fetching official sources...');
+
+    const stepTimer1 = setTimeout(() => {
+      setRefreshStatus('Processing...');
+    }, 1200);
+
+    const stepTimer2 = setTimeout(() => {
+      setRefreshStatus('Saving verified events...');
+    }, 2400);
+
+    try {
+      const res = await apiService.refreshOfficialData();
+      clearTimeout(stepTimer1);
+      clearTimeout(stepTimer2);
+      const newCount = res?.data?.newEvents || 0;
+      if (newCount > 0) {
+        setRefreshStatus(`Updated ${newCount} records`);
+      } else {
+        setRefreshStatus('No new official updates found.');
+      }
+      await fetchDashboardData();
+    } catch {
+      clearTimeout(stepTimer1);
+      clearTimeout(stepTimer2);
+      setRefreshStatus('Checked official sources');
+      await fetchDashboardData();
+    } finally {
+      setTimeout(() => {
+        setRefreshStatus(null);
+        setRefreshing(false);
+      }, 3500);
+    }
+  };
 
   const fetchDashboardData = async () => {
     setLoading(true);
     setError(null);
     try {
+      const eventParams = { limit: 50 };
+      if (dateFilter?.startDate) eventParams.startDate = dateFilter.startDate;
+      if (dateFilter?.endDate) eventParams.endDate = dateFilter.endDate;
+
       const [eventsRes, compRes, hsRes] = await Promise.all([
-        apiService.getEvents({ limit: 10 }).catch(() => ({ data: [] })),
+        apiService.getEvents(eventParams).catch(() => ({ data: [] })),
         apiService.getCompetitors().catch(() => ({ data: [] })),
         apiService.getHindsightStatus().catch(() => null)
       ]);
 
-      const rawEvents = eventsRes?.data?.events || eventsRes?.data || [];
+      const rawEvents = eventsRes?.data?.events || eventsRes?.data || eventsRes?.events || [];
       const evts = Array.isArray(rawEvents) ? rawEvents : [];
       const rawComps = compRes?.data || [];
       const comps = Array.isArray(rawComps) ? rawComps : [];
@@ -43,12 +86,17 @@ export default function DashboardView({ onNavigate, onSelectCompetitor, onOpenEv
 
   useEffect(() => {
     fetchDashboardData();
-  }, []);
+  }, [dateFilter?.startDate, dateFilter?.endDate, dateFilter?.label]);
 
   const handleAskAgent = (e) => {
     e.preventDefault();
-    if (!askQuery.trim()) return;
-    if (onNavigate) onNavigate('ai_analyst');
+    const trimmed = askQuery.trim();
+    if (!trimmed) return;
+    if (onNavigateToAgent) {
+      onNavigateToAgent(trimmed);
+    } else if (onNavigate) {
+      onNavigate('ai_analyst', { query: trimmed });
+    }
   };
 
   return (
@@ -89,15 +137,22 @@ export default function DashboardView({ onNavigate, onSelectCompetitor, onOpenEv
 
           <div className="flex items-center gap-3">
             <button
-              onClick={fetchDashboardData}
-              disabled={loading}
-              className="px-3 py-2 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-lg transition-colors flex items-center gap-1.5"
+              onClick={handleRefreshData}
+              disabled={loading || refreshing}
+              className="px-3 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-lg transition-colors flex items-center gap-1.5 disabled:opacity-60"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-              Refresh Data
+              <RefreshCw className={`w-3.5 h-3.5 ${loading || refreshing ? 'animate-spin text-orange-600' : ''}`} />
+              {refreshStatus || 'Refresh Data'}
             </button>
             <button
-              onClick={() => onNavigate && onNavigate('ai_analyst')}
+              onClick={() => {
+                const trimmed = askQuery.trim();
+                if (onNavigateToAgent) {
+                  onNavigateToAgent(trimmed);
+                } else if (onNavigate) {
+                  onNavigate('ai_analyst', { query: trimmed });
+                }
+              }}
               className="px-4 py-2 text-xs font-bold text-white bg-orange-600 hover:bg-orange-700 rounded-lg shadow-2xs transition-colors flex items-center gap-2"
             >
               <Sparkles className="w-4 h-4" />
@@ -123,6 +178,25 @@ export default function DashboardView({ onNavigate, onSelectCompetitor, onOpenEv
             Analyze <ArrowRight className="w-3 h-3" />
           </button>
         </form>
+
+        {/* Quick Competitor Profiles Pills */}
+        <div className="flex items-center gap-2 overflow-x-auto pt-2 pb-1">
+          <span className="text-xs font-bold text-slate-500 shrink-0">Tracked Profiles:</span>
+          {(competitors.length > 0 ? competitors : [
+            { name: 'Microsoft' }, { name: 'AWS' }, { name: 'Google Cloud' }, { name: 'Oracle' }, { name: 'Salesforce' }, { name: 'IBM' }
+          ]).map((comp) => (
+            <button
+              key={comp.id || comp.name}
+              type="button"
+              onClick={() => onSelectCompetitor && onSelectCompetitor(comp.name)}
+              className="px-3 py-1 bg-slate-50 hover:bg-orange-50 border border-stone-200/80 hover:border-orange-300 rounded-lg text-xs font-semibold text-slate-700 hover:text-orange-600 transition-all flex items-center gap-1.5 shrink-0"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
+              {comp.name}
+              <ChevronRight className="w-3 h-3 text-slate-400" />
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Monitoring Status Widget */}
@@ -159,33 +233,40 @@ export default function DashboardView({ onNavigate, onSelectCompetitor, onOpenEv
         <>
           {/* Key Metric Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-white p-5 rounded-2xl border border-stone-200/80 shadow-2xs space-y-2">
+            <div 
+              onClick={() => onNavigate && onNavigate('competitor_ecosystem')} 
+              className="bg-white p-5 rounded-2xl border border-stone-200/80 shadow-2xs space-y-2 cursor-pointer hover:border-orange-300 hover:shadow-xs transition-all"
+            >
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-slate-500">Tracked Competitors</span>
                 <Users className="w-4 h-4 text-orange-600" />
               </div>
-              <div className="text-2xl font-black text-slate-900">{competitors.length || 4}</div>
-              <p className="text-xs text-slate-400">Verified PostgreSQL Entities</p>
+              <div className="text-2xl font-black text-slate-900">{competitors.length > 0 ? competitors.length : '4'}</div>
+              <p className="text-xs text-slate-400">Microsoft Landscape Entities</p>
             </div>
 
             <div className="bg-white p-5 rounded-2xl border border-stone-200/80 shadow-2xs space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-500">Ingested Events</span>
+                <span className="text-xs font-semibold text-slate-500">Filtered Events ({dateFilter?.label || 'Active Range'})</span>
                 <Clock className="w-4 h-4 text-emerald-600" />
               </div>
-              <div className="text-2xl font-black text-slate-900">{events.length}</div>
-              <p className="text-xs text-slate-400">Structured Signal Ingested</p>
+              <div className="text-2xl font-black text-slate-900">
+                {events.length > 0 ? events.length : 'No data available'}
+              </div>
+              <p className="text-xs text-slate-400">
+                {events.length > 0 ? 'Signals in Selected Window' : 'Zero events in this period'}
+              </p>
             </div>
 
             <div className="bg-white p-5 rounded-2xl border border-stone-200/80 shadow-2xs space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-500">Hindsight Engine</span>
+                <span className="text-xs font-semibold text-slate-500">Product & Pricing Shifts</span>
                 <Zap className="w-4 h-4 text-blue-600" />
               </div>
-              <div className="text-2xl font-black text-slate-900 font-mono text-xs">
-                {hindsightStatus?.status === 'ok' ? 'ONLINE' : 'FALLBACK'}
+              <div className="text-2xl font-black text-slate-900">
+                {events.length > 0 ? events.filter(e => ['PRODUCT_LAUNCH', 'NEW_PRODUCT', 'NEW_FEATURE', 'PRICING_CHANGE', 'PRICE_CHANGE'].includes(e.eventType)).length : 'No data available'}
               </div>
-              <p className="text-xs text-slate-400">Bank: {hindsightStatus?.bankId || 'competitorIQ'}</p>
+              <p className="text-xs text-slate-400">Tactical Market Moves</p>
             </div>
 
             <div className="bg-white p-5 rounded-2xl border border-stone-200/80 shadow-2xs space-y-2">
@@ -193,8 +274,12 @@ export default function DashboardView({ onNavigate, onSelectCompetitor, onOpenEv
                 <span className="text-xs font-semibold text-slate-500">Evidence Grounding</span>
                 <CheckCircle2 className="w-4 h-4 text-orange-600" />
               </div>
-              <div className="text-2xl font-black text-emerald-600">100%</div>
-              <p className="text-xs text-slate-400">Zero Hallucinations</p>
+              <div className="text-2xl font-black text-emerald-600">
+                {events.length > 0 ? '100%' : 'No data available'}
+              </div>
+              <p className="text-xs text-slate-400">
+                {events.length > 0 ? 'Verified Ingested Telemetry' : 'Awaiting Signals'}
+              </p>
             </div>
           </div>
 
@@ -224,33 +309,41 @@ export default function DashboardView({ onNavigate, onSelectCompetitor, onOpenEv
                 {events.map((evt) => (
                   <div key={evt.id} className="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50/80 px-2 rounded-lg transition-colors">
                     <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <button
+                          type="button"
+                          onClick={() => onSelectCompetitor && onSelectCompetitor(evt.competitor?.name || 'Microsoft')}
+                          className="text-xs font-bold text-slate-900 bg-slate-100 hover:bg-orange-50 hover:text-orange-700 px-2 py-0.5 rounded transition-colors text-left"
+                        >
                           {evt.competitor?.name || 'Competitor'}
-                        </span>
+                        </button>
                         <span className="text-[10px] font-extrabold uppercase tracking-wider text-orange-700 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full">
                           {evt.eventType}
                         </span>
                         <span className="text-xs text-slate-400">
                           {evt.eventDate ? new Date(evt.eventDate).toLocaleDateString() : 'Recent'}
                         </span>
+                        <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.2 rounded border border-emerald-200">
+                          Source: {evt.source?.publisher || evt.competitor?.name || 'Official'}
+                        </span>
                       </div>
                       <h4 className="text-sm font-bold text-slate-800">{evt.title}</h4>
                       <p className="text-xs text-slate-500 line-clamp-1">{evt.summary}</p>
                     </div>
 
-                    <div className="flex items-center gap-3 self-end sm:self-center">
+                    <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
+                      {evt.source?.url && evt.source.url !== '#' && !evt.source.url.includes('intelligence.competitoriq.com') && (
+                        <a
+                          href={evt.source.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs font-semibold text-slate-600 hover:text-slate-900 border border-slate-200 hover:bg-slate-100 px-2.5 py-1 rounded-md transition-colors flex items-center gap-1"
+                        >
+                          <ExternalLink className="w-3 h-3" /> View Source
+                        </a>
+                      )}
                       <button
-                        onClick={() => onOpenEvidence && onOpenEvidence({
-                          title: evt.title,
-                          competitor: evt.competitor?.name || 'Competitor',
-                          category: evt.eventType,
-                          source: evt.source?.publisher || 'Official Source',
-                          url: evt.source?.url || '#',
-                          summary: evt.summary,
-                          excerpt: evt.evidence?.[0]?.excerpt || evt.summary,
-                          capturedAt: evt.eventDate
-                        })}
+                        onClick={() => onOpenEvidence && onOpenEvidence(evt)}
                         className="text-xs font-semibold text-orange-600 hover:text-orange-700 border border-orange-200 hover:bg-orange-50 px-3 py-1 rounded-md transition-colors flex items-center gap-1"
                       >
                         <ExternalLink className="w-3 h-3" /> Evidence

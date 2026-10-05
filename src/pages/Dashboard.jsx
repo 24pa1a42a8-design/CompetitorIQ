@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import Sidebar from '../components/Sidebar';
 import TopNavbar from '../components/TopNavbar';
 import EvidenceModal from '../components/EvidenceModal';
+import IntelligenceDetailModal from '../components/IntelligenceDetailModal';
+import AccountModals from '../components/AccountModals';
+import { useAuth } from '../context/AuthContext';
 
 // Views
 import DashboardView from '../views/DashboardView';
@@ -19,13 +22,55 @@ import CompetitiveComparisonView from '../views/CompetitiveComparisonView';
 
 export default function Dashboard() {
   const [currentView, setCurrentView] = useState('dashboard');
-  const [selectedCompetitor, setSelectedCompetitor] = useState('Oracle');
+  const [selectedCompetitor, setSelectedCompetitor] = useState('Microsoft');
+  const [initialAgentQuery, setInitialAgentQuery] = useState('');
+  const [initialAgentCompetitor, setInitialAgentCompetitor] = useState(null);
   const [isEvidenceOpen, setIsEvidenceOpen] = useState(false);
   const [evidenceData, setEvidenceData] = useState(null);
+
+  // Date Filter State persisted across views
+  const [dateFilter, setDateFilter] = useState(() => {
+    const now = new Date();
+    return {
+      label: 'Last 6 months',
+      startDate: new Date(now.getTime() - 180 * 24 * 60 * 60 * 1000).toISOString(),
+      endDate: now.toISOString()
+    };
+  });
+
+  // Intelligence Detail Modal State
+  const [intelDetail, setIntelDetail] = useState(null);
+  const [isIntelDetailOpen, setIsIntelDetailOpen] = useState(false);
+
+  // Account Modals State
+  const [activeAccountModal, setActiveAccountModal] = useState(null);
+  const { user } = useAuth();
 
   const handleOpenEvidence = (data) => {
     setEvidenceData(data);
     setIsEvidenceOpen(true);
+  };
+
+  const handleOpenNotificationDetail = (item) => {
+    setIntelDetail(item);
+    setIsIntelDetailOpen(true);
+  };
+
+  const handleNavigateToAgent = (query = '', competitor = null) => {
+    setInitialAgentQuery(query);
+    setInitialAgentCompetitor(competitor || null);
+    setCurrentView('ai_analyst');
+  };
+
+  const handleNavigate = (view, state = null) => {
+    if (view === 'ai_analyst') {
+      setInitialAgentQuery(state?.query || '');
+      setInitialAgentCompetitor(state?.competitor || null);
+    }
+    if (view === 'competitor_profile' && state?.competitor) {
+      setSelectedCompetitor(state.competitor);
+    }
+    setCurrentView(view);
   };
 
   const breadcrumbsMap = {
@@ -101,20 +146,22 @@ export default function Dashboard() {
       case 'dashboard':
         return (
           <DashboardView 
-            onNavigate={setCurrentView} 
+            onNavigate={handleNavigate} 
+            onNavigateToAgent={handleNavigateToAgent}
             onSelectCompetitor={(id) => {
               setSelectedCompetitor(id);
               setCurrentView('competitor_profile');
             }} 
             onOpenEvidence={handleOpenEvidence}
+            dateFilter={dateFilter}
           />
         );
       case 'executive_report':
-        return <ExecutiveReportView onOpenEvidence={handleOpenEvidence} onNavigate={setCurrentView} />;
+        return <ExecutiveReportView onOpenEvidence={handleOpenEvidence} onNavigate={handleNavigate} dateFilter={dateFilter} />;
       case 'competitor_ecosystem':
         return (
           <CompetitorEcosystemView 
-            onNavigate={setCurrentView} 
+            onNavigate={handleNavigate} 
             onSelectCompetitor={(id) => {
               setSelectedCompetitor(id);
               setCurrentView('competitor_profile');
@@ -125,35 +172,45 @@ export default function Dashboard() {
         return (
           <CompetitorProfileView 
             selectedCompetitor={selectedCompetitor} 
-            onNavigate={setCurrentView} 
+            onNavigate={handleNavigate} 
             onOpenEvidence={handleOpenEvidence} 
+            dateFilter={dateFilter}
           />
         );
       case 'activity_timeline':
-        return <ActivityTimelineView onOpenEvidence={handleOpenEvidence} onNavigate={setCurrentView} />;
+        return <ActivityTimelineView onOpenEvidence={handleOpenEvidence} onNavigate={handleNavigate} dateFilter={dateFilter} />;
       case 'connect_dots':
-        return <ConnectTheDotsView onNavigate={setCurrentView} onOpenEvidence={handleOpenEvidence} />;
+        return <ConnectTheDotsView onNavigate={handleNavigate} onOpenEvidence={handleOpenEvidence} dateFilter={dateFilter} />;
       case 'strategic_patterns':
-        return <StrategicPatternsView onNavigate={setCurrentView} />;
+        return <StrategicPatternsView onNavigate={handleNavigate} dateFilter={dateFilter} />;
       case 'hindsight_memory':
-        return <HindsightMemoryView onNavigate={setCurrentView} onOpenEvidence={handleOpenEvidence} />;
+        return <HindsightMemoryView onNavigate={handleNavigate} onOpenEvidence={handleOpenEvidence} />;
       case 'ai_analyst':
-        return <AIAnalystView onNavigate={setCurrentView} onOpenEvidence={handleOpenEvidence} />;
+        return (
+          <AIAnalystView 
+            onNavigate={handleNavigate} 
+            onOpenEvidence={handleOpenEvidence}
+            initialQuery={initialAgentQuery}
+            initialCompetitor={initialAgentCompetitor}
+          />
+        );
       case 'before_after':
-        return <BeforeAfterView onNavigate={setCurrentView} />;
+        return <BeforeAfterView onNavigate={handleNavigate} />;
       case 'alerts':
-        return <AlertsView onNavigate={setCurrentView} onOpenEvidence={handleOpenEvidence} />;
+        return <AlertsView onNavigate={handleNavigate} onOpenEvidence={handleOpenEvidence} />;
       case 'competitive_comparison':
-        return <CompetitiveComparisonView onNavigate={setCurrentView} />;
+        return <CompetitiveComparisonView onNavigate={handleNavigate} dateFilter={dateFilter} />;
       default:
         return (
           <DashboardView 
-            onNavigate={setCurrentView} 
+            onNavigate={handleNavigate} 
+            onNavigateToAgent={handleNavigateToAgent}
             onSelectCompetitor={(id) => {
               setSelectedCompetitor(id);
               setCurrentView('competitor_profile');
             }} 
             onOpenEvidence={handleOpenEvidence}
+            dateFilter={dateFilter}
           />
         );
     }
@@ -177,7 +234,10 @@ export default function Dashboard() {
           setCurrentView={setCurrentView}
           selectedCompetitor={selectedCompetitor}
           breadcrumbs={breadcrumbsMap[currentView] || []}
-          onOpenEvidence={handleOpenEvidence}
+          dateFilter={dateFilter}
+          onDateChange={setDateFilter}
+          onOpenNotificationDetail={handleOpenNotificationDetail}
+          onOpenAccountModal={setActiveAccountModal}
         />
 
         {/* Scrollable View Content */}
@@ -191,6 +251,20 @@ export default function Dashboard() {
         isOpen={isEvidenceOpen} 
         onClose={() => setIsEvidenceOpen(false)} 
         evidenceData={evidenceData} 
+      />
+
+      {/* Detailed Intelligence Signal Modal */}
+      <IntelligenceDetailModal
+        isOpen={isIntelDetailOpen}
+        onClose={() => setIsIntelDetailOpen(false)}
+        detail={intelDetail}
+      />
+
+      {/* Account Settings, Notifications, Security, Help & Delete Account Modals */}
+      <AccountModals
+        activeModal={activeAccountModal}
+        onClose={() => setActiveAccountModal(null)}
+        user={user}
       />
     </div>
   );

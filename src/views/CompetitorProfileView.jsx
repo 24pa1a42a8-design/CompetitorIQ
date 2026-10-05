@@ -7,17 +7,23 @@ import {
 import HindsightFlowWidget from '../components/common/HindsightFlowWidget';
 import apiService from '../services/apiService';
 
-export default function CompetitorProfileView({ onNavigate, selectedCompetitor = 'Oracle', onOpenEvidence }) {
+export default function CompetitorProfileView({ onNavigate, selectedCompetitor = 'Oracle', onOpenEvidence, dateFilter }) {
   const [activeTab, setActiveTab] = useState('Overview');
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const compName = typeof selectedCompetitor === 'string' ? selectedCompetitor : 'Oracle';
+
   const fetchProfileData = async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await apiService.getEvents({ query: selectedCompetitor, limit: 20 });
+      const params = { query: compName, limit: 30 };
+      if (dateFilter?.startDate) params.startDate = dateFilter.startDate;
+      if (dateFilter?.endDate) params.endDate = dateFilter.endDate;
+
+      const res = await apiService.getEvents(params);
       const rawEvents = res?.data?.events || res?.data || [];
       setEvents(Array.isArray(rawEvents) ? rawEvents : []);
     } catch (err) {
@@ -29,9 +35,7 @@ export default function CompetitorProfileView({ onNavigate, selectedCompetitor =
 
   useEffect(() => {
     fetchProfileData();
-  }, [selectedCompetitor]);
-
-  const compName = typeof selectedCompetitor === 'string' ? selectedCompetitor : 'Oracle';
+  }, [selectedCompetitor, dateFilter?.startDate, dateFilter?.endDate]);
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6 animate-in fade-in duration-200 font-sans text-slate-800">
@@ -74,7 +78,10 @@ export default function CompetitorProfileView({ onNavigate, selectedCompetitor =
           </div>
 
           <button
-            onClick={() => onNavigate('ai_analyst')}
+            onClick={() => onNavigate('ai_analyst', { 
+              competitor: compName, 
+              query: `Analyze strategic developments, product roadmap, and pricing changes for ${compName}` 
+            })}
             className="flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-xl shadow-xs transition"
           >
             <Sparkles className="w-4 h-4 text-orange-300" /> Query AI Agent for {compName}

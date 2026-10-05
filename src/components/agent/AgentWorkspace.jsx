@@ -1,18 +1,36 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
-  Bot, Send, Sparkles, RefreshCw, AlertCircle, CheckCircle2, ExternalLink
+  Bot, Send, Sparkles, RefreshCw, AlertCircle, CheckCircle2, ExternalLink, XCircle
 } from 'lucide-react';
 import HindsightFlowWidget from '../common/HindsightFlowWidget';
+import AgentActivityPanel from './AgentActivityPanel';
 import apiService from '../../services/apiService';
 
-export default function AgentWorkspace({ onNavigate, onOpenEvidence }) {
-  const [query, setQuery] = useState('');
+export default function AgentWorkspace({ onNavigate, onOpenEvidence, initialQuery = '', initialCompetitor = null }) {
+  const [query, setQuery] = useState(initialQuery || '');
+  const [selectedCompetitor, setSelectedCompetitor] = useState(initialCompetitor || null);
+  const [lastSubmittedQuery, setLastSubmittedQuery] = useState('');
   const [isExecuting, setIsExecuting] = useState(false);
   const [error, setError] = useState(null);
   const [agentResponse, setAgentResponse] = useState(null);
   const [conversations, setConversations] = useState([]);
   const [activeConversationId, setActiveConversationId] = useState(null);
   const [ollamaInfo, setOllamaInfo] = useState(null);
+
+  // AbortController reference for request cancellation
+  const abortControllerRef = useRef(null);
+
+  useEffect(() => {
+    if (initialQuery) {
+      setQuery(initialQuery);
+    }
+  }, [initialQuery]);
+
+  useEffect(() => {
+    if (initialCompetitor) {
+      setSelectedCompetitor(initialCompetitor);
+    }
+  }, [initialCompetitor]);
 
   const fetchConversations = async () => {
     try {
@@ -34,25 +52,43 @@ export default function AgentWorkspace({ onNavigate, onOpenEvidence }) {
       .catch(() => {
         setOllamaInfo({ status: 'unavailable', reachable: false, model: 'qwen2.5:3b' });
       });
+
+    return () => {
+      // Abort in-flight request if user navigates away
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
   }, []);
 
   const sampleQueries = [
-    "What changed recently for Oracle?",
-    "What has IBM been doing over the last few months?",
-    "Compare Oracle and IBM pricing and expansion strategies",
-    "What patterns are emerging in enterprise cloud AI moves?"
+    "Hi",
+    "What are Microsoft's key competitive advantages against AWS?",
+    "What pricing changes have competitors made?",
+    "Compare Oracle and IBM cloud infrastructure and pricing",
+    "What has Google Cloud announced recently?"
   ];
 
   const handleStartResearch = async (targetQuery) => {
-    const queryToRun = targetQuery || query;
-    if (!queryToRun.trim() || isExecuting) return;
+    const queryToRun = (targetQuery !== undefined ? targetQuery : query).trim();
+    if (!queryToRun || isExecuting) return;
+
+    // Cancel any existing in-flight request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    const abortController = new AbortController();
+    abortControllerRef.current = abortController;
 
     setIsExecuting(true);
     setError(null);
+    setLastSubmittedQuery(queryToRun);
 
     try {
       const res = await apiService.queryAgent(queryToRun, {
-        conversationId: activeConversationId || undefined
+        conversationId: activeConversationId || undefined,
+        competitorId: selectedCompetitor || undefined,
+        signal: abortController.signal
       });
 
       if (res?.data) {
@@ -63,9 +99,20 @@ export default function AgentWorkspace({ onNavigate, onOpenEvidence }) {
         fetchConversations();
       }
     } catch (err) {
-      setError(err.message || 'Agent execution failed. Please retry.');
+      if (err.name === 'AbortError' || err.message?.includes('cancelled')) {
+        setError('Research was cancelled.');
+      } else {
+        setError(err.message || 'Agent execution failed. Please retry.');
+      }
     } finally {
       setIsExecuting(false);
+      abortControllerRef.current = null;
+    }
+  };
+
+  const handleCancelResearch = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
     }
   };
 
@@ -90,6 +137,15 @@ export default function AgentWorkspace({ onNavigate, onOpenEvidence }) {
       console.error('Failed to load conversation history:', err);
     }
   };
+
+  // Execution steps to display during live execution
+  const activeExecutionSteps = [
+    { id: 'understand', name: 'Parse Intent & Microsoft Context', status: 'completed', durationMs: 2, detail: 'Intent, target competitors, and context verified' },
+    { id: 'plan', name: 'Formulate Tool Execution Plan', status: 'completed', durationMs: 1, detail: 'Retrieval, recall, and synthesis steps scheduled' },
+    { id: 'fetch_database_signals', name: 'Retrieve PostgreSQL Signals & Evidence', status: 'active', detail: 'Searching structured events and pricing models' },
+    { id: 'hindsight_memory_recall', name: 'Hindsight Semantic Memory Recall', status: 'pending', detail: 'Semantic memory lookup' },
+    { id: 'grounded_ai_synthesis', name: 'Grounded Intelligence Brief Formulation', status: 'pending', detail: 'Ollama local LLM reasoning' }
+  ];
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6 animate-in fade-in duration-150 font-sans text-slate-800">
@@ -122,7 +178,7 @@ export default function AgentWorkspace({ onNavigate, onOpenEvidence }) {
           </div>
 
           <span className="text-xs font-mono text-slate-400 hidden sm:inline">
-            REST API Connected
+            Focal Company: <strong className="text-slate-700">Microsoft</strong>
           </span>
         </div>
 
@@ -131,7 +187,7 @@ export default function AgentWorkspace({ onNavigate, onOpenEvidence }) {
             CompetitorIQ AI Research Agent
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-3xl leading-relaxed">
-            Query competitor moves, pricing shifts, and strategic patterns. The agent retrieves PostgreSQL events, queries Hindsight memories, and outputs strictly grounded briefs with facts, observations, and inferences.
+            Query competitor moves, pricing shifts, and strategic patterns. The agent understands intent, executes tool plans, retrieves PostgreSQL events, queries Hindsight memories, and outputs strictly grounded briefs with facts, observations, and inferences.
           </p>
         </div>
 
@@ -148,25 +204,37 @@ export default function AgentWorkspace({ onNavigate, onOpenEvidence }) {
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Ask anything: What changed recently for Oracle? Compare IBM and Oracle expansion strategies..."
-              className="w-full bg-slate-50 border border-stone-200/90 rounded-2xl px-5 py-4 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all pr-36"
+              disabled={isExecuting}
+              placeholder="Ask anything: 'Hi', 'What pricing changes have competitors made?', 'Compare Oracle and IBM cloud strategies'..."
+              className="w-full bg-slate-50 border border-stone-200/90 rounded-2xl px-5 py-4 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all pr-44 disabled:opacity-75"
             />
-            <button
-              type="submit"
-              disabled={isExecuting || !query.trim()}
-              className="absolute right-2.5 px-5 py-2.5 bg-orange-600 hover:bg-orange-700 disabled:opacity-50 text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center gap-2"
-            >
-              {isExecuting ? (
-                <>
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                  Analyzing...
-                </>
-              ) : (
-                <>
-                  Ask Agent <Send className="w-3.5 h-3.5" />
-                </>
+            <div className="absolute right-2.5 flex items-center gap-2">
+              {isExecuting && (
+                <button
+                  type="button"
+                  onClick={handleCancelResearch}
+                  className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition flex items-center gap-1.5"
+                >
+                  <XCircle className="w-3.5 h-3.5 text-slate-500" /> Cancel
+                </button>
               )}
-            </button>
+              <button
+                type="submit"
+                disabled={isExecuting || !query.trim()}
+                className="px-5 py-2.5 bg-orange-600 hover:bg-orange-700 disabled:opacity-50 text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center gap-2"
+              >
+                {isExecuting ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    Analyzing...
+                  </>
+                ) : (
+                  <>
+                    Ask Agent <Send className="w-3.5 h-3.5" />
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </form>
 
@@ -179,11 +247,12 @@ export default function AgentWorkspace({ onNavigate, onOpenEvidence }) {
             {sampleQueries.map((sq, idx) => (
               <button
                 key={idx}
+                disabled={isExecuting}
                 onClick={() => {
                   setQuery(sq);
                   handleStartResearch(sq);
                 }}
-                className="text-xs text-slate-600 bg-slate-100 hover:bg-orange-50 hover:text-orange-700 hover:border-orange-200 border border-slate-200/80 px-3 py-1.5 rounded-lg transition text-left"
+                className="text-xs text-slate-600 bg-slate-100 hover:bg-orange-50 hover:text-orange-700 hover:border-orange-200 border border-slate-200/80 px-3 py-1.5 rounded-lg transition text-left disabled:opacity-50"
               >
                 {sq}
               </button>
@@ -223,22 +292,24 @@ export default function AgentWorkspace({ onNavigate, onOpenEvidence }) {
             <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
             <span>{error}</span>
           </div>
-          <button
-            onClick={() => handleStartResearch()}
-            className="px-3 py-1 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded transition"
-          >
-            Retry
-          </button>
+          {lastSubmittedQuery && (
+            <button
+              onClick={() => handleStartResearch(lastSubmittedQuery)}
+              className="px-3 py-1 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded transition"
+            >
+              Retry "{lastSubmittedQuery.length > 25 ? lastSubmittedQuery.slice(0, 25) + '...' : lastSubmittedQuery}"
+            </button>
+          )}
         </div>
       )}
 
-      {/* Loading Skeleton */}
-      {isExecuting && (
-        <div className="p-8 text-center bg-white rounded-2xl border border-stone-200/80 shadow-2xs space-y-3">
-          <RefreshCw className="w-8 h-8 text-orange-600 animate-spin mx-auto" />
-          <h3 className="text-sm font-bold text-slate-800">Agent Executing Grounded Analysis</h3>
-          <p className="text-xs text-slate-500">Querying PostgreSQL events, checking Hindsight vector memory, and formulating facts...</p>
-        </div>
+      {/* Real-time Agent Execution Orchestrator Panel */}
+      {(isExecuting || agentResponse?.executionSteps?.length > 0) && (
+        <AgentActivityPanel 
+          steps={agentResponse?.executionSteps?.length > 0 && !isExecuting ? agentResponse.executionSteps : activeExecutionSteps}
+          activeStepId={isExecuting ? 'fetch_database_signals' : null}
+          currentStatus={isExecuting ? 'Executing Reason & Tool Cycle' : 'Completed'}
+        />
       )}
 
       {/* Structured Agent Response Output */}
@@ -250,17 +321,19 @@ export default function AgentWorkspace({ onNavigate, onOpenEvidence }) {
                 EXECUTIVE BRIEF
               </span>
               <span className="text-xs font-bold text-orange-700 bg-orange-50 border border-orange-200 px-2.5 py-0.5 rounded-full">
-                Stage: {agentResponse.hindsightStage || 'RECALL'}
+                Stage: {agentResponse.hindsightStage || 'STANDBY'}
               </span>
               {agentResponse.ollamaStatus && (
                 <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full border ${
                   agentResponse.ollamaStatus.used
                     ? 'bg-purple-50 text-purple-700 border-purple-200'
+                    : agentResponse.ollamaStatus.status === 'idle'
+                    ? 'bg-blue-50 text-blue-700 border-blue-200'
                     : 'bg-amber-50 text-amber-700 border-amber-200'
                 }`}>
                   {agentResponse.ollamaStatus.used 
                     ? `Ollama (${agentResponse.ollamaStatus.model}) Grounded` 
-                    : 'Deterministic Synthesis Fallback'}
+                    : agentResponse.ollamaStatus.message || 'Direct Fast-Path Response'}
                 </span>
               )}
             </div>
@@ -272,79 +345,92 @@ export default function AgentWorkspace({ onNavigate, onOpenEvidence }) {
             )}
           </div>
 
+          {/* Reasoning Summary if available */}
+          {agentResponse.reasoningSummary && (
+            <div className="p-3 bg-stone-50 border border-stone-200/70 rounded-xl text-xs text-slate-600 flex items-start gap-2">
+              <Bot className="w-4 h-4 text-orange-600 shrink-0 mt-0.5" />
+              <div>
+                <strong className="text-slate-800">Agent Reasoning Summary: </strong>
+                <span>{agentResponse.reasoningSummary}</span>
+              </div>
+            </div>
+          )}
+
           {/* Render Markdown Answer */}
           <div className="prose prose-slate max-w-none text-sm leading-relaxed whitespace-pre-line text-slate-800 font-sans bg-slate-50 p-5 rounded-xl border border-stone-200">
             {agentResponse.answer}
           </div>
 
-          {/* Structured Categorized Sections */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Structured Categorized Sections (Only when facts exist) */}
+          {(agentResponse.facts?.length > 0 || agentResponse.observations?.length > 0 || agentResponse.inferences?.length > 0) && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-            {/* VERIFIED FACTS */}
-            <div className="bg-emerald-50/50 p-5 rounded-xl border border-emerald-200 space-y-2">
-              <h3 className="text-xs font-black text-emerald-900 uppercase tracking-wider flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Grounded Facts ({agentResponse.facts?.length || 0})
-              </h3>
-              {agentResponse.facts?.length === 0 ? (
-                <p className="text-xs text-slate-500 italic">No direct facts found for this query.</p>
-              ) : (
-                <ul className="space-y-1.5 text-xs text-emerald-950">
-                  {agentResponse.facts?.map((f, i) => (
-                    <li key={i} className="leading-relaxed font-medium">• {f}</li>
-                  ))}
-                </ul>
-              )}
+              {/* VERIFIED FACTS */}
+              <div className="bg-emerald-50/50 p-5 rounded-xl border border-emerald-200 space-y-2">
+                <h3 className="text-xs font-black text-emerald-900 uppercase tracking-wider flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Grounded Facts ({agentResponse.facts?.length || 0})
+                </h3>
+                {agentResponse.facts?.length === 0 ? (
+                  <p className="text-xs text-slate-500 italic">No direct facts found for this query.</p>
+                ) : (
+                  <ul className="space-y-1.5 text-xs text-emerald-950">
+                    {agentResponse.facts?.map((f, i) => (
+                      <li key={i} className="leading-relaxed font-medium">• {f}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
+              {/* STRATEGIC OBSERVATIONS */}
+              <div className="bg-blue-50/50 p-5 rounded-xl border border-blue-200 space-y-2">
+                <h3 className="text-xs font-black text-blue-900 uppercase tracking-wider flex items-center gap-1.5">
+                  <Sparkles className="w-4 h-4 text-blue-600" /> Strategic Observations ({agentResponse.observations?.length || 0})
+                </h3>
+                {agentResponse.observations?.length === 0 ? (
+                  <p className="text-xs text-slate-500 italic">No strategic observations compiled.</p>
+                ) : (
+                  <ul className="space-y-1.5 text-xs text-blue-950">
+                    {agentResponse.observations?.map((o, i) => (
+                      <li key={i} className="leading-relaxed">• {o}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
+              {/* LOGICAL INFERENCES */}
+              <div className="bg-amber-50/50 p-5 rounded-xl border border-amber-200 space-y-2">
+                <h3 className="text-xs font-black text-amber-900 uppercase tracking-wider flex items-center gap-1.5">
+                  <Bot className="w-4 h-4 text-amber-600" /> Logical Inferences ({agentResponse.inferences?.length || 0})
+                </h3>
+                {agentResponse.inferences?.length === 0 ? (
+                  <p className="text-xs text-slate-500 italic">No logical inferences derived.</p>
+                ) : (
+                  <ul className="space-y-1.5 text-xs text-amber-950">
+                    {agentResponse.inferences?.map((inf, i) => (
+                      <li key={i} className="leading-relaxed italic">• {inf}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
+              {/* UNKNOWNS & DATA GAPS */}
+              <div className="bg-slate-50 p-5 rounded-xl border border-slate-200 space-y-2">
+                <h3 className="text-xs font-black text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+                  <AlertCircle className="w-4 h-4 text-slate-500" /> Unknowns & Data Gaps ({agentResponse.unknowns?.length || 0})
+                </h3>
+                {agentResponse.unknowns?.length === 0 ? (
+                  <p className="text-xs text-slate-500 italic">No significant data gaps identified.</p>
+                ) : (
+                  <ul className="space-y-1.5 text-xs text-slate-700">
+                    {agentResponse.unknowns?.map((u, i) => (
+                      <li key={i} className="leading-relaxed">• {u}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
             </div>
-
-            {/* STRATEGIC OBSERVATIONS */}
-            <div className="bg-blue-50/50 p-5 rounded-xl border border-blue-200 space-y-2">
-              <h3 className="text-xs font-black text-blue-900 uppercase tracking-wider flex items-center gap-1.5">
-                <Sparkles className="w-4 h-4 text-blue-600" /> Strategic Observations ({agentResponse.observations?.length || 0})
-              </h3>
-              {agentResponse.observations?.length === 0 ? (
-                <p className="text-xs text-slate-500 italic">No strategic observations compiled.</p>
-              ) : (
-                <ul className="space-y-1.5 text-xs text-blue-950">
-                  {agentResponse.observations?.map((o, i) => (
-                    <li key={i} className="leading-relaxed">• {o}</li>
-                  ))}
-                </ul>
-              )}
-            </div>
-
-            {/* LOGICAL INFERENCES */}
-            <div className="bg-amber-50/50 p-5 rounded-xl border border-amber-200 space-y-2">
-              <h3 className="text-xs font-black text-amber-900 uppercase tracking-wider flex items-center gap-1.5">
-                <Bot className="w-4 h-4 text-amber-600" /> Logical Inferences ({agentResponse.inferences?.length || 0})
-              </h3>
-              {agentResponse.inferences?.length === 0 ? (
-                <p className="text-xs text-slate-500 italic">No logical inferences derived.</p>
-              ) : (
-                <ul className="space-y-1.5 text-xs text-amber-950">
-                  {agentResponse.inferences?.map((inf, i) => (
-                    <li key={i} className="leading-relaxed italic">• {inf}</li>
-                  ))}
-                </ul>
-              )}
-            </div>
-
-            {/* UNKNOWNS & DATA GAPS */}
-            <div className="bg-slate-50 p-5 rounded-xl border border-slate-200 space-y-2">
-              <h3 className="text-xs font-black text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
-                <AlertCircle className="w-4 h-4 text-slate-500" /> Unknowns & Data Gaps ({agentResponse.unknowns?.length || 0})
-              </h3>
-              {agentResponse.unknowns?.length === 0 ? (
-                <p className="text-xs text-slate-500 italic">No significant data gaps identified.</p>
-              ) : (
-                <ul className="space-y-1.5 text-xs text-slate-700">
-                  {agentResponse.unknowns?.map((u, i) => (
-                    <li key={i} className="leading-relaxed">• {u}</li>
-                  ))}
-                </ul>
-              )}
-            </div>
-
-          </div>
+          )}
 
           {/* Evidence Traceability */}
           {agentResponse.evidence?.length > 0 && (

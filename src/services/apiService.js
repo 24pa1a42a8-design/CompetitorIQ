@@ -11,19 +11,75 @@ const API_BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env?.VIT
 class ApiService {
   constructor() {
     this.baseUrl = API_BASE_URL;
-    this.defaultOrgId = 'default-org';
+    this.orgId = null;
+    this.authToken = null;
+  }
+
+  setAuth(orgId, token = null) {
+    this.orgId = orgId || null;
+    this.authToken = token || null;
+  }
+
+  getOrganizationId() {
+    if (this.orgId) return this.orgId;
+    if (typeof window !== 'undefined') {
+      try {
+        const rawAuth = localStorage.getItem('competitor_iq_auth')
+          || sessionStorage.getItem('competitor_iq_auth')
+          || localStorage.getItem('competitor_iq_user');
+        if (rawAuth) {
+          const parsed = JSON.parse(rawAuth);
+          if (parsed?.organizationId) return parsed.organizationId;
+          if (parsed?.user?.organizationId) return parsed.user.organizationId;
+        }
+      } catch {
+        // ignore JSON parse error in non-browser or corrupted local storage
+      }
+    }
+    return 'default-org';
+  }
+
+  getAuthToken() {
+    if (this.authToken) return this.authToken;
+    if (typeof window !== 'undefined') {
+      try {
+        const rawAuth = localStorage.getItem('competitor_iq_auth')
+          || sessionStorage.getItem('competitor_iq_auth');
+        if (rawAuth) {
+          const parsed = JSON.parse(rawAuth);
+          if (parsed?.token) return parsed.token;
+        }
+      } catch {
+        // ignore
+      }
+    }
+    return null;
   }
 
   async request(endpoint, options = {}) {
     const url = `${this.baseUrl}${endpoint}`;
+    const dynamicOrgId = options.headers?.['x-organization-id'] || this.getOrganizationId();
+    const dynamicToken = options.headers?.Authorization || this.getAuthToken();
+
     const headers = {
       'Content-Type': 'application/json',
-      'x-organization-id': this.defaultOrgId,
+      'x-organization-id': dynamicOrgId,
+      ...(dynamicToken ? { Authorization: dynamicToken.startsWith('Bearer ') ? dynamicToken : `Bearer ${dynamicToken}` } : {}),
       ...(options.headers || {})
     };
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), options.timeout || 30000);
+    const timeoutId = setTimeout(() => controller.abort(), options.timeout || 45000);
+
+    if (options.signal) {
+      if (options.signal.aborted) {
+        clearTimeout(timeoutId);
+        const cancelErr = new Error('Request was cancelled.');
+        cancelErr.name = 'AbortError';
+        throw cancelErr;
+      }
+      options.signal.addEventListener('abort', () => controller.abort(), { once: true });
+    }
 
     try {
       const response = await fetch(url, {
@@ -49,7 +105,7 @@ class ApiService {
     } catch (err) {
       clearTimeout(timeoutId);
       if (err.name === 'AbortError') {
-        const timeoutError = new Error('Request timed out. Please try again.');
+        const timeoutError = new Error('Request timed out or was cancelled. Please try again.');
         timeoutError.code = 'TIMEOUT';
         throw timeoutError;
       }
@@ -76,6 +132,8 @@ class ApiService {
     if (params.competitorId) query.append('competitorId', params.competitorId);
     if (params.eventType) query.append('eventType', params.eventType);
     if (params.query) query.append('query', params.query);
+    if (params.startDate) query.append('startDate', params.startDate);
+    if (params.endDate) query.append('endDate', params.endDate);
     if (params.limit) query.append('limit', params.limit);
     if (params.offset) query.append('offset', params.offset);
 
@@ -85,6 +143,10 @@ class ApiService {
       return { ...res, data: res.data.events };
     }
     return res;
+  }
+
+  async getEventById(id) {
+    return this.request(`/events/${id}`);
   }
 
   async ingestItem(itemData) {
@@ -133,11 +195,15 @@ class ApiService {
   async queryAgent(queryText, options = {}) {
     return this.request('/agent/query', {
       method: 'POST',
+      signal: options.signal,
+      timeout: options.timeout || 60000,
       body: JSON.stringify({
         query: queryText,
         competitorId: options.competitorId,
         conversationId: options.conversationId,
-        mode: options.mode || 'AUTO'
+        mode: options.mode || 'AUTO',
+        timeoutMs: options.timeoutMs,
+        maxIterations: options.maxIterations
       })
     });
   }
@@ -168,6 +234,16 @@ class ApiService {
 
   async getAlertById(id) {
     return this.request(`/alerts/${id}`);
+  }
+
+  async getUnreadAlertsCount() {
+    return this.request('/alerts/unread-count');
+  }
+
+  async markAllAlertsAsRead() {
+    return this.request('/alerts/read-all', {
+      method: 'PATCH'
+    });
   }
 
   async updateAlertStatus(id, status) {
@@ -300,6 +376,14 @@ class ApiService {
     return this.request('/monitoring/toggle', {
       method: 'POST',
       body: JSON.stringify({ enabled })
+    });
+  }
+
+  // Official Sources Real Refresh Pipeline
+  async refreshOfficialData() {
+    return this.request('/ingestion/refresh', {
+      method: 'POST',
+      body: JSON.stringify({})
     });
   }
 }

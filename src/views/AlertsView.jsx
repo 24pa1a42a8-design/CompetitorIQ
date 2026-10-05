@@ -13,6 +13,7 @@ export default function AlertsView({ onNavigate, onOpenEvidence }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedAlert, setSelectedAlert] = useState(null);
+  const [evaluating, setEvaluating] = useState(false);
 
   const fetchAlerts = async () => {
     setLoading(true);
@@ -27,7 +28,7 @@ export default function AlertsView({ onNavigate, onOpenEvidence }) {
           await apiService.evaluateAlerts({});
           const retryRes = await apiService.getAlerts({ limit: 50 });
           loadedAlerts = retryRes?.data || [];
-        } catch (e) {
+        } catch {
           // Ignore eval error on fallback
         }
       }
@@ -38,6 +39,32 @@ export default function AlertsView({ onNavigate, onOpenEvidence }) {
       setError(err.message || 'Failed to load intelligence alerts');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleEvaluateAlerts = async () => {
+    setEvaluating(true);
+    setError(null);
+    try {
+      await apiService.evaluateAlerts({});
+      await fetchAlerts();
+    } catch (err) {
+      console.error('Failed to evaluate alerts:', err);
+      setError(err.message || 'Failed to evaluate threat alerts.');
+    } finally {
+      setEvaluating(false);
+    }
+  };
+
+  const handleMarkAllRead = async () => {
+    try {
+      await apiService.markAllAlertsAsRead();
+      setAlerts(prev => prev.map(a => ({ ...a, status: 'READ' })));
+      if (selectedAlert) {
+        setSelectedAlert(prev => prev ? { ...prev, status: 'READ' } : null);
+      }
+    } catch (err) {
+      console.error('Failed to mark all alerts as read:', err);
     }
   };
 
@@ -148,19 +175,34 @@ export default function AlertsView({ onNavigate, onOpenEvidence }) {
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5 shrink-0">
+        <div className="flex items-center gap-2 flex-wrap shrink-0">
           <button
             onClick={fetchAlerts}
             disabled={loading}
-            className="px-3.5 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition flex items-center gap-1.5"
+            className="px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition flex items-center gap-1.5"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} /> Refresh Alerts
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} /> Refresh
+          </button>
+          <button
+            onClick={handleEvaluateAlerts}
+            disabled={evaluating || loading}
+            className="px-3.5 py-1.5 text-xs font-semibold text-orange-700 bg-orange-50 hover:bg-orange-100 border border-orange-200 rounded-xl transition flex items-center gap-1.5 disabled:opacity-50"
+          >
+            <ShieldAlert className={`w-3.5 h-3.5 ${evaluating ? 'animate-spin' : ''}`} />
+            {evaluating ? 'Evaluating...' : 'Evaluate Signals'}
+          </button>
+          <button
+            onClick={handleMarkAllRead}
+            disabled={loading || alerts.length === 0}
+            className="px-3 py-1.5 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition disabled:opacity-50"
+          >
+            Mark All Read
           </button>
           <button 
             onClick={() => onNavigate('ai_analyst')}
-            className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs rounded-xl shadow-2xs transition flex items-center gap-2"
+            className="px-3.5 py-1.5 bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs rounded-xl shadow-2xs transition flex items-center gap-1.5"
           >
-            <Sparkles className="w-4 h-4" /> AI Threat Assessment
+            <Sparkles className="w-3.5 h-3.5" /> AI Threat Assessment
           </button>
         </div>
       </div>
@@ -226,14 +268,24 @@ export default function AlertsView({ onNavigate, onOpenEvidence }) {
 
       {/* Empty State */}
       {!loading && !error && filteredAlerts.length === 0 && (
-        <div className="p-12 text-center bg-white rounded-2xl border border-stone-200 space-y-3">
+        <div className="p-12 text-center bg-white rounded-2xl border border-stone-200 space-y-4">
           <ShieldAlert className="w-10 h-10 text-slate-300 mx-auto" />
-          <h3 className="text-sm font-bold text-slate-800">No Competitive Alerts Found</h3>
-          <p className="text-xs text-slate-500 max-w-md mx-auto">
-            {filterQuery || activeTab !== 'ALL' 
-              ? 'No alerts match the selected filter criteria. Try clearing filters.'
-              : 'Ingest public competitor signals or trigger source adapters to generate automated threat alerts.'}
-          </p>
+          <div>
+            <h3 className="text-sm font-bold text-slate-800">No Competitive Alerts Found</h3>
+            <p className="text-xs text-slate-500 max-w-md mx-auto mt-1">
+              {filterQuery || activeTab !== 'ALL' 
+                ? 'No alerts match the selected filter criteria. Try clearing filters.'
+                : 'Ingest public competitor signals or trigger the evaluation engine over existing database events.'}
+            </p>
+          </div>
+          <button
+            onClick={handleEvaluateAlerts}
+            disabled={evaluating}
+            className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs rounded-xl shadow-2xs transition flex items-center gap-2 mx-auto disabled:opacity-50"
+          >
+            <ShieldAlert className={`w-4 h-4 ${evaluating ? 'animate-spin' : ''}`} />
+            {evaluating ? 'Evaluating Signals...' : 'Evaluate Signals Now'}
+          </button>
         </div>
       )}
 
@@ -301,10 +353,18 @@ export default function AlertsView({ onNavigate, onOpenEvidence }) {
                 </div>
 
                 <div className="flex items-center gap-2">
+                  {alert.status === 'UNREAD' && (
+                    <button
+                      onClick={(e) => handleUpdateStatus(alert.id, 'READ', e)}
+                      className="px-2.5 py-1 text-[11px] font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition"
+                    >
+                      Mark Read
+                    </button>
+                  )}
                   {alert.status !== 'ACKNOWLEDGED' && alert.status !== 'RESOLVED' && (
                     <button
                       onClick={(e) => handleUpdateStatus(alert.id, 'ACKNOWLEDGED', e)}
-                      className="px-2.5 py-1 text-[11px] font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition"
+                      className="px-2.5 py-1 text-[11px] font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition"
                     >
                       Acknowledge
                     </button>

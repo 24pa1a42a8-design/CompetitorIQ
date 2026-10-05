@@ -635,15 +635,26 @@ export const agentService = {
       );
     }
 
-    // Contextual Pronoun Resolution (e.g. "What about their pricing?")
+    // Contextual Pronoun & Active Competitor Continuity (D-18)
+    let inheritedCompetitor = false;
     if (targetCompetitors.length === 0 && conversationHistory.length > 0) {
-      if (/\b(their|they|them|its|it|this competitor)\b/i.test(cleanedQuery)) {
-        const recentAssistantText = conversationHistory.slice(-3).map(m => m.content.toLowerCase()).join(' ');
-        for (const comp of allCompetitors) {
-          if (recentAssistantText.includes(comp.name.toLowerCase())) {
-            targetCompetitors.push(comp);
-            break;
+      const isConversationalFollowUp = 
+        /\b(their|they|them|its|it|this competitor|that competitor|the competitor)\b/i.test(cleanedQuery) ||
+        /\b(what about|how about|and pricing|elaborate|tell me more|what else|more details|compare them)\b/i.test(cleanedQuery);
+
+      if (isConversationalFollowUp) {
+        // Inspect past conversation messages backwards to find the last discussed competitor
+        const reversedHistory = [...conversationHistory].reverse();
+        for (const msg of reversedHistory) {
+          const text = (msg.content || '').toLowerCase();
+          for (const comp of allCompetitors) {
+            if (text.includes(comp.name.toLowerCase()) || (comp.slug && text.includes(comp.slug.toLowerCase()))) {
+              targetCompetitors.push(comp);
+              inheritedCompetitor = true;
+              break;
+            }
           }
+          if (targetCompetitors.length > 0) break;
         }
       }
     }
@@ -674,6 +685,16 @@ export const agentService = {
       durationMs: Date.now() - understandStart,
       detail: `Target Entities: ${targetCompetitors.map(c => c.name).join(', ') || 'Broad/Ecosystem'}, Intent: ${isPlatformQuery ? 'PLATFORM' : isBroadCompetitorQuery ? 'BROAD_LANDSCAPE' : isEducationalOrConcept ? 'CONCEPT' : 'TARGETED'}`
     });
+
+    if (inheritedCompetitor && targetCompetitors[0]) {
+      executionSteps.push({
+        id: 'context_resolution',
+        name: 'Contextual Follow-up Resolution',
+        status: 'completed',
+        durationMs: 1,
+        detail: `Inherited competitor context '${targetCompetitors[0].name}' from previous conversation turns`
+      });
+    }
 
     // =========================================================================
     // STAGE 2: REASON & PLAN

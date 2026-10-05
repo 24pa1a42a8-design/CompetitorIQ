@@ -6,7 +6,7 @@ import {
 import HindsightFlowWidget from '../components/common/HindsightFlowWidget';
 import apiService from '../services/apiService';
 
-export default function ActivityTimelineView({ onOpenEvidence, onNavigate }) {
+export default function ActivityTimelineView({ onOpenEvidence, onNavigate, dateFilter }) {
   const [filterType, setFilterType] = useState('ALL');
   const [searchTag, setSearchTag] = useState('');
   const [events, setEvents] = useState([]);
@@ -17,7 +17,11 @@ export default function ActivityTimelineView({ onOpenEvidence, onNavigate }) {
     setLoading(true);
     setError(null);
     try {
-      const res = await apiService.getEvents({ limit: 100 });
+      const params = { limit: 100 };
+      if (dateFilter?.startDate) params.startDate = dateFilter.startDate;
+      if (dateFilter?.endDate) params.endDate = dateFilter.endDate;
+
+      const res = await apiService.getEvents(params);
       const rawEvents = res?.data?.events || res?.data || [];
       setEvents(Array.isArray(rawEvents) ? rawEvents : []);
     } catch (err) {
@@ -29,7 +33,7 @@ export default function ActivityTimelineView({ onOpenEvidence, onNavigate }) {
 
   useEffect(() => {
     fetchEvents();
-  }, []);
+  }, [dateFilter?.startDate, dateFilter?.endDate]);
 
   const eventList = Array.isArray(events) ? events : [];
   const filteredEvents = eventList.filter(e => {

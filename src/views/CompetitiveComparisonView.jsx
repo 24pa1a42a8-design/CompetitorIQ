@@ -15,7 +15,7 @@ const CATEGORY_ROWS = [
   { key: 'MESSAGING', label: '6. Positioning & Messaging Shifts', metricKey: 'messagingEvents', trendKey: 'messaging' }
 ];
 
-export default function CompetitiveComparisonView({ onNavigate }) {
+export default function CompetitiveComparisonView({ onNavigate, onOpenEvidence, dateFilter }) {
   const [allCompetitors, setAllCompetitors] = useState([]);
   const [selectedCompIds, setSelectedCompIds] = useState([]);
   const [windowDays, setWindowDays] = useState(90);
@@ -37,7 +37,7 @@ export default function CompetitiveComparisonView({ onNavigate }) {
           // Select up to 4 competitors by default
           setSelectedCompIds(comps.slice(0, 4).map(c => c.id));
         }
-      } catch (err) {
+      } catch {
         setError('Failed to load competitors list.');
       }
     }
@@ -49,10 +49,14 @@ export default function CompetitiveComparisonView({ onNavigate }) {
     setLoading(true);
     setError(null);
     try {
-      const res = await apiService.getCompetitiveComparison({
+      const params = {
         competitorIds: selectedCompIds,
         windowDays
-      });
+      };
+      if (dateFilter?.startDate) params.startDate = dateFilter.startDate;
+      if (dateFilter?.endDate) params.endDate = dateFilter.endDate;
+
+      const res = await apiService.getCompetitiveComparison(params);
       const matrix = res?.data?.competitors ? res.data : (res?.competitors ? res : res?.data || null);
       setComparisonData(matrix);
     } catch (err) {
@@ -64,7 +68,7 @@ export default function CompetitiveComparisonView({ onNavigate }) {
 
   useEffect(() => {
     fetchComparison();
-  }, [selectedCompIds, windowDays]);
+  }, [selectedCompIds, windowDays, dateFilter?.startDate, dateFilter?.endDate]);
 
   const toggleCompetitorSelection = (id) => {
     if (selectedCompIds.includes(id)) {

@@ -182,7 +182,7 @@ export default function Dashboard() {
       case 'connect_dots':
         return <ConnectTheDotsView onNavigate={handleNavigate} onOpenEvidence={handleOpenEvidence} dateFilter={dateFilter} />;
       case 'strategic_patterns':
-        return <StrategicPatternsView onNavigate={handleNavigate} dateFilter={dateFilter} />;
+        return <StrategicPatternsView onNavigate={handleNavigate} onOpenEvidence={handleOpenEvidence} dateFilter={dateFilter} />;
       case 'hindsight_memory':
         return <HindsightMemoryView onNavigate={handleNavigate} onOpenEvidence={handleOpenEvidence} />;
       case 'ai_analyst':
@@ -199,7 +199,7 @@ export default function Dashboard() {
       case 'alerts':
         return <AlertsView onNavigate={handleNavigate} onOpenEvidence={handleOpenEvidence} />;
       case 'competitive_comparison':
-        return <CompetitiveComparisonView onNavigate={handleNavigate} dateFilter={dateFilter} />;
+        return <CompetitiveComparisonView onNavigate={handleNavigate} onOpenEvidence={handleOpenEvidence} dateFilter={dateFilter} />;
       default:
         return (
           <DashboardView 

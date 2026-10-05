@@ -21,7 +21,7 @@ const ANALYSIS_TYPES = [
   { value: 'EMERGING_TREND', label: 'Emerging Trend' }
 ];
 
-export default function StrategicPatternsView({ onNavigate }) {
+export default function StrategicPatternsView({ onNavigate, onOpenEvidence, dateFilter }) {
   const [analyses, setAnalyses] = useState([]);
   const [competitors, setCompetitors] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -41,12 +41,16 @@ export default function StrategicPatternsView({ onNavigate }) {
     setLoading(true);
     setError(null);
     try {
+      const params = {
+        competitorId: selectedCompetitor || undefined,
+        analysisType: selectedType !== 'ALL' ? selectedType : undefined,
+        confidence: selectedConfidence !== 'ALL' ? selectedConfidence : undefined
+      };
+      if (dateFilter?.startDate) params.startDate = dateFilter.startDate;
+      if (dateFilter?.endDate) params.endDate = dateFilter.endDate;
+
       const [analysesRes, compRes] = await Promise.all([
-        apiService.getStrategicAnalyses({
-          competitorId: selectedCompetitor || undefined,
-          analysisType: selectedType !== 'ALL' ? selectedType : undefined,
-          confidence: selectedConfidence !== 'ALL' ? selectedConfidence : undefined
-        }).catch(() => ({ data: [] })),
+        apiService.getStrategicAnalyses(params).catch(() => ({ data: [] })),
         apiService.getCompetitors().catch(() => ({ data: [] }))
       ]);
 
@@ -59,7 +63,7 @@ export default function StrategicPatternsView({ onNavigate }) {
           if (synth?.data?.analyses) {
             loadedAnalyses = synth.data.analyses;
           }
-        } catch (e) {
+        } catch {
           // ignore auto-synthesis error
         }
       }
@@ -76,7 +80,7 @@ export default function StrategicPatternsView({ onNavigate }) {
 
   useEffect(() => {
     loadData();
-  }, [selectedCompetitor, selectedType, selectedConfidence]);
+  }, [selectedCompetitor, selectedType, selectedConfidence, dateFilter?.startDate, dateFilter?.endDate]);
 
   const handleRunSynthesis = async () => {
     setAnalyzing(true);
@@ -289,12 +293,30 @@ export default function StrategicPatternsView({ onNavigate }) {
                     <h2 className="text-lg font-bold text-slate-900">{item.title}</h2>
                   </div>
 
-                  <button 
-                    onClick={() => setSelectedAnalysis(item)}
-                    className="flex items-center gap-1 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold text-xs rounded-lg transition shrink-0"
-                  >
-                    <Eye className="w-3.5 h-3.5" /> Full Traceability
-                  </button>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button 
+                      onClick={() => setSelectedAnalysis(item)}
+                      className="flex items-center gap-1 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold text-xs rounded-lg transition"
+                    >
+                      <Eye className="w-3.5 h-3.5" /> Full Traceability
+                    </button>
+                    {onOpenEvidence && (
+                      <button
+                        onClick={() => onOpenEvidence({
+                          title: item.title,
+                          competitor: competitorName,
+                          category: (item.analysisType || 'STRATEGIC').replace(/_/g, ' '),
+                          excerpt: item.summary,
+                          facts: facts,
+                          capturedAt: item.createdAt,
+                          sourceUrl: 'Verified PostgreSQL Records'
+                        })}
+                        className="flex items-center gap-1 px-3 py-1.5 bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-200 font-semibold text-xs rounded-lg transition"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" /> Evidence
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 {/* Summary */}

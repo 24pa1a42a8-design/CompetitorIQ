@@ -43,8 +43,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 02-01: Build evidence retrieval pipeline in `agentService.js` and repositories that enforces mandatory pre-retrieval.
-- [ ] 02-02: Implement epistemological claim classifier and update UI components to prominently render the 5 epistemological categories and evidence links.
+- [x] 02-01: Build evidence retrieval pipeline in `agentService.js` and repositories that enforces mandatory pre-retrieval.
+- [x] 02-02: Implement epistemological claim classifier and update UI components to prominently render the 5 epistemological categories and evidence links.
 
 ### Phase 3: Autonomous AI Agent Execution Loop & Local Ollama Reasoning
 **Goal**: Upgrade the AI Agent from simple single-turn prompt execution into an autonomous multi-step reasoning agent with planning, tool invocation, iteration, and self-correction powered by local Ollama (`qwen2.5:3b`).

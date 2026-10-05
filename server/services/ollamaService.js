@@ -203,6 +203,23 @@ CRITICAL GROUNDING RULES:
     const uniqueInferences = [...new Set(Array.isArray(inferences) ? inferences : [])].slice(0, 4);
     const uniqueImplications = [...new Set(Array.isArray(implications) ? implications : [])].slice(0, 4);
 
+    let toolContextSection = '';
+    if (options.toolOutputs && typeof options.toolOutputs === 'object') {
+      const parts = [];
+      if (Array.isArray(options.toolOutputs.comparisons) && options.toolOutputs.comparisons.length > 0) {
+        parts.push('Competitor Momentum Comparisons:\n' + options.toolOutputs.comparisons.map(c => `- ${c.competitorName}: Momentum ${c.momentumScore}/100 (${c.momentumLevel}), Events: ${c.eventCount}`).join('\n'));
+      }
+      if (Array.isArray(options.toolOutputs.pricingSignals) && options.toolOutputs.pricingSignals.length > 0) {
+        parts.push('Extracted Pricing Signals:\n' + options.toolOutputs.pricingSignals.map(p => `- ${p.competitorName} ${p.tierName}: ${p.currency} ${p.newPrice || 'Custom'} (Previous: ${p.previousPrice || 'N/A'})`).join('\n'));
+      }
+      if (Array.isArray(options.toolOutputs.patterns) && options.toolOutputs.patterns.length > 0) {
+        parts.push('Correlated Strategic Patterns:\n' + options.toolOutputs.patterns.map(pat => `- ${pat.title}: ${pat.summary || pat.description}`).join('\n'));
+      }
+      if (parts.length > 0) {
+        toolContextSection = `\n\nInternal Tool Execution Insights:\n${parts.join('\n\n')}`;
+      }
+    }
+
     const userContent = `User Query: "${userQuery}"
 
 Verified Facts & Evidence:
@@ -215,7 +232,7 @@ Logical Inferences:
 ${uniqueInferences.length > 0 ? uniqueInferences.map(i => `- ${i}`).join('\n') : '(None)'}
 
 Business Implications:
-${uniqueImplications.length > 0 ? uniqueImplications.map(imp => `- ${imp}`).join('\n') : '(None)'}
+${uniqueImplications.length > 0 ? uniqueImplications.map(imp => `- ${imp}`).join('\n') : '(None)'}${toolContextSection}
 
 Please provide a concise executive brief answering the user query based strictly on the above facts. Include sections for Verified Facts, Strategic Observations, Logical Inferences, Business & Strategic Implications, and Unknowns & Data Gaps. Keep it concise and embed inline citations where appropriate.`;
 

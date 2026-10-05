@@ -6,9 +6,9 @@ CompetitorIQ transforms into a battle-tested, production-ready AI-powered Compet
 
 ## Phases
 
-- [ ] **Phase 1: Defect Remediation & Full Frontend-Backend Binding** - Resolve existing codebase warnings/bugs and wire all views, dropdowns, and modals to real Express API endpoints and PostgreSQL.
-- [ ] **Phase 2: Pre-Retrieval Evidence & Grounding Pipeline** - Enforce mandatory factual evidence retrieval prior to insight generation, strict 5-part epistemological claim labeling, and verifiable citations.
-- [ ] **Phase 3: Autonomous AI Agent Execution Loop & Local Ollama Reasoning** - Implement autonomous planning, action/tool execution, iterative evaluation, and self-correction in `AgentService` using local Ollama (`qwen2.5:3b`) with deterministic fallback.
+- [x] **Phase 1: Defect Remediation & Full Frontend-Backend Binding** - Resolve existing codebase warnings/bugs and wire all views, dropdowns, and modals to real Express API endpoints and PostgreSQL.
+- [x] **Phase 2: Pre-Retrieval Evidence & Grounding Pipeline** - Enforce mandatory factual evidence retrieval prior to insight generation, strict 5-part epistemological claim labeling, and verifiable citations.
+- [x] **Phase 3: Autonomous AI Agent Execution Loop & Local Ollama Reasoning** - Implement autonomous planning, action/tool execution, iterative evaluation, and self-correction in `AgentService` using local Ollama (`qwen2.5:3b`) with deterministic fallback.
 - [ ] **Phase 4: Hindsight Memory Orchestration & Conversational Continuity** - Complete RETAIN, RECALL, and REFLECT workflows with persistent multi-turn conversational context and session continuity.
 - [ ] **Phase 5: Microsoft & Hyperscaler Ecosystem Tracking Expansion** - Implement verified public source tracking for Microsoft, AWS, Google Cloud, Oracle, Salesforce, and IBM across products, pricing, partnerships, and hiring.
 - [ ] **Phase 6: Production Hardening, Security, E2E Verification & Demo Flow** - Finalize multi-tenant security, rate limiting, comprehensive automated test suites, and 60-second hackathon live demo flow validation.
@@ -28,9 +28,9 @@ CompetitorIQ transforms into a battle-tested, production-ready AI-powered Compet
 **UI hint**: yes
 
 Plans:
-- [ ] 01-01: Clean up working tree, resolve Oxlint warnings, fix React compiler state-in-effect issues, and standardize API response handling.
-- [ ] 01-02: Connect frontend views (DashboardView, AlertsView, CompetitorProfileView, ConnectTheDotsView) to live Express routes with PostgreSQL data.
-- [ ] 01-03: Connect remaining views (StrategicPatternsView, CompetitiveComparisonView, ExecutiveReportView, Modals) and verify interactive filtering.
+- [x] 01-01: Clean up working tree, resolve Oxlint warnings, fix React compiler state-in-effect issues, and standardize API response handling.
+- [x] 01-02: Connect frontend views (DashboardView, AlertsView, CompetitorProfileView, ConnectTheDotsView) to live Express routes with PostgreSQL data.
+- [x] 01-03: Connect remaining views (StrategicPatternsView, CompetitiveComparisonView, ExecutiveReportView, Modals) and verify interactive filtering.
 
 ### Phase 2: Pre-Retrieval Evidence & Grounding Pipeline
 **Goal**: Establish an unshakeable ground truth foundation where all AI generation and analytical services mandatorily query PostgreSQL factual evidence before synthesizing text, strictly separating facts from inferences.
@@ -58,8 +58,8 @@ Plans:
 **UI hint**: yes
 
 Plans:
-- [ ] 03-01: Implement agent execution loop (plan → act → evaluate → self-correct) and tool registry in `agentService.js`.
-- [ ] 03-02: Optimize Ollama `qwen2.5:3b` prompting, context assembly, timeout handling, and deterministic fallback transparency.
+- [x] 03-01: Implement agent execution loop (plan → act → evaluate → self-correct) and tool registry in `agentService.js`.
+- [x] 03-02: Optimize Ollama `qwen2.5:3b` prompting, context assembly, timeout handling, and deterministic fallback transparency.
 
 ### Phase 4: Hindsight Memory Orchestration & Conversational Continuity
 **Goal**: Integrate Hindsight Cloud vector memory across RETAIN, RECALL, and REFLECT stages and maintain conversational context across multi-turn sessions.
@@ -110,9 +110,9 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Defect Remediation & Full Frontend-Backend Binding | 0/3 | Not started | - |
-| 2. Pre-Retrieval Evidence & Grounding Pipeline | 0/2 | Not started | - |
-| 3. Autonomous AI Agent Execution Loop & Local Ollama Reasoning | 0/2 | Not started | - |
+| 1. Defect Remediation & Full Frontend-Backend Binding | 3/3 | Completed | 2026-10-05 |
+| 2. Pre-Retrieval Evidence & Grounding Pipeline | 2/2 | Completed | 2026-10-05 |
+| 3. Autonomous AI Agent Execution Loop & Local Ollama Reasoning | 2/2 | Completed | 2026-10-05 |
 | 4. Hindsight Memory Orchestration & Conversational Continuity | 0/2 | Not started | - |
 | 5. Microsoft & Hyperscaler Ecosystem Tracking Expansion | 0/2 | Not started | - |
 | 6. Production Hardening, Security, E2E Verification & Demo Flow | 0/2 | Not started | - |

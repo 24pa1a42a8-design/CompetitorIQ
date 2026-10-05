@@ -380,6 +380,14 @@ export default function AgentWorkspace({ onNavigate, onOpenEvidence, initialQuer
             )}
           </div>
 
+          {/* Adaptive Self-Correction Notification Banner (D-15) */}
+          {agentResponse.executionSteps?.some(s => s.status === 'self_corrected' || s.id === 'self_correct_broaden_search') && (
+            <div className="p-3.5 bg-indigo-50/80 border border-indigo-200 rounded-xl flex items-center gap-2.5 text-xs text-indigo-900">
+              <RefreshCw className="w-4 h-4 text-indigo-600 shrink-0" />
+              <span><strong>Adaptive Query Relaxation:</strong> Initial keyword filter yielded zero records; autonomously broadened search to retrieve verified competitor activity.</span>
+            </div>
+          )}
+
           {/* Insufficient Evidence Warning Banner (D-09) */}
           {agentResponse.insufficientEvidence && (
             <div className="p-5 bg-rose-50/80 border border-rose-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">

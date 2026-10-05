@@ -1306,7 +1306,12 @@ export const agentService = {
         implications, 
         {
           timeoutMs: ollamaTimeout,
-          conversationHistory
+          conversationHistory,
+          toolOutputs: {
+            comparisons: comparisonData,
+            pricingSignals: pricingData,
+            patterns: patternsData
+          }
         }
       );
 

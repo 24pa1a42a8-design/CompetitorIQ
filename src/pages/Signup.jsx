@@ -79,7 +79,7 @@ export default function Signup() {
       } else {
         setGeneralError(res.message || 'Failed to create account. Please try again.');
       }
-    } catch (err) {
+    } catch (_err) {
       setGeneralError('An error occurred during account creation.');
     }
   };

@@ -1,16 +1,9 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 
 const AuthContext = createContext(null);
 
 const STORAGE_KEY = 'competitor_iq_auth';
 const REMEMBER_KEY = 'competitor_iq_remember';
-
-const DEFAULT_USER = {
-  name: 'Alex Rivera',
-  email: 'alex.rivera@enterprise.com',
-  role: 'Strategic Lead',
-  initials: 'AR'
-};
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
@@ -61,7 +54,7 @@ export const AuthProvider = ({ children }) => {
     return { success: true };
   };
 
-  const signup = async ({ name, email, password }) => {
+  const signup = async ({ name, email, password: _password }) => {
     setIsLoading(true);
     await new Promise((resolve) => setTimeout(resolve, 900));
 

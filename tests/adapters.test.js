@@ -80,6 +80,9 @@ describe('Automated Competitive Intelligence Source Adapters Unit Tests', () => 
     assert.ok(types.includes('product_release'));
     assert.ok(types.includes('pricing_page'));
     assert.ok(types.includes('careers_hiring'));
+    assert.ok(adapterRegistry.getAdapter('news_press') instanceof NewsPressAdapter);
+    assert.ok(adapterRegistry.getAdapter('pricing_page') instanceof PricingPageAdapter);
+    assert.ok(adapterRegistry.getAdapter('careers_hiring') instanceof CareersHiringAdapter);
   });
 
   test('5. Adapter Ingestion Service passes items to processBatch pipeline', async () => {

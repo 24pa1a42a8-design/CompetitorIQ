@@ -32,7 +32,7 @@ export default function ForgotPassword() {
       if (res.success) {
         setIsSuccess(true);
       }
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to send reset link. Please try again.');
     }
   };

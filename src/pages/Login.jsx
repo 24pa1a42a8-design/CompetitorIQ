@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import AuthLayout from '../layouts/AuthLayout';
 import Input from '../components/common/Input';
 import PasswordInput from '../components/common/PasswordInput';
@@ -10,23 +10,20 @@ import { Mail, ArrowRight, ShieldCheck } from 'lucide-react';
 
 export default function Login() {
   const navigate = useNavigate();
-  const location = useLocation();
   const { login, isLoading, isAuthenticated } = useAuth();
 
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(() => {
+    try {
+      return localStorage.getItem('competitor_iq_remember') || '';
+    } catch {
+      return '';
+    }
+  });
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
 
   const [errors, setErrors] = useState({});
   const [generalError, setGeneralError] = useState('');
-
-  // Auto populate remember email if present
-  useEffect(() => {
-    const savedEmail = localStorage.getItem('competitor_iq_remember');
-    if (savedEmail) {
-      setEmail(savedEmail);
-    }
-  }, []);
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -67,7 +64,7 @@ export default function Login() {
       } else {
         setGeneralError(res.message || 'Invalid credentials. Please check your details and try again.');
       }
-    } catch (err) {
+    } catch (_err) {
       setGeneralError('Something went wrong during sign in. Please try again.');
     }
   };

@@ -1,12 +1,12 @@
 ---
 gsd_state_version: "1.0"
-current_phase: 1
-current_phase_name: Defect Remediation & Full Frontend-Backend Binding
-status: completed
-stopped_at: Phase 1 executed & verified (all 3 plans complete)
-last_updated: "2026-10-05T14:54:00.000Z"
+current_phase: 2
+current_phase_name: Pre-Retrieval Evidence & Grounding Pipeline
+status: ready_to_plan
+stopped_at: Phase 2 context gathered (02-CONTEXT.md and 02-DISCUSSION-LOG.md locked)
+last_updated: "2026-10-05T14:58:00.000Z"
 last_activity: 2026-10-05
-last_activity_desc: Phase 1 executed with 0 errors/warnings and all tests passing
+last_activity_desc: Phase 2 context gathered and decisions locked (D-09 through D-12)
 state_head: cee635a
 progress:
   total_phases: 6
@@ -23,14 +23,14 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-10-05)
 
 **Core value:** Evidence-grounded competitive intelligence where every claim is backed by verifiable primary source citations, strictly separating empirical facts from analytical inferences, and operating reliably with deterministic fallbacks even when external services degrade.
-**Current focus:** Completed Phase 1 (Defect Remediation & Full Frontend-Backend Binding). Ready for Phase 2 (Pre-Retrieval Evidence & Grounding Pipeline).
+**Current focus:** Phase 2: Pre-Retrieval Evidence & Grounding Pipeline
 
 ## Current Position
 
-Phase: 1 of 6 (Defect Remediation & Full Frontend-Backend Binding) - COMPLETED
-Plan: 3 of 3 in current phase - ALL COMPLETED
-Status: Phase 1 complete, ready to discuss/plan Phase 2
-Last activity: 2026-10-05 — Live binding of all views, 0 lint warnings, and 38 unit tests passing
+Phase: 2 of 6 (Pre-Retrieval Evidence & Grounding Pipeline)
+Plan: 0 of 2 in current phase
+Status: Ready to plan (`/gsd-plan-phase 2`)
+Last activity: 2026-10-05 — Context gathered, decisions locked (D-09 through D-12)
 
 Progress: [██░░░░░░░░] 17%
 

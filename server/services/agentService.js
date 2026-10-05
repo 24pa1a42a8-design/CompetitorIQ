@@ -26,6 +26,14 @@ export const MONITORED_LANDSCAPE = [
 ];
 
 /**
+ * Detects if a query is requesting macro-trend, pattern, trajectory, or strategic reflection
+ */
+export function isReflectQuery(query) {
+  if (!query || typeof query !== 'string') return false;
+  return /\b(trajectory|macro|pattern|patterns|landscape|reflection|reflect|strategic posture|long-term|3-month|90-day|connect the dots)\b/i.test(query);
+}
+
+/**
  * Helper to determine if an error is transient and eligible for bounded retry
  */
 function isTransientError(err) {
@@ -308,23 +316,27 @@ export const AgentToolRegistry = {
   },
 
   /**
-   * 5. recall_memory: Query Hindsight vector memory bank
+   * 5. recall_memory: Query Hindsight vector memory bank (RECALL or REFLECT)
    */
-  async recall_memory({ query, organizationId = 'default-org', competitorId = null, limit = 10, requestId = null }) {
+  async recall_memory({ query, organizationId = 'default-org', competitorId = null, limit = 10, requestId = null, mode = null }) {
     const start = Date.now();
+    const shouldReflect = mode === 'REFLECT' || isReflectQuery(query);
+    const targetStage = shouldReflect ? 'REFLECT' : 'RECALL';
+
     if (!hindsightService.isConfigured()) {
       return {
         tool: 'recall_memory',
+        stage: targetStage,
         status: 'degraded',
         durationMs: Date.now() - start,
         itemCount: 0,
-        data: [],
-        summary: 'Hindsight vector memory standby'
+        data: shouldReflect ? {} : [],
+        summary: `Hindsight vector memory standby (${targetStage})`
       };
     }
 
-    const recallOp = await memoryOperationRepository.recordStart({
-      stage: 'RECALL',
+    const memoryOp = await memoryOperationRepository.recordStart({
+      stage: targetStage,
       organizationId,
       competitorId,
       requestId,
@@ -332,26 +344,55 @@ export const AgentToolRegistry = {
     }).catch(() => null);
 
     try {
-      const recallRes = await hindsightService.recall(query, { limit });
-      const recalled = Array.isArray(recallRes) ? recallRes : (recallRes?.memories || []);
-      if (recallOp?.id) {
-        await memoryOperationRepository.recordCompletion(recallOp.id, {
-          status: 'COMPLETED',
-          memoryCount: recalled.length
-        }).catch(() => {});
+      if (shouldReflect) {
+        const reflectRes = await hindsightService.reflect(query);
+        const isDegraded = reflectRes?.degraded || reflectRes?.insufficientEvidence;
+        const isCreditLimit = reflectRes?.insufficientCredits;
+
+        if (memoryOp?.id) {
+          await memoryOperationRepository.recordCompletion(memoryOp.id, {
+            status: isCreditLimit ? 'FAILED' : (isDegraded ? 'COMPLETED' : 'COMPLETED'),
+            memoryCount: reflectRes?.connectedMemoriesCount || (reflectRes?.facts?.length || 0),
+            errorCode: isCreditLimit ? 'INSUFFICIENT_CREDITS' : null,
+            metadata: { confidenceScore: reflectRes?.confidenceScore, degraded: isDegraded }
+          }).catch(() => {});
+        }
+
+        return {
+          tool: 'recall_memory',
+          stage: 'REFLECT',
+          status: isCreditLimit ? 'degraded' : 'completed',
+          creditLimitReached: Boolean(isCreditLimit),
+          durationMs: Date.now() - start,
+          itemCount: reflectRes?.connectedMemoriesCount || (reflectRes?.facts?.length || 0),
+          data: reflectRes,
+          summary: reflectRes?.summary || 'Hindsight strategic pattern reflection complete'
+        };
+      } else {
+        const recallRes = competitorId
+          ? await hindsightService.recallEvents(competitorId, query, { limit })
+          : await hindsightService.recall(query, { limit });
+        const recalled = Array.isArray(recallRes) ? recallRes : (recallRes?.memories || []);
+        if (memoryOp?.id) {
+          await memoryOperationRepository.recordCompletion(memoryOp.id, {
+            status: 'COMPLETED',
+            memoryCount: recalled.length
+          }).catch(() => {});
+        }
+        return {
+          tool: 'recall_memory',
+          stage: 'RECALL',
+          status: 'completed',
+          durationMs: Date.now() - start,
+          itemCount: recalled.length,
+          data: recalled,
+          summary: `Recalled ${recalled.length} semantic memories from Hindsight bank`
+        };
       }
-      return {
-        tool: 'recall_memory',
-        status: 'completed',
-        durationMs: Date.now() - start,
-        itemCount: recalled.length,
-        data: recalled,
-        summary: `Recalled ${recalled.length} semantic memories from Hindsight bank`
-      };
     } catch (err) {
       const isCreditLimit = err.message?.includes('Insufficient credits') || err.message?.includes('402');
-      if (recallOp?.id) {
-        await memoryOperationRepository.recordCompletion(recallOp.id, {
+      if (memoryOp?.id) {
+        await memoryOperationRepository.recordCompletion(memoryOp.id, {
           status: 'FAILED',
           errorCode: isCreditLimit ? 'INSUFFICIENT_CREDITS' : (err.code || 'HINDSIGHT_ERROR'),
           metadata: { message: err.message }
@@ -359,11 +400,12 @@ export const AgentToolRegistry = {
       }
       return {
         tool: 'recall_memory',
+        stage: targetStage,
         status: 'degraded',
         creditLimitReached: isCreditLimit,
         durationMs: Date.now() - start,
         itemCount: 0,
-        data: [],
+        data: shouldReflect ? {} : [],
         summary: isCreditLimit ? 'Hindsight credits exhausted — fallback to PostgreSQL evidence' : err.message
       };
     }
@@ -814,25 +856,39 @@ export const agentService = {
       }
     }
 
-    // Tool: Hindsight Memory Recall
+    // Tool: Hindsight Memory Recall / Reflect
     if (plan.includes('hindsight_memory_recall') || plan.includes('recall_memory')) {
       if (hindsightStatus.configured && (targetCompetitors.length > 0 || isBroadCompetitorQuery)) {
-        activeHindsightStage = 'RECALL';
+        const queryIsReflect = isReflectQuery(cleanedQuery) || options.mode === 'REFLECT';
+        activeHindsightStage = queryIsReflect ? 'REFLECT' : 'RECALL';
+
         const recallRes = await AgentToolRegistry.recall_memory({
           query: cleanedQuery,
           organizationId: orgId,
           competitorId: targetCompetitors[0]?.id || null,
-          requestId
+          requestId,
+          mode: queryIsReflect ? 'REFLECT' : 'RECALL'
         });
-        hindsightMemories = recallRes.data || [];
-        hindsightStatus.recalled = recallRes.status === 'completed';
+
+        if (recallRes.stage === 'REFLECT') {
+          reflectAnalysis = recallRes.data;
+          hindsightStatus.reflected = recallRes.status === 'completed';
+          if (Array.isArray(reflectAnalysis?.facts)) {
+            hindsightMemories = reflectAnalysis.facts.map((f, idx) => ({ id: `ref-fact-${idx}`, text: f }));
+          }
+        } else {
+          hindsightMemories = recallRes.data || [];
+          hindsightStatus.recalled = recallRes.status === 'completed';
+        }
+
         if (recallRes.creditLimitReached) {
           hindsightStatus.creditLimitReached = true;
           activeHindsightStage = 'DEGRADED';
         }
+
         executionSteps.push({
-          id: 'hindsight_memory_recall',
-          name: 'Hindsight Semantic Memory Recall',
+          id: queryIsReflect ? 'hindsight_reflect' : 'hindsight_memory_recall',
+          name: queryIsReflect ? 'Hindsight Strategic Reflection' : 'Hindsight Semantic Memory Recall',
           status: recallRes.status,
           durationMs: recallRes.durationMs,
           itemCount: recallRes.itemCount,
@@ -842,8 +898,8 @@ export const agentService = {
       }
     }
 
-    // Step: Hindsight Strategic Pattern Reflection
-    if (plan.includes('hindsight_reflect') && hindsightStatus.configured && !hindsightStatus.creditLimitReached) {
+    // Step: Hindsight Strategic Pattern Reflection (fallback if not already performed by recall_memory tool)
+    if (plan.includes('hindsight_reflect') && !reflectAnalysis && hindsightStatus.configured && !hindsightStatus.creditLimitReached) {
       const reflectStepStart = Date.now();
       const reflectOp = await memoryOperationRepository.recordStart({
         stage: 'REFLECT',

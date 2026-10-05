@@ -7,6 +7,7 @@ import { eventEvidenceRepository } from '../repositories/eventEvidenceRepository
 import { memoryOperationRepository } from '../repositories/memoryOperationRepository.js';
 import { hindsightService } from '../hindsight/hindsightService.js';
 import { alertService } from './alertService.js';
+import { signalRepository } from '../repositories/signalRepository.js';
 import { logger } from '../config/logger.js';
 
 export const ingestionService = {
@@ -20,7 +21,7 @@ export const ingestionService = {
     );
 
     // 1. Deduplication check
-    const dupCheck = await isDuplicateEvent(normalized);
+    const dupCheck = await isDuplicateEvent(normalized, { organizationId });
     if (dupCheck.isDuplicate) {
       logger.info(
         { contentHash: normalized.contentHash, reason: dupCheck.reason },
@@ -91,6 +92,10 @@ export const ingestionService = {
 
       // Create CompetitorEvent
       if (competitorRecord) {
+        const fullDescription = normalized.imageUrl
+          ? `[Image: ${normalized.imageUrl}]\n${normalized.description || normalized.summary}`
+          : (normalized.description || normalized.summary);
+
         eventRecord = await competitorEventRepository.create({
           organizationId,
           competitorId: competitorRecord.id,
@@ -98,7 +103,7 @@ export const ingestionService = {
           eventType: normalized.eventType,
           title: normalized.title,
           summary: normalized.summary,
-          description: normalized.description,
+          description: fullDescription,
           eventDate: normalized.eventDate,
           detectedAt: normalized.detectedAt,
           importance: normalized.importance,
@@ -106,14 +111,84 @@ export const ingestionService = {
           contentHash: normalized.contentHash
         });
 
-        // Create EventEvidence
         if (eventRecord) {
+          // Create EventEvidence
+          const evidenceExcerpt = normalized.imageUrl
+            ? `[Image: ${normalized.imageUrl}]\n${normalized.evidenceExcerpt}`
+            : normalized.evidenceExcerpt;
+
           evidenceRecord = await eventEvidenceRepository.create({
             eventId: eventRecord.id,
             sourceId: sourceRecord?.id || null,
-            excerpt: normalized.evidenceExcerpt,
+            excerpt: evidenceExcerpt,
             evidenceType: 'PRIMARY_SOURCE'
           });
+
+          // Persist Typed Signals when present or inferred from event type
+          try {
+            if (rawItem.pricingSignal || ['PRICING', 'PRICING_CHANGE'].includes(normalized.eventType)) {
+              const sig = rawItem.pricingSignal || {};
+              await signalRepository.createPricingSignal({
+                eventId: eventRecord.id,
+                competitorId: competitorRecord.id,
+                previousPrice: sig.previousPrice,
+                newPrice: sig.newPrice !== undefined ? sig.newPrice : 0,
+                currency: sig.currency || 'USD',
+                billingPeriod: sig.billingPeriod || 'MONTHLY',
+                tierName: sig.tierName || 'Standard',
+                effectiveDate: sig.effectiveDate || normalized.eventDate
+              });
+            }
+
+            if (rawItem.productSignal || ['PRODUCT', 'FEATURE', 'PRODUCT_LAUNCH', 'FEATURE_RELEASE'].includes(normalized.eventType)) {
+              const sig = rawItem.productSignal || {};
+              await signalRepository.createProductSignal({
+                eventId: eventRecord.id,
+                competitorId: competitorRecord.id,
+                productName: sig.productName || normalized.title,
+                featureName: sig.featureName || null,
+                signalType: sig.signalType || (normalized.eventType === 'PRODUCT' || normalized.eventType === 'PRODUCT_LAUNCH' ? 'NEW_PRODUCT' : 'NEW_FEATURE'),
+                effectiveDate: sig.effectiveDate || normalized.eventDate
+              });
+            }
+
+            if (rawItem.hiringSignal || ['HIRING', 'HIRING_SPIKE'].includes(normalized.eventType)) {
+              const sig = rawItem.hiringSignal || {};
+              await signalRepository.createHiringSignal({
+                eventId: eventRecord.id,
+                competitorId: competitorRecord.id,
+                role: sig.role || normalized.title,
+                department: sig.department || null,
+                location: sig.location || null,
+                detectedCount: sig.detectedCount || 1
+              });
+            }
+
+            if (rawItem.messagingSignal || ['MESSAGING', 'MESSAGING_CHANGE'].includes(normalized.eventType)) {
+              const sig = rawItem.messagingSignal || {};
+              await signalRepository.createMessagingSignal({
+                eventId: eventRecord.id,
+                competitorId: competitorRecord.id,
+                messageTheme: sig.messageTheme || normalized.title,
+                previousMessaging: sig.previousMessaging || null,
+                newMessaging: sig.newMessaging || normalized.summary
+              });
+            }
+
+            if (rawItem.fundingSignal || ['FUNDING'].includes(normalized.eventType)) {
+              const sig = rawItem.fundingSignal || {};
+              await signalRepository.createFundingSignal({
+                eventId: eventRecord.id,
+                competitorId: competitorRecord.id,
+                fundingType: sig.fundingType || 'INVESTMENT',
+                amount: sig.amount || 0,
+                currency: sig.currency || 'USD',
+                announcedDate: sig.announcedDate || normalized.eventDate
+              });
+            }
+          } catch (sigErr) {
+            logger.warn({ err: sigErr.message }, 'Signal persistence warning (event saved safely)');
+          }
 
           // 2b. Evaluate Alert Engine rules AFTER event & evidence are saved
           try {
@@ -208,6 +283,7 @@ export const ingestionService = {
       title: normalized.title,
       summary: normalized.summary,
       sourceUrl: normalized.sourceUrl,
+      imageUrl: normalized.imageUrl || null,
       confidence: normalized.confidence,
       databasePersisted: Boolean(eventRecord),
       hindsightRetained,
@@ -228,6 +304,10 @@ export const ingestionService = {
       duplicatesSkipped: results.filter(r => r.isDuplicate).length,
       results
     };
+  },
+
+  async ingestEvent(rawItem, options = {}) {
+    return this.processItem(rawItem, options);
   }
 };
 

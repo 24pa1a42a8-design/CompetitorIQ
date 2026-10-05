@@ -75,6 +75,33 @@ export async function reflectCompetitorStrategy(queryText, options = {}) {
     };
   } catch (err) {
     logger.error({ bankId, query, err: err.message }, 'Hindsight reflect operation failed');
+    const isCreditLimit = err.message?.includes('Insufficient credits') || err.message?.includes('402');
+    if (
+      isCreditLimit ||
+      err.code === 'HINDSIGHT_INSUFFICIENT_CREDITS' ||
+      err.code === 'HINDSIGHT_NOT_CONFIGURED' ||
+      err.code === 'HINDSIGHT_UNAVAILABLE' ||
+      err.message?.includes('fetch failed') ||
+      err.message?.includes('ECONNREFUSED')
+    ) {
+      return {
+        query,
+        bankId,
+        degraded: true,
+        insufficientCredits: Boolean(isCreditLimit),
+        summary: isCreditLimit
+          ? 'Hindsight credits exhausted — fallback to PostgreSQL evidence for strategic reflection.'
+          : 'Hindsight memory unavailable — fallback to PostgreSQL evidence for strategic reflection.',
+        facts: [],
+        observations: [
+          'Hindsight Cloud reflection engine degraded; grounded analysis powered by PostgreSQL telemetry.'
+        ],
+        inferences: [],
+        unknowns: ['Hindsight reflection degraded to relational evidence.'],
+        confidenceScore: '0%',
+        connectedMemoriesCount: 0
+      };
+    }
     return handleHindsightApiError(err);
   }
 }

@@ -27,11 +27,39 @@ export function normalizeIngestionItem(rawItem) {
   const eventDate = rawItem.eventDate || rawItem.publishedAt || rawItem.timestamp || new Date().toISOString();
   const detectedAt = rawItem.detectedAt || new Date().toISOString();
   
-  const eventType = (rawItem.eventType || classifyEvent(title, summary, description)).toUpperCase();
-  const importance = (rawItem.importance || rawItem.severity || 'MEDIUM').toUpperCase();
+  const rawType = (rawItem.eventType || '').toUpperCase().trim();
+  const EVENT_TYPE_MAP = {
+    PRICING: 'PRICING',
+    PRICING_CHANGE: 'PRICING',
+    PRICE: 'PRICING',
+    PRODUCT: 'PRODUCT',
+    PRODUCT_LAUNCH: 'PRODUCT',
+    FEATURE: 'FEATURE',
+    FEATURE_RELEASE: 'FEATURE',
+    MESSAGING: 'MESSAGING',
+    MESSAGING_CHANGE: 'MESSAGING',
+    HIRING: 'HIRING',
+    HIRING_SPIKE: 'HIRING',
+    FUNDING: 'FUNDING',
+    PARTNERSHIP: 'PARTNERSHIP',
+    LEADERSHIP: 'LEADERSHIP',
+    EXPANSION: 'EXPANSION',
+    ANNOUNCEMENT: 'ANNOUNCEMENT'
+  };
+
+  const eventType = EVENT_TYPE_MAP[rawType] || classifyEvent(title, summary, description);
+  const rawImportance = typeof rawItem.importance === 'string'
+    ? rawItem.importance
+    : (typeof rawItem.severity === 'string'
+        ? rawItem.severity
+        : (typeof rawItem.importance === 'number' && rawItem.importance >= 80 ? 'HIGH' : 'MEDIUM'));
+  const importance = (rawImportance || 'MEDIUM').toUpperCase();
   const confidence = typeof rawItem.confidence === 'number' ? Math.min(1.0, Math.max(0.1, rawItem.confidence)) : 0.95;
   const evidenceExcerpt = sanitizeText(rawItem.evidence || rawItem.excerpt || summary);
 
+  const imageUrl = rawItem.imageUrl || rawItem.image || null;
+  const author = rawItem.author || null;
+  const category = rawItem.category || null;
   const contentHash = generateContentHash(competitorId, title, summary, eventDate);
 
   return {
@@ -43,6 +71,9 @@ export function normalizeIngestionItem(rawItem) {
     description,
     source,
     sourceUrl,
+    imageUrl,
+    author,
+    category,
     eventDate: new Date(eventDate),
     detectedAt: new Date(detectedAt),
     importance,

@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import { env } from './config/env.js';
 import { httpLogger } from './middlewares/loggerMiddleware.js';
 import { globalRateLimiter } from './middlewares/rateLimiter.js';
+import { apiLimiter, ingestionLimiter, agentLimiter } from './middlewares/rateLimitMiddleware.js';
 import { errorHandler } from './middlewares/errorHandler.js';
 import healthRoutes from './routes/healthRoutes.js';
 import hindsightRoutes from './routes/hindsightRoutes.js';
@@ -21,8 +22,8 @@ import { authMiddleware } from './middlewares/authMiddleware.js';
 
 const app = express();
 
-// Security headers
-app.use(helmet());
+// Security headers (configure CSP to allow Vite dev resources)
+app.use(helmet({ contentSecurityPolicy: false }));
 
 // CORS configuration (supports env.FRONTEND_URL, localhost, 127.0.0.1 on all ports)
 const allowedOrigins = [
@@ -57,7 +58,12 @@ app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 // Logging, Rate Limiting & Organization Isolation
 app.use(httpLogger);
 app.use(globalRateLimiter);
+app.use('/api', apiLimiter);
 app.use('/api', authMiddleware);
+
+// Specialized rate limiters
+app.use('/api/ingestion', ingestionLimiter);
+app.use('/api/agent', agentLimiter);
 
 // API Routes
 app.use('/api/health', healthRoutes);

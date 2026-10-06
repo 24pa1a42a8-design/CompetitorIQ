@@ -8,6 +8,7 @@
     "server": "node server/server.js",
     "dev:server": "node --watch server/server.js",
     "test": "node --test --test-concurrency=1 tests/*.test.js",
+    "demo": "node server/scripts/demoFlow.js",
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview"

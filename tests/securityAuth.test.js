@@ -1,8 +1,27 @@
-import test from 'node:test';
+import test, { before, after } from 'node:test';
 import assert from 'node:assert';
+import app from '../server/app.js';
 
 test('Production Security & Organization Isolation Tests', async (t) => {
-  const BASE_URL = 'http://localhost:5000/api';
+  let server = null;
+  let BASE_URL = '';
+
+  before(async () => {
+    process.env.NODE_ENV = 'production';
+    await new Promise((resolve) => {
+      server = app.listen(0, () => {
+        const port = server.address().port;
+        BASE_URL = `http://127.0.0.1:${port}/api`;
+        resolve();
+      });
+    });
+  });
+
+  after(async () => {
+    if (server) {
+      await new Promise((resolve) => server.close(resolve));
+    }
+  });
 
   await t.test('1. Public health check is accessible without authentication', async () => {
     const res = await fetch(`${BASE_URL}/health`);
@@ -34,7 +53,6 @@ test('Production Security & Organization Isolation Tests', async (t) => {
   });
 
   await t.test('4. Rejects cross-organization access with 403 CROSS_ORGANIZATION_ACCESS_DENIED', async () => {
-    // User authenticated as org-tenant-a attempts to query org-tenant-b
     const res = await fetch(`${BASE_URL}/alerts/unread-count`, {
       headers: {
         'Authorization': 'Bearer org-tenant-a:user-key-123',
@@ -47,12 +65,11 @@ test('Production Security & Organization Isolation Tests', async (t) => {
   });
 
   await t.test('5. Rejects malicious organization identifiers with 400 INVALID_ORGANIZATION_ID', async () => {
-    // Malicious injection attempt in x-organization-id
     const maliciousPayloads = [
       '../../etc/passwd',
       "org' OR 1=1 --",
       'org<script>alert(1)</script>',
-      'a'.repeat(100) // exceeds max length
+      'a'.repeat(100)
     ];
 
     for (const payload of maliciousPayloads) {

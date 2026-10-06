@@ -90,12 +90,55 @@ export const alertController = {
     }
   },
 
+  async getUnreadCount(req, res) {
+    try {
+      const organizationId = req.headers['x-organization-id'] || 'default-org';
+      const count = await alertService.getUnreadCount(organizationId);
+      return res.json({
+        success: true,
+        count,
+        unreadCount: count
+      });
+    } catch (err) {
+      logger.error({ err: err.message }, 'Failed to fetch unread alert count');
+      return res.status(err.status || 500).json({
+        success: false,
+        error: {
+          code: 'GET_UNREAD_COUNT_FAILED',
+          message: err.message || 'Internal server error'
+        }
+      });
+    }
+  },
+
+  async markAllAsRead(req, res) {
+    try {
+      const organizationId = req.headers['x-organization-id'] || 'default-org';
+      const result = await alertService.markAllAsRead(organizationId);
+      return res.json({
+        success: true,
+        data: result,
+        message: 'All notifications marked as read'
+      });
+    } catch (err) {
+      logger.error({ err: err.message }, 'Failed to mark all alerts as read');
+      return res.status(err.status || 500).json({
+        success: false,
+        error: {
+          code: 'MARK_ALL_READ_FAILED',
+          message: err.message || 'Internal server error'
+        }
+      });
+    }
+  },
+
   async updateAlertStatus(req, res) {
     try {
       const { id } = req.params;
-      const { status } = updateAlertStatusSchema.parse(req.body);
+      const status = req.body?.status || (req.path.endsWith('/read') ? 'READ' : null);
+      const parsed = updateAlertStatusSchema.parse({ status });
 
-      const updatedAlert = await alertService.updateAlertStatus(id, status);
+      const updatedAlert = await alertService.updateAlertStatus(id, parsed.status);
 
       return res.json({
         success: true,

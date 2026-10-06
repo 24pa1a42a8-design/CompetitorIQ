@@ -160,6 +160,14 @@ export const alertService = {
     return alert;
   },
 
+  async getUnreadCount(organizationId) {
+    return alertRepository.countUnread(organizationId);
+  },
+
+  async markAllAsRead(organizationId) {
+    return alertRepository.markAllAsRead(organizationId);
+  },
+
   async updateAlertStatus(id, status) {
     const validStatuses = ['UNREAD', 'READ', 'ACKNOWLEDGED', 'RESOLVED'];
     if (!validStatuses.includes(status)) {

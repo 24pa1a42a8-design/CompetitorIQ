@@ -8,8 +8,8 @@ const queryBodySchema = z.object({
     .trim()
     .min(1, 'Query cannot be empty.')
     .max(4000, 'Query cannot exceed 4000 characters.'),
-  competitorId: z.string().optional(),
-  conversationId: z.string().optional(),
+  competitorId: z.string().nullable().optional(),
+  conversationId: z.string().nullable().optional(),
   mode: z.enum(['RECALL', 'REFLECT', 'AUTO']).optional(),
   timeoutMs: z.number().int().positive().optional()
 });

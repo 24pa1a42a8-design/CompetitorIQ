@@ -17,6 +17,7 @@ import strategicAnalysisRoutes from './routes/strategicAnalysisRoutes.js';
 import competitiveComparisonRoutes from './routes/competitiveComparisonRoutes.js';
 import executiveReportRoutes from './routes/executiveReportRoutes.js';
 import monitoringRoutes from './routes/monitoringRoutes.js';
+import { authMiddleware } from './middlewares/authMiddleware.js';
 
 const app = express();
 
@@ -53,9 +54,10 @@ app.use(cors({
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
-// Logging & Rate Limiting
+// Logging, Rate Limiting & Organization Isolation
 app.use(httpLogger);
 app.use(globalRateLimiter);
+app.use('/api', authMiddleware);
 
 // API Routes
 app.use('/api/health', healthRoutes);
@@ -65,6 +67,16 @@ app.use('/api/agent', agentRoutes);
 app.use('/api/competitors', competitorRoutes);
 app.use('/api/adapters', adapterRoutes);
 app.use('/api/alerts', alertRoutes);
+app.use('/api/notifications', alertRoutes);
+app.use('/api/v1/notifications', alertRoutes);
+app.use('/api/events', (req, res, next) => {
+  req.url = '/events' + (req.url === '/' ? '' : req.url);
+  return ingestionRoutes(req, res, next);
+});
+app.use('/api/v1/events', (req, res, next) => {
+  req.url = '/events' + (req.url === '/' ? '' : req.url);
+  return ingestionRoutes(req, res, next);
+});
 app.use('/api/connect-dots', connectDotsRoutes);
 app.use('/api/strategic-analysis', strategicAnalysisRoutes);
 app.use('/api/competitive-comparison', competitiveComparisonRoutes);

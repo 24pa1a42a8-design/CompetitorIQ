@@ -1,5 +1,6 @@
 import { fetchPublicSource } from './httpFetcher.js';
 import { parseSourceContent } from './htmlParser.js';
+import { getVerifiedSnapshot } from './snapshots.js';
 import { logger } from '../config/logger.js';
 
 export class BaseSourceAdapter {
@@ -25,6 +26,8 @@ export class BaseSourceAdapter {
 
     // 1. Fetch step (if mock Content is passed in options for fixture testing, use it directly)
     let fetchResult;
+    let fallbackUsed = false;
+
     if (options.mockContent) {
       fetchResult = {
         success: true,
@@ -41,24 +44,38 @@ export class BaseSourceAdapter {
       });
     }
 
-    if (!fetchResult.success) {
-      logger.warn({ adapter: this.name, url: sourceConfig.url, error: fetchResult.error }, 'Source adapter fetch failed or restricted');
+    let contentToParse = fetchResult?.content || null;
+    let contentType = fetchResult?.contentType || 'text/html';
+
+    // 2. Hybrid Fallback Strategy (D-20): If live fetch fails/blocked or yields no content, use verified snapshot fallback
+    if ((!fetchResult || !fetchResult.success || !contentToParse) && !options.disableSnapshotFallback) {
+      const snapshot = getVerifiedSnapshot(sourceConfig);
+      if (snapshot) {
+        logger.info({ adapter: this.name, sourceId: sourceConfig.id, competitor: sourceConfig.competitorName }, 'Live fetch restricted or failed; using verified snapshot fallback');
+        contentToParse = snapshot;
+        contentType = snapshot.trim().startsWith('<') ? 'application/xml' : 'text/html';
+        fallbackUsed = true;
+      }
+    }
+
+    if (!contentToParse) {
+      logger.warn({ adapter: this.name, url: sourceConfig.url, error: fetchResult?.error }, 'Source adapter fetch failed and no snapshot available');
       return {
         success: false,
         items: [],
-        error: fetchResult.error || 'Fetch failed',
-        fetchedAt: fetchResult.fetchedAt
+        error: fetchResult?.error || 'Fetch failed and snapshot unavailable',
+        fetchedAt: fetchResult?.fetchedAt || new Date()
       };
     }
 
-    // 2. Parse step
-    const parsed = this.parse(fetchResult.content, {
+    // 3. Parse step
+    const parsed = this.parse(contentToParse, {
       sourceUrl: sourceConfig.url,
       defaultTitle: `${sourceConfig.competitorName} ${this.name} Telemetry`,
-      contentType: fetchResult.contentType
+      contentType
     });
 
-    // 3. Map into raw ingestion items for ingestionService
+    // 4. Map into raw ingestion items for ingestionService
     const rawItems = (parsed.items || []).map(item => ({
       competitorName: sourceConfig.competitorName || 'Competitor',
       eventType: this.eventTypeHint,
@@ -66,16 +83,18 @@ export class BaseSourceAdapter {
       summary: item.summary,
       source: sourceConfig.publisher || sourceConfig.id || this.name,
       sourceUrl: item.sourceUrl || sourceConfig.url,
-      publishedDate: item.publishedDate || fetchResult.fetchedAt,
+      publishedDate: item.publishedDate || fetchResult?.fetchedAt || new Date().toISOString(),
+      imageUrl: item.imageUrl || null,
       evidence: item.evidence || item.summary || item.title,
-      confidence: 0.92
+      confidence: fallbackUsed ? 0.98 : 0.92
     }));
 
     return {
       success: true,
       count: rawItems.length,
       items: rawItems,
-      fetchedAt: fetchResult.fetchedAt
+      fallbackUsed,
+      fetchedAt: fetchResult?.fetchedAt || new Date()
     };
   }
 }

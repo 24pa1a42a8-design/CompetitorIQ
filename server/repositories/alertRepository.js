@@ -38,7 +38,12 @@ export const alertRepository = {
         event: {
           include: {
             source: true,
-            evidence: true
+            evidence: true,
+            pricingSignals: true,
+            productSignals: true,
+            messagingSignals: true,
+            hiringSignals: true,
+            fundingSignals: true
           }
         }
       }
@@ -56,7 +61,12 @@ export const alertRepository = {
         event: {
           include: {
             source: true,
-            evidence: true
+            evidence: true,
+            pricingSignals: true,
+            productSignals: true,
+            messagingSignals: true,
+            hiringSignals: true,
+            fundingSignals: true
           }
         }
       }
@@ -72,6 +82,32 @@ export const alertRepository = {
         organizationId,
         eventId,
         type
+      }
+    });
+  },
+
+  async countUnread(organizationId) {
+    const prisma = getPrismaClient();
+    if (!prisma) return 0;
+    const where = { status: 'UNREAD' };
+    if (organizationId && organizationId !== 'all') {
+      where.organizationId = organizationId;
+    }
+    return prisma.alert.count({ where });
+  },
+
+  async markAllAsRead(organizationId) {
+    const prisma = getPrismaClient();
+    if (!prisma) return { count: 0 };
+    const where = { status: 'UNREAD' };
+    if (organizationId && organizationId !== 'all') {
+      where.organizationId = organizationId;
+    }
+    return prisma.alert.updateMany({
+      where,
+      data: {
+        status: 'READ',
+        readAt: new Date()
       }
     });
   },
@@ -102,7 +138,14 @@ export const alertRepository = {
       data: updateData,
       include: {
         competitor: true,
-        event: true
+        event: {
+          include: {
+            source: true,
+            evidence: true,
+            pricingSignals: true,
+            productSignals: true
+          }
+        }
       }
     });
   },

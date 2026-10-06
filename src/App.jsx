@@ -8,18 +8,22 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import ForgotPassword from './pages/ForgotPassword';
 import Dashboard from './pages/Dashboard';
+import AgentHeroPage from './pages/AgentHeroPage';
 
 export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          {/* Public Auth Routes */}
+          {/* ── Public Landing ── */}
+          <Route path="/" element={<AgentHeroPage />} />
+
+          {/* ── Public Auth Routes ── */}
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
 
-          {/* Protected Dashboard Route */}
+          {/* ── Protected Dashboard ── */}
           <Route
             path="/dashboard/*"
             element={
@@ -37,9 +41,8 @@ export default function App() {
             }
           />
 
-          {/* Default Redirects */}
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          {/* ── Catch-all ── */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

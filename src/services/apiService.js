@@ -386,7 +386,15 @@ class ApiService {
       body: JSON.stringify({})
     });
   }
+
+  async refreshCompetitorData(competitorSlug) {
+    return this.request(`/ingestion/competitor/${encodeURIComponent(competitorSlug)}`, {
+      method: 'POST',
+      body: JSON.stringify({})
+    });
+  }
 }
 
 export const apiService = new ApiService();
 export default apiService;
+

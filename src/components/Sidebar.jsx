@@ -16,7 +16,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { BrandHeader } from './common/BrandLogo';
 
-export default function Sidebar({ currentView, setCurrentView, selectedCompetitor = 'Oracle', setSelectedCompetitor }) {
+export default function Sidebar({ currentView, setCurrentView, selectedCompetitor = 'Microsoft', setSelectedCompetitor }) {
   const { user, logout } = useAuth();
 
   const handleLogout = () => {
@@ -39,9 +39,11 @@ export default function Sidebar({ currentView, setCurrentView, selectedCompetito
   ];
 
   const competitorList = [
+    { id: 'Microsoft', name: 'Microsoft (Focal)', color: 'bg-blue-600 text-white', icon: 'M', isFocal: true },
+    { id: 'Google Cloud', name: 'Google Cloud', color: 'bg-emerald-600 text-white', icon: 'G' },
+    { id: 'AWS', name: 'AWS', color: 'bg-[#ea580c] text-white', icon: 'A' },
     { id: 'Oracle', name: 'Oracle', color: 'bg-orange-600 text-white', icon: 'O' },
     { id: 'IBM', name: 'IBM', color: 'bg-amber-600 text-white', icon: 'I' },
-    { id: 'AWS', name: 'AWS', color: 'bg-[#ea580c] text-white', icon: 'A' },
     { id: 'Salesforce', name: 'Salesforce', color: 'bg-stone-700 text-white', icon: 'S' }
   ];
 

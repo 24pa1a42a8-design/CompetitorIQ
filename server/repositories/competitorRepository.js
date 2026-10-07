@@ -1,35 +1,52 @@
-import { getPrismaClient } from '../config/database.js';
+import { getPrismaClient, executeWithDbRetry } from '../config/database.js';
+
+const executeWithRetry = executeWithDbRetry;
 
 export const competitorRepository = {
   async findById(id) {
     const prisma = getPrismaClient();
     if (!prisma) return null;
-    return prisma.competitor.findUnique({
+    return executeWithRetry(() => prisma.competitor.findUnique({
       where: { id },
       include: {
         events: { take: 10, orderBy: { eventDate: 'desc' } }
       }
-    });
+    }));
   },
 
   async findBySlug(organizationId, slug) {
     const prisma = getPrismaClient();
     if (!prisma) return null;
-    return prisma.competitor.findUnique({
+    return executeWithRetry(() => prisma.competitor.findUnique({
       where: {
         organizationId_slug: { organizationId, slug }
       }
-    });
+    }));
   },
 
   async findAllByOrganization(organizationId) {
     const prisma = getPrismaClient();
     if (!prisma) return [];
 
-    let competitors = await prisma.competitor.findMany({
+    let competitors = await executeWithRetry(() => prisma.competitor.findMany({
       where: { organizationId },
       orderBy: { name: 'asc' }
-    });
+    }));
+
+    // Deduplicate by trimmed, lowercased competitor name to prevent UI dropdown duplicates
+    const uniqueMap = new Map();
+    for (const c of competitors) {
+      const key = c.name.trim().toLowerCase();
+      if (!uniqueMap.has(key)) {
+        uniqueMap.set(key, c);
+      } else {
+        const existing = uniqueMap.get(key);
+        if (existing.slug === 'general-competitor' && c.slug !== 'general-competitor') {
+          uniqueMap.set(key, c);
+        }
+      }
+    }
+    competitors = Array.from(uniqueMap.values());
 
     if (organizationId === 'default-org' && competitors.length < 4) {
       const defaultComps = [

@@ -1,45 +1,50 @@
-import { getPrismaClient } from '../config/database.js';
+import { getPrismaClient, executeWithDbRetry } from '../config/database.js';
+
+const executeWithRetry = executeWithDbRetry;
 
 export const conversationRepository = {
   async createConversation(data) {
     const prisma = getPrismaClient();
     if (!prisma) return null;
-    return prisma.agentConversation.create({
-      data: {
-        organizationId: data.organizationId,
-        userId: data.userId || null,
-        title: data.title || 'Competitor Intelligence Session'
+    return executeWithRetry(async () => {
+      if (data.organizationId) {
+        await prisma.organization.upsert({
+          where: { id: data.organizationId },
+          update: {},
+          create: { id: data.organizationId, name: 'Default Organization', planTier: 'FREE' }
+        }).catch(() => {});
       }
+      return prisma.agentConversation.create({
+        data: {
+          organizationId: data.organizationId,
+          userId: data.userId || null,
+          title: data.title || 'Competitor Intelligence Session'
+        }
+      });
     });
   },
 
   async findConversationById(id) {
     const prisma = getPrismaClient();
     if (!prisma) return null;
-    return prisma.agentConversation.findUnique({
+    return executeWithRetry(() => prisma.agentConversation.findUnique({
       where: { id },
       include: {
         messages: {
           orderBy: { createdAt: 'asc' }
         }
       }
-    });
+    }));
   },
 
   async findConversationsByOrg(organizationId, limit = 20) {
     const prisma = getPrismaClient();
     if (!prisma) return [];
-    return prisma.agentConversation.findMany({
+    return executeWithRetry(() => prisma.agentConversation.findMany({
       where: { organizationId },
       take: limit,
-      orderBy: { updatedAt: 'desc' },
-      include: {
-        messages: {
-          take: 1,
-          orderBy: { createdAt: 'desc' }
-        }
-      }
-    });
+      orderBy: { updatedAt: 'desc' }
+    }));
   },
 
   async addMessage(data) {
@@ -47,21 +52,22 @@ export const conversationRepository = {
     if (!prisma) return null;
 
     // Create the message and update conversation timestamp
-    const message = await prisma.agentMessage.create({
+    const message = await executeWithRetry(() => prisma.agentMessage.create({
       data: {
         conversationId: data.conversationId,
         role: data.role,
         content: typeof data.content === 'string' ? data.content : JSON.stringify(data.content)
       }
-    });
+    }));
 
-    await prisma.agentConversation.update({
+    await executeWithRetry(() => prisma.agentConversation.update({
       where: { id: data.conversationId },
       data: { updatedAt: new Date() }
-    }).catch(() => {});
+    })).catch(() => {});
 
     return message;
   }
 };
 
 export default conversationRepository;
+

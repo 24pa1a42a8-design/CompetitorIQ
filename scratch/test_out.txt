@@ -1,0 +1,7 @@
+Status: 200
+Success: true
+Event Count: 100
+Alert Count: 92
+Pattern Count: 15
+Supporting Events Count: 100
+Executive Summary: Leading enterprise workflow AI agent market; accelerating cloud infrastructure investment.

@@ -1,10 +1,12 @@
-import { getPrismaClient } from '../config/database.js';
+import { getPrismaClient, executeWithDbRetry } from '../config/database.js';
+
+const executeWithRetry = executeWithDbRetry;
 
 export const memoryOperationRepository = {
   async recordStart(data) {
     const prisma = getPrismaClient();
     if (!prisma) return null;
-    return prisma.memoryOperation.create({
+    return executeWithRetry(() => prisma.memoryOperation.create({
       data: {
         stage: data.stage,
         status: 'RUNNING',
@@ -15,14 +17,14 @@ export const memoryOperationRepository = {
         query: data.query,
         startedAt: new Date()
       }
-    });
+    }));
   },
 
   async recordCompletion(id, details = {}) {
     const prisma = getPrismaClient();
     if (!prisma || !id) return null;
     const completedAt = new Date();
-    return prisma.memoryOperation.update({
+    return executeWithRetry(() => prisma.memoryOperation.update({
       where: { id },
       data: {
         status: details.status || 'COMPLETED',
@@ -32,17 +34,18 @@ export const memoryOperationRepository = {
         errorCode: details.errorCode,
         metadata: details.metadata
       }
-    });
+    }));
   },
 
   async findRecent(options = {}) {
     const prisma = getPrismaClient();
     if (!prisma) return [];
-    return prisma.memoryOperation.findMany({
+    return executeWithRetry(() => prisma.memoryOperation.findMany({
       take: options.limit || 10,
       orderBy: { startedAt: 'desc' }
-    });
+    }));
   }
 };
 
 export default memoryOperationRepository;
+

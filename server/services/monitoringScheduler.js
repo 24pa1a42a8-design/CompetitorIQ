@@ -51,7 +51,11 @@ class CompetitorMonitoringScheduler {
     }
   }
 
-  start(tickMs = 60 * 1000, immediateTick = process.env.NODE_ENV !== 'test') {
+  start(tickMs = 60 * 1000, immediateTick = false) {
+    if (process.env.MONITORING_ENABLED === 'false') {
+      logger.info('Continuous Competitor Monitoring Scheduler disabled via MONITORING_ENABLED=false');
+      return;
+    }
     if (this.intervalId) return;
     this.enabled = true;
     logger.info({ tickMs, sourcesCount: this.sources.size }, 'Starting Continuous Competitor Monitoring Scheduler');

@@ -40,8 +40,8 @@ function isTransientError(err) {
   if (!err) return false;
   const msg = (err.message || '').toLowerCase();
   const code = (err.code || '').toLowerCase();
-  if (code === 'econnreset' || code === 'etimedout' || code === 'econnrefused') return true;
-  if (msg.includes('connection reset') || msg.includes('socket hang up') || msg.includes('503') || msg.includes('504')) {
+  if (code === 'econnreset' || code === 'etimedout' || code === 'econnrefused' || code === 'p1001' || code === 'p1017' || code === 'p2024') return true;
+  if (msg.includes('connection reset') || msg.includes('socket hang up') || msg.includes('503') || msg.includes('504') || msg.includes("can't reach database server") || msg.includes('connection pool') || msg.includes('server has closed the connection') || msg.includes('10054')) {
     if (msg.includes('insufficient credits') || msg.includes('402') || msg.includes('validation')) {
       return false;
     }
@@ -54,8 +54,8 @@ function isTransientError(err) {
  * Execute a tool/function with bounded retries and exponential backoff + jitter
  */
 async function executeWithRetry(fn, options = {}) {
-  const maxRetries = options.maxRetries ?? 2;
-  const initialDelayMs = options.initialDelayMs ?? 100;
+  const maxRetries = options.maxRetries ?? 4;
+  const initialDelayMs = options.initialDelayMs ?? 300;
   let attempt = 0;
 
   while (attempt <= maxRetries) {
@@ -66,6 +66,17 @@ async function executeWithRetry(fn, options = {}) {
       if (attempt > maxRetries || !isTransientError(err)) {
         throw err;
       }
+      try {
+        const prisma = getPrismaClient();
+        if (prisma) {
+          const msg = (err.message || '').toLowerCase();
+          const code = (err.code || '').toLowerCase();
+          if (code === 'p1017' || msg.includes('server has closed the connection') || msg.includes('10054')) {
+            await prisma.$disconnect().catch(() => {});
+          }
+          await prisma.$connect().catch(() => {});
+        }
+      } catch (_) {}
       const jitter = Math.random() * 40;
       const delay = initialDelayMs * Math.pow(2, attempt - 1) + jitter;
       await new Promise(resolve => setTimeout(resolve, delay));
@@ -440,10 +451,12 @@ export const agentService = {
     const prisma = getPrismaClient();
     if (prisma) {
       try {
-        await prisma.organization.upsert({
-          where: { id: orgId },
-          update: {},
-          create: { id: orgId, name: 'Default Organization', planTier: 'FREE' }
+        await executeWithRetry(async () => {
+          await prisma.organization.upsert({
+            where: { id: orgId },
+            update: {},
+            create: { id: orgId, name: 'Default Organization', planTier: 'FREE' }
+          });
         });
       } catch {
         // Safe to ignore if org exists
@@ -459,7 +472,7 @@ export const agentService = {
       let validUserId = null;
       if (userId && prisma) {
         try {
-          const u = await prisma.user.findUnique({ where: { id: userId } });
+          const u = await executeWithRetry(() => prisma.user.findUnique({ where: { id: userId } }));
           if (u) validUserId = u.id;
         } catch {}
       }

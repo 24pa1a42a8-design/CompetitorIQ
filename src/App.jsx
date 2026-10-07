@@ -8,17 +8,14 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import ForgotPassword from './pages/ForgotPassword';
 import Dashboard from './pages/Dashboard';
-import AgentHeroPage from './pages/AgentHeroPage';
 
 export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          {/* ── Public Landing ── */}
-          <Route path="/" element={<AgentHeroPage />} />
-
           {/* ── Public Auth Routes ── */}
+          <Route path="/" element={<Login />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -42,7 +39,7 @@ export default function App() {
           />
 
           {/* ── Catch-all ── */}
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

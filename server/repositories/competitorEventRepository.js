@@ -1,10 +1,12 @@
-import { getPrismaClient } from '../config/database.js';
+import { getPrismaClient, executeWithDbRetry } from '../config/database.js';
+
+const executeWithRetry = executeWithDbRetry;
 
 export const competitorEventRepository = {
   async findById(id) {
     const prisma = getPrismaClient();
     if (!prisma) return null;
-    return prisma.competitorEvent.findUnique({
+    return executeWithRetry(() => prisma.competitorEvent.findUnique({
       where: { id },
       include: {
         competitor: true,
@@ -16,7 +18,7 @@ export const competitorEventRepository = {
         hiringSignals: true,
         fundingSignals: true
       }
-    });
+    }));
   },
 
   async findByCompetitor(competitorId, options = {}) {
@@ -33,7 +35,7 @@ export const competitorEventRepository = {
       if (options.endDate) where.eventDate.lte = new Date(options.endDate);
     }
 
-    return prisma.competitorEvent.findMany({
+    return executeWithRetry(() => prisma.competitorEvent.findMany({
       where,
       take: options.limit || 20,
       orderBy: { eventDate: 'desc' },
@@ -47,7 +49,7 @@ export const competitorEventRepository = {
         hiringSignals: true,
         fundingSignals: true
       }
-    });
+    }));
   },
 
   async searchEvents(options = {}) {
@@ -75,28 +77,57 @@ export const competitorEventRepository = {
       ];
     }
 
-    return prisma.competitorEvent.findMany({
+    return executeWithRetry(() => prisma.competitorEvent.findMany({
       where,
-      take: options.limit || 20,
+      take: options.limit || 50,
       skip: options.offset || 0,
       orderBy: { eventDate: 'desc' },
-      include: {
-        competitor: true,
-        source: true,
-        evidence: true,
-        pricingSignals: true,
-        productSignals: true,
-        messagingSignals: true,
-        hiringSignals: true,
-        fundingSignals: true
+      select: {
+        id: true,
+        organizationId: true,
+        competitorId: true,
+        sourceId: true,
+        eventType: true,
+        title: true,
+        summary: true,
+        description: true,
+        eventDate: true,
+        detectedAt: true,
+        importance: true,
+        confidence: true,
+        contentHash: true,
+        competitor: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            logo: true
+          }
+        },
+        source: {
+          select: {
+            id: true,
+            url: true,
+            publisher: true,
+            title: true
+          }
+        },
+        evidence: {
+          take: 1,
+          select: {
+            id: true,
+            excerpt: true,
+            evidenceType: true
+          }
+        }
       }
-    });
+    }));
   },
 
   async create(data) {
     const prisma = getPrismaClient();
     if (!prisma) throw new Error('Database is not configured.');
-    return prisma.competitorEvent.create({ data });
+    return executeWithRetry(() => prisma.competitorEvent.create({ data }));
   }
 };
 

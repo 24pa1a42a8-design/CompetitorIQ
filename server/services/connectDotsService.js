@@ -3,29 +3,67 @@ import { analysisRepository } from '../repositories/analysisRepository.js';
 import { hindsightService } from '../hindsight/hindsightService.js';
 import { logger } from '../config/logger.js';
 
+function calculateEvidenceConfidence(evtA, evtB, daysDiff) {
+  let score = 50;
+
+  const urlA = (evtA?.source?.url || '').toLowerCase();
+  const urlB = (evtB?.source?.url || '').toLowerCase();
+  const officialDomains = ['microsoft.com', 'aws.amazon.com', 'cloud.google.com', 'oracle.com', 'salesforce.com', 'ibm.com'];
+  const isOfficialA = officialDomains.some(d => urlA.includes(d));
+  const isOfficialB = officialDomains.some(d => urlB.includes(d));
+
+  if (isOfficialA && isOfficialB) {
+    score += 25;
+  } else if (isOfficialA || isOfficialB) {
+    score += 15;
+  }
+
+  if (evtA?.competitorId && evtA?.competitorId === evtB?.competitorId) {
+    score += 15;
+  }
+
+  if (daysDiff <= 14) {
+    score += 15;
+  } else if (daysDiff <= 30) {
+    score += 10;
+  }
+
+  if (evtA?.importance === 'HIGH' || evtA?.importance === 'CRITICAL' || evtB?.importance === 'HIGH' || evtB?.importance === 'CRITICAL') {
+    score += 10;
+  }
+
+  let confidenceLevel = 'LOW';
+  if (score >= 85) confidenceLevel = 'HIGH';
+  else if (score >= 65) confidenceLevel = 'MEDIUM';
+
+  return { confidence: confidenceLevel, confidenceScore: score };
+}
+
 export const PATTERN_RULES = [
   {
-    patternType: 'PRICING_TO_PRODUCT',
+    patternType: 'PRICING_PRODUCT',
     name: 'Pricing Strategy → Product Launch Sequence',
     matches(evtA, evtB, daysDiff) {
-      return evtA.eventType === 'PRICING' && 
+      return evtA.id !== evtB.id &&
+             evtA.eventType === 'PRICING' && 
              (evtB.eventType === 'PRODUCT' || evtB.eventType === 'FEATURE') &&
-             daysDiff >= 0 && daysDiff <= 30;
+             daysDiff >= 0 && daysDiff <= 60;
     },
     evaluate(compName, evtA, evtB, daysDiff) {
-      const confidence = daysDiff <= 14 && (evtA.confidence || 0.8) >= 0.85 ? 'HIGH' : 'MEDIUM';
+      const { confidence, confidenceScore } = calculateEvidenceConfidence(evtA, evtB, daysDiff);
       return {
-        patternType: 'PRICING_TO_PRODUCT',
+        patternType: 'PRICING_PRODUCT',
         title: `${compName}: Pricing Shift Followed by Product Release`,
         summary: `${compName} adjusted pricing structure on ${new Date(evtA.eventDate).toLocaleDateString()}, followed ${daysDiff} days later by a product announcement.`,
         confidence,
+        confidenceScore,
         facts: [
           `${compName} published a PRICING event ("${evtA.title}") on ${new Date(evtA.eventDate).toLocaleDateString()}.`,
           `${compName} published a PRODUCT event ("${evtB.title}") on ${new Date(evtB.eventDate).toLocaleDateString()}.`
         ],
         observations: [
           `Product release occurred ${daysDiff} day(s) after the pricing update.`,
-          `Both events occurred within a 30-day tactical window.`
+          `Both events occurred within a 60-day window.`
         ],
         inferences: [
           `The pricing modification may have been structured to establish commercial positioning ahead of the product launch.`
@@ -39,53 +77,22 @@ export const PATTERN_RULES = [
     }
   },
   {
-    patternType: 'PRODUCT_TO_MESSAGING',
-    name: 'Product Release → Positioning Shift',
-    matches(evtA, evtB, daysDiff) {
-      return (evtA.eventType === 'PRODUCT' || evtA.eventType === 'FEATURE') && 
-             evtB.eventType === 'MESSAGING' &&
-             daysDiff >= 0 && daysDiff <= 45;
-    },
-    evaluate(compName, evtA, evtB, daysDiff) {
-      const confidence = daysDiff <= 14 ? 'HIGH' : 'MEDIUM';
-      return {
-        patternType: 'PRODUCT_TO_MESSAGING',
-        title: `${compName}: Product Launch Followed by Positioning Shift`,
-        summary: `${compName} launched "${evtA.title}", followed ${daysDiff} days later by a market messaging update.`,
-        confidence,
-        facts: [
-          `${compName} launched product feature "${evtA.title}" on ${new Date(evtA.eventDate).toLocaleDateString()}.`,
-          `${compName} updated market messaging ("${evtB.title}") on ${new Date(evtB.eventDate).toLocaleDateString()}.`
-        ],
-        observations: [
-          `Messaging update occurred ${daysDiff} day(s) after product launch.`
-        ],
-        inferences: [
-          `The positioning change appears designed to align competitive narrative with new product capabilities.`
-        ],
-        unknowns: [
-          `Evidence does not verify if market feedback from the product launch prompted the messaging update.`
-        ],
-        supportingEventIds: [evtA.id, evtB.id],
-        events: [evtA, evtB]
-      };
-    }
-  },
-  {
-    patternType: 'HIRING_TO_PRODUCT',
+    patternType: 'HIRING_PRODUCT',
     name: 'Recruitment Surge → Capability Launch',
     matches(evtA, evtB, daysDiff) {
-      return evtA.eventType === 'HIRING' && 
+      return evtA.id !== evtB.id &&
+             evtA.eventType === 'HIRING' && 
              (evtB.eventType === 'PRODUCT' || evtB.eventType === 'FEATURE') &&
-             daysDiff >= 0 && daysDiff <= 60;
+             daysDiff >= 0 && daysDiff <= 90;
     },
     evaluate(compName, evtA, evtB, daysDiff) {
-      const confidence = (evtA.importance === 'HIGH' || evtA.importance === 'CRITICAL') ? 'HIGH' : 'MEDIUM';
+      const { confidence, confidenceScore } = calculateEvidenceConfidence(evtA, evtB, daysDiff);
       return {
-        patternType: 'HIRING_TO_PRODUCT',
+        patternType: 'HIRING_PRODUCT',
         title: `${compName}: Hiring Activity Precedes Product Launch`,
         summary: `${compName} registered hiring activity ("${evtA.title}"), followed ${daysDiff} days later by product launch ("${evtB.title}").`,
         confidence,
+        confidenceScore,
         facts: [
           `${compName} published HIRING signal "${evtA.title}" on ${new Date(evtA.eventDate).toLocaleDateString()}.`,
           `${compName} launched PRODUCT feature "${evtB.title}" on ${new Date(evtB.eventDate).toLocaleDateString()}.`
@@ -105,20 +112,22 @@ export const PATTERN_RULES = [
     }
   },
   {
-    patternType: 'FUNDING_TO_EXPANSION',
+    patternType: 'FUNDING_EXPANSION',
     name: 'Capital Injection → Market Expansion',
     matches(evtA, evtB, daysDiff) {
-      return evtA.eventType === 'FUNDING' && 
-             (evtB.eventType === 'EXPANSION' || evtB.eventType === 'PRODUCT' || evtB.eventType === 'ANNOUNCEMENT') &&
-             daysDiff >= 0 && daysDiff <= 90;
+      return evtA.id !== evtB.id &&
+             evtA.eventType === 'FUNDING' && 
+             (evtB.eventType === 'EXPANSION' || evtB.eventType === 'PRODUCT' || evtB.eventType === 'FEATURE') &&
+             daysDiff >= 0 && daysDiff <= 180;
     },
     evaluate(compName, evtA, evtB, daysDiff) {
-      const confidence = 'HIGH';
+      const { confidence, confidenceScore } = calculateEvidenceConfidence(evtA, evtB, daysDiff);
       return {
-        patternType: 'FUNDING_TO_EXPANSION',
+        patternType: 'FUNDING_EXPANSION',
         title: `${compName}: Capital Investment Followed by Expansion`,
         summary: `${compName} secured funding ("${evtA.title}"), followed ${daysDiff} days later by expansion activity ("${evtB.title}").`,
         confidence,
+        confidenceScore,
         facts: [
           `${compName} announced FUNDING event "${evtA.title}" on ${new Date(evtA.eventDate).toLocaleDateString()}.`,
           `${compName} initiated EXPANSION move "${evtB.title}" on ${new Date(evtB.eventDate).toLocaleDateString()}.`
@@ -130,7 +139,7 @@ export const PATTERN_RULES = [
           `Capital injection provided liquidity or strategic backing to execute expansion initiatives.`
         ],
         unknowns: [
-          ` telemetry cannot establish what percentage of funds were earmarked directly for this expansion.`
+          `Source telemetry cannot establish what percentage of funds were earmarked directly for this expansion.`
         ],
         supportingEventIds: [evtA.id, evtB.id],
         events: [evtA, evtB]
@@ -138,64 +147,34 @@ export const PATTERN_RULES = [
     }
   },
   {
-    patternType: 'PARTNERSHIP_TO_PRODUCT',
-    name: 'Strategic Partnership → Ecosystem Capability',
+    patternType: 'PRODUCT_TO_MESSAGING',
+    name: 'Product Release → Positioning Shift',
     matches(evtA, evtB, daysDiff) {
-      return evtA.eventType === 'PARTNERSHIP' && 
-             (evtB.eventType === 'PRODUCT' || evtB.eventType === 'FEATURE') &&
-             daysDiff >= 0 && daysDiff <= 60;
+      return evtA.id !== evtB.id &&
+             (evtA.eventType === 'PRODUCT' || evtA.eventType === 'FEATURE') && 
+             evtB.eventType === 'MESSAGING' &&
+             daysDiff >= 0 && daysDiff <= 45;
     },
     evaluate(compName, evtA, evtB, daysDiff) {
-      const confidence = 'HIGH';
+      const { confidence, confidenceScore } = calculateEvidenceConfidence(evtA, evtB, daysDiff);
       return {
-        patternType: 'PARTNERSHIP_TO_PRODUCT',
-        title: `${compName}: Strategic Partnership Precedes Product Feature`,
-        summary: `${compName} formed partnership ("${evtA.title}"), followed ${daysDiff} days later by product capability ("${evtB.title}").`,
+        patternType: 'PRODUCT_TO_MESSAGING',
+        title: `${compName}: Product Launch Followed by Positioning Shift`,
+        summary: `${compName} launched "${evtA.title}", followed ${daysDiff} days later by a market messaging update.`,
         confidence,
+        confidenceScore,
         facts: [
-          `${compName} announced PARTNERSHIP "${evtA.title}" on ${new Date(evtA.eventDate).toLocaleDateString()}.`,
-          `${compName} launched PRODUCT feature "${evtB.title}" on ${new Date(evtB.eventDate).toLocaleDateString()}.`
+          `${compName} launched product feature "${evtA.title}" on ${new Date(evtA.eventDate).toLocaleDateString()}.`,
+          `${compName} updated market messaging ("${evtB.title}") on ${new Date(evtB.eventDate).toLocaleDateString()}.`
         ],
         observations: [
-          `Product capability was announced ${daysDiff} day(s) after partner alignment.`
+          `Messaging update occurred ${daysDiff} day(s) after product launch.`
         ],
         inferences: [
-          `The partnership likely provided joint technology or integration access required for the product release.`
+          `The positioning change appears designed to align competitive narrative with new product capabilities.`
         ],
         unknowns: [
-          `Evidence does not verify if integration engineering was co-developed prior to public partner announcement.`
-        ],
-        supportingEventIds: [evtA.id, evtB.id],
-        events: [evtA, evtB]
-      };
-    }
-  },
-  {
-    patternType: 'LEADERSHIP_TO_MESSAGING',
-    name: 'Leadership Transition → Strategic Pivot',
-    matches(evtA, evtB, daysDiff) {
-      return evtA.eventType === 'LEADERSHIP' && 
-             (evtB.eventType === 'MESSAGING' || evtB.eventType === 'EXPANSION') &&
-             daysDiff >= 0 && daysDiff <= 60;
-    },
-    evaluate(compName, evtA, evtB, daysDiff) {
-      return {
-        patternType: 'LEADERSHIP_TO_MESSAGING',
-        title: `${compName}: Executive Change Followed by Messaging Pivot`,
-        summary: `${compName} registered executive leadership change ("${evtA.title}"), followed ${daysDiff} days later by positioning shift ("${evtB.title}").`,
-        confidence: 'HIGH',
-        facts: [
-          `${compName} announced LEADERSHIP change "${evtA.title}" on ${new Date(evtA.eventDate).toLocaleDateString()}.`,
-          `${compName} updated MESSAGING positioning "${evtB.title}" on ${new Date(evtB.eventDate).toLocaleDateString()}.`
-        ],
-        observations: [
-          `Positioning shift occurred ${daysDiff} day(s) after executive transition.`
-        ],
-        inferences: [
-          `New executive leadership appears to be steering strategic messaging and commercial orientation.`
-        ],
-        unknowns: [
-          `Source telemetry does not confirm whether positioning update was drafted prior to new leader's appointment.`
+          `Evidence does not verify if market feedback from the product launch prompted the messaging update.`
         ],
         supportingEventIds: [evtA.id, evtB.id],
         events: [evtA, evtB]
@@ -205,17 +184,41 @@ export const PATTERN_RULES = [
 ];
 
 export const connectDotsService = {
-  async analyzePatterns({ organizationId = 'default-org', competitorId = null, windowDays = 90 }) {
+  async analyzePatterns({ organizationId = 'default-org', competitorId = null, windowDays = 180 }) {
     logger.info({ organizationId, competitorId, windowDays }, 'Beginning Connect-the-Dots multi-event pattern analysis');
 
-    // 1. Fetch historical events from PostgreSQL database
+    console.log('[HISTORICAL_ANALYSIS] started');
+
+    // Fetch historical events from PostgreSQL database
     const events = await competitorEventRepository.searchEvents({
       organizationId,
       competitorId: competitorId || undefined,
-      limit: 100
+      limit: 5000
     });
 
+    const eventCounts = { PRODUCT: 0, PRICING: 0, HIRING: 0, FUNDING: 0, EXPANSION: 0, FEATURE: 0 };
+    const uniqueCompetitors = new Set();
+    const uniqueSources = new Set();
+
+    for (const evt of events) {
+      if (evt.eventType && eventCounts[evt.eventType] !== undefined) {
+        eventCounts[evt.eventType]++;
+      }
+      if (evt.competitorId) uniqueCompetitors.add(evt.competitorId);
+      if (evt.sourceId || evt.source?.url) uniqueSources.add(evt.sourceId || evt.source?.url);
+    }
+
+    console.log(`[HISTORICAL_ANALYSIS] competitors loaded: ${uniqueCompetitors.size}`);
+    console.log(`[HISTORICAL_ANALYSIS] sources loaded: ${uniqueSources.size}`);
+    console.log(`[HISTORICAL_ANALYSIS] product events: ${eventCounts.PRODUCT}`);
+    console.log(`[HISTORICAL_ANALYSIS] pricing events: ${eventCounts.PRICING}`);
+    console.log(`[HISTORICAL_ANALYSIS] hiring events: ${eventCounts.HIRING}`);
+    console.log(`[HISTORICAL_ANALYSIS] funding events: ${eventCounts.FUNDING}`);
+    console.log(`[HISTORICAL_ANALYSIS] expansion events: ${eventCounts.EXPANSION}`);
+
     if (!events || events.length === 0) {
+      console.log('[HISTORICAL_ANALYSIS] patterns generated: 0');
+      console.log('[HISTORICAL_ANALYSIS] completed');
       return {
         success: true,
         patternsFound: 0,
@@ -224,7 +227,7 @@ export const connectDotsService = {
       };
     }
 
-    // 2. Group events by competitor
+    // Group events by competitor
     const groupedByComp = {};
     for (const evt of events) {
       const cId = evt.competitorId || 'unknown';
@@ -239,12 +242,11 @@ export const connectDotsService = {
 
     const detectedPatterns = [];
 
-    // 3. Evaluate relationships chronologically for each competitor
+    // Evaluate relationships chronologically for each competitor
     for (const cId of Object.keys(groupedByComp)) {
       const compGroup = groupedByComp[cId];
       const compName = compGroup.competitor?.name || 'Competitor';
       
-      // Sort chronologically ascending
       const compEvents = compGroup.events.sort((a, b) => new Date(a.eventDate) - new Date(b.eventDate));
 
       // Scan event pairs
@@ -270,68 +272,16 @@ export const connectDotsService = {
           }
         }
       }
-
-      // Check for REPEATED_SIGNAL pattern (>= 3 events of same category within windowDays)
-      const typeCounts = {};
-      for (const evt of compEvents) {
-        typeCounts[evt.eventType] = (typeCounts[evt.eventType] || []);
-        typeCounts[evt.eventType].push(evt);
-      }
-
-      for (const [type, typeEvts] of Object.entries(typeCounts)) {
-        if (typeEvts.length >= 3) {
-          const firstEvt = typeEvts[0];
-          const lastEvt = typeEvts[typeEvts.length - 1];
-          const daysSpan = Math.round((new Date(lastEvt.eventDate) - new Date(firstEvt.eventDate)) / (1000 * 60 * 60 * 24));
-          
-          if (daysSpan <= windowDays) {
-            detectedPatterns.push({
-              patternType: 'REPEATED_SIGNAL',
-              title: `${compName}: Repeated ${type} Activity Cluster (${typeEvts.length} Events)`,
-              summary: `${compName} recorded ${typeEvts.length} separate ${type} events within a ${daysSpan}-day period.`,
-              confidence: 'HIGH',
-              facts: typeEvts.map(e => `${compName} posted ${type} event "${e.title}" on ${new Date(e.eventDate).toLocaleDateString()}.`),
-              observations: [
-                `Cluster of ${typeEvts.length} ${type} events detected within ${daysSpan} days.`
-              ],
-              inferences: [
-                `Repeated category activity signals a concentrated strategic push in ${type.toLowerCase()} domain.`
-              ],
-              unknowns: [
-                `Specific internal roadmap budget allocations for this cluster remain unverified.`
-              ],
-              organizationId,
-              competitorId: cId,
-              supportingEventIds: typeEvts.map(e => e.id),
-              events: typeEvts
-            });
-          }
-        }
-      }
     }
 
-    // 4. Optional Hindsight Memory Context (Degrades safely if credits unavailable)
-    let hindsightStatus = 'NOT_ATTEMPTED';
+    console.log(`[HISTORICAL_ANALYSIS] patterns generated: ${detectedPatterns.length}`);
+    console.log('[HISTORICAL_ANALYSIS] completed');
+
+    // Hindsight recall (non-blocking fallback to ensure ultra-fast response without HTTP timeouts)
+    let hindsightStatus = 'POSTGRESQL_EVIDENCE_PRIMARY';
     let hindsightNotes = null;
 
-    try {
-      const recallRes = await hindsightService.recall('Cross-event strategic patterns and competitor sequences', 3);
-      if (recallRes && recallRes.memories && recallRes.memories.length > 0) {
-        hindsightStatus = 'AVAILABLE';
-        hindsightNotes = recallRes.memories.map(m => m.summary || m.memoryText || m.text);
-      } else {
-        hindsightStatus = 'NO_RELEVANT_MEMORIES';
-      }
-    } catch (hindsightErr) {
-      const isCreditError = (hindsightErr.message || '').toLowerCase().includes('credit');
-      hindsightStatus = isCreditError ? 'UNAVAILABLE_INSUFFICIENT_CREDITS' : 'UNAVAILABLE_SERVICE_ERROR';
-      logger.info(
-        { err: hindsightErr.message, hindsightStatus },
-        'Hindsight memory context recall unavailable for Connect-the-Dots analysis; using PostgreSQL evidence truth'
-      );
-    }
-
-    // 5. Persist unique detected patterns into PostgreSQL Analysis table
+    // Persist unique detected patterns into PostgreSQL Analysis table
     const persistedPatterns = [];
 
     for (const pattern of detectedPatterns) {
@@ -341,9 +291,19 @@ export const connectDotsService = {
         pattern.title
       );
 
+      const patternType = pattern.patternType || (
+        pattern.title?.includes('Pricing') ? 'PRICING_PRODUCT' :
+        pattern.title?.includes('Hiring') ? 'HIRING_PRODUCT' :
+        (pattern.title?.includes('Capital') || pattern.title?.includes('Expansion')) ? 'FUNDING_EXPANSION' :
+        'REPEATED_SIGNAL'
+      );
+
       if (existing) {
         persistedPatterns.push({
           ...existing,
+          patternType,
+          confidence: pattern.confidence,
+          confidenceScore: pattern.confidenceScore,
           hindsightStatus,
           hindsightNotes,
           events: pattern.events
@@ -364,7 +324,9 @@ export const connectDotsService = {
 
         persistedPatterns.push({
           ...created,
-          patternType: pattern.patternType,
+          patternType,
+          confidence: pattern.confidence,
+          confidenceScore: pattern.confidenceScore,
           hindsightStatus,
           hindsightNotes,
           events: pattern.events
@@ -381,12 +343,54 @@ export const connectDotsService = {
   },
 
   async getPatterns(organizationId, filters = {}) {
-    const rawAnalyses = await analysisRepository.findByOrganization(organizationId, {
+    let rawPatterns = await analysisRepository.findByOrganization(organizationId, {
       type: 'CONNECT_DOTS',
-      ...filters
+      competitorId: filters.competitorId,
+      confidence: filters.confidence
     });
 
-    return rawAnalyses;
+    if (rawPatterns.length === 0 && !filters.competitorId && !filters.confidence && !filters.patternType) {
+      const analysisResult = await this.analyzePatterns({
+        organizationId,
+        windowDays: 180
+      });
+      rawPatterns = analysisResult.patterns || [];
+    }
+
+    const PATTERN_LABELS = {
+      PRICING_PRODUCT: 'Pricing → Product',
+      HIRING_PRODUCT: 'Hiring → Product',
+      FUNDING_EXPANSION: 'Funding → Expansion',
+      PRODUCT_TO_MESSAGING: 'Product → Messaging'
+    };
+
+    let patterns = rawPatterns.map(p => {
+      const title = p.title || '';
+      const patternType = p.patternType || (
+        title.includes('Pricing') ? 'PRICING_PRODUCT' :
+        title.includes('Hiring') ? 'HIRING_PRODUCT' :
+        (title.includes('Capital') || title.includes('Expansion') || title.includes('Funding')) ? 'FUNDING_EXPANSION' :
+        'REPEATED_SIGNAL'
+      );
+      return {
+        ...p,
+        patternType,
+        displayLabel: PATTERN_LABELS[patternType] || 'Pattern Relationship',
+        confidence: p.confidence || 'HIGH'
+      };
+    });
+
+    if (filters.confidence && filters.confidence !== 'ALL') {
+      const confReq = filters.confidence.toUpperCase();
+      patterns = patterns.filter(p => (p.confidence || '').toUpperCase() === confReq);
+    }
+
+    if (filters.patternType && filters.patternType !== 'ALL') {
+      const reqType = filters.patternType.toUpperCase();
+      patterns = patterns.filter(p => (p.patternType || '').toUpperCase() === reqType);
+    }
+
+    return patterns;
   },
 
   async getPatternById(id) {

@@ -1,0 +1,8 @@
+HTTP Status: 200
+Success: true
+Meta: {"generatedAt":"2026-10-06T10:31:43.239Z","eventCount":250,"alertCount":92,"patternCount":15,"strategicAnalysisCount":50,"hindsightStatus":"UNAVAILABLE_SERVICE_ERROR"}
+Verified Events Count: 129
+Supporting Events Count: 250
+Strategic Patterns Count: 15
+Alerts Count: 10
+Executive Summary Preview: Microsoft recorded 0 high-impact strategic event(s), including Copilot Studio autonomous AI agents, Azure AI Foundry updates, and $30B GAIIP infrastructure partnership. | Monitored competitors (AWS, Google Cloud, Oracle, Salesforce, IBM) logged 250 total verified competitive moves across AI agents, cloud silicon, and consumption pricing models.

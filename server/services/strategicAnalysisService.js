@@ -188,7 +188,9 @@ export const strategicAnalysisService = {
 
     try {
       const recallQuery = `Strategic competitor trajectory patterns over ${validWindow} days`;
-      const recallRes = await hindsightService.recall(recallQuery, 3);
+      const recallPromise = hindsightService.recall(recallQuery, 3);
+      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Hindsight recall timeout after 1.5s')), 1500));
+      const recallRes = await Promise.race([recallPromise, timeoutPromise]);
       if (recallRes && recallRes.memories && recallRes.memories.length > 0) {
         hindsightStatus = 'AVAILABLE';
         hindsightMemoryNotes = recallRes.memories.map(m => m.summary || m.memoryText || m.text);
@@ -431,7 +433,7 @@ export const strategicAnalysisService = {
     });
 
     // Format & unpack inferences JSON if needed
-    return rawAnalyses.map(a => {
+    const formatted = rawAnalyses.map(a => {
       let inferencesPayload = a.inferences || {};
       let inferencesList = [];
       let implications = [];
@@ -447,6 +449,16 @@ export const strategicAnalysisService = {
         momentumMetrics = inferencesPayload.momentumMetrics || null;
       }
 
+      // Infer type from title if not explicitly set
+      if (analysisType === 'COMPETITIVE_MOMENTUM' && a.title) {
+        for (const typeCandidate of SUPPORTED_ANALYSIS_TYPES) {
+          if (a.title.includes(typeCandidate.replace(/_/g, ' '))) {
+            analysisType = typeCandidate;
+            break;
+          }
+        }
+      }
+
       return {
         ...a,
         analysisType,
@@ -455,6 +467,12 @@ export const strategicAnalysisService = {
         momentumMetrics
       };
     });
+
+    if (filters.analysisType && filters.analysisType !== 'ALL') {
+      return formatted.filter(a => a.analysisType === filters.analysisType);
+    }
+
+    return formatted;
   },
 
   async getAnalysisById(id) {

@@ -3,7 +3,9 @@ import {
   BarChart3, Check, Sparkles, RefreshCw, AlertCircle,
   Eye, TrendingUp, TrendingDown, ShieldAlert, Cpu, X, FileText
 } from 'lucide-react';
-import HindsightFlowWidget from '../components/common/HindsightFlowWidget';
+import CompetitiveActivityChart from '../components/charts/CompetitiveActivityChart';
+import CategoryActivityChart from '../components/charts/CategoryActivityChart';
+import CompetitiveTrendChart from '../components/charts/CompetitiveTrendChart';
 import apiService from '../services/apiService';
 
 const CATEGORY_ROWS = [
@@ -44,8 +46,11 @@ export default function CompetitiveComparisonView({ onNavigate, onOpenEvidence, 
     loadCompetitorsList();
   }, []);
 
+  const reqIdRef = React.useRef(0);
+
   // Fetch comparison matrix when selected competitors or windowDays change
   const fetchComparison = async () => {
+    const currentReqId = ++reqIdRef.current;
     setLoading(true);
     setError(null);
     try {
@@ -57,12 +62,17 @@ export default function CompetitiveComparisonView({ onNavigate, onOpenEvidence, 
       if (dateFilter?.endDate) params.endDate = dateFilter.endDate;
 
       const res = await apiService.getCompetitiveComparison(params);
+      if (currentReqId !== reqIdRef.current) return;
       const matrix = res?.data?.competitors ? res.data : (res?.competitors ? res : res?.data || null);
       setComparisonData(matrix);
     } catch (err) {
+      if (currentReqId !== reqIdRef.current) return;
+      if (err.name === 'AbortError' || err.isCancelled) return;
       setError(err.message || 'Failed to generate competitive comparison matrix.');
     } finally {
-      setLoading(false);
+      if (currentReqId === reqIdRef.current) {
+        setLoading(false);
+      }
     }
   };
 
@@ -83,14 +93,7 @@ export default function CompetitiveComparisonView({ onNavigate, onOpenEvidence, 
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6 font-sans text-slate-800">
-      {/* Hindsight Intelligence Banner */}
-      <HindsightFlowWidget 
-        variant="banner" 
-        defaultStage="recall" 
-        stageMessage="Recalling cross-competitor technical architectures, feature matrices, and pricing structures from memory" 
-        memoriesCount={comparedCompetitors.length}
-        confidenceScore="96%"
-      />
+
 
       {/* Header Banner */}
       <div className="bg-slate-900 text-white p-7 rounded-2xl border border-slate-800 shadow-md flex flex-col md:flex-row items-start justify-between gap-4">
@@ -190,7 +193,7 @@ export default function CompetitiveComparisonView({ onNavigate, onOpenEvidence, 
         </div>
       )}
 
-      {/* Main Comparison Matrix Display */}
+      {/* Main Comparison Display */}
       {!loading && !error && comparedCompetitors.length > 0 && (
         <div className="space-y-6">
           {/* Status & Timeframe Legend */}
@@ -210,6 +213,18 @@ export default function CompetitiveComparisonView({ onNavigate, onOpenEvidence, 
                   DEGRADED (POSTGRESQL TRUTH)
                 </span>
               )}
+            </div>
+          </div>
+
+          {/* NEW VISUAL ANALYTICS SECTION: GRAPH 1, GRAPH 2, GRAPH 3 */}
+          <div className="space-y-6">
+            {/* Graph 1: Competitive Activity Overview Bar Chart */}
+            <CompetitiveActivityChart competitors={comparedCompetitors} />
+
+            {/* Graphs 2 & 3 Grid: Activity by Dimension & Activity Trend */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <CategoryActivityChart competitors={comparedCompetitors} />
+              <CompetitiveTrendChart competitors={comparedCompetitors} windowDays={windowDays} />
             </div>
           </div>
 

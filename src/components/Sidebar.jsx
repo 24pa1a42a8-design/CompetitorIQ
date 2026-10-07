@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { BrandHeader } from './common/BrandLogo';
+import CompetitorLogo from './common/CompetitorLogo';
 
 export default function Sidebar({ currentView, setCurrentView, selectedCompetitor = 'Microsoft', setSelectedCompetitor }) {
   const { user, logout } = useAuth();
@@ -39,12 +40,12 @@ export default function Sidebar({ currentView, setCurrentView, selectedCompetito
   ];
 
   const competitorList = [
-    { id: 'Microsoft', name: 'Microsoft (Focal)', color: 'bg-blue-600 text-white', icon: 'M', isFocal: true },
-    { id: 'Google Cloud', name: 'Google Cloud', color: 'bg-emerald-600 text-white', icon: 'G' },
-    { id: 'AWS', name: 'AWS', color: 'bg-[#ea580c] text-white', icon: 'A' },
-    { id: 'Oracle', name: 'Oracle', color: 'bg-orange-600 text-white', icon: 'O' },
-    { id: 'IBM', name: 'IBM', color: 'bg-amber-600 text-white', icon: 'I' },
-    { id: 'Salesforce', name: 'Salesforce', color: 'bg-stone-700 text-white', icon: 'S' }
+    { id: 'Microsoft', name: 'Microsoft (Focal)', isFocal: true },
+    { id: 'Google Cloud', name: 'Google Cloud' },
+    { id: 'AWS', name: 'AWS' },
+    { id: 'Oracle', name: 'Oracle' },
+    { id: 'IBM', name: 'IBM' },
+    { id: 'Salesforce', name: 'Salesforce' }
   ];
 
   return (
@@ -109,9 +110,7 @@ export default function Sidebar({ currentView, setCurrentView, selectedCompetito
                       : 'text-slate-600 hover:text-slate-900 hover:bg-stone-100/60'
                   }`}
                 >
-                  <div className={`w-6 h-6 rounded-lg ${comp.color} flex items-center justify-center font-bold text-[11px] shrink-0`}>
-                    {comp.icon}
-                  </div>
+                  <CompetitorLogo name={comp.id} size={16} showContainer />
                   <span className="truncate">{comp.name}</span>
                 </button>
               );

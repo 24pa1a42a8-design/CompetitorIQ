@@ -1,26 +1,26 @@
-import { getPrismaClient } from '../config/database.js';
+import { getPrismaClient, executeWithDbRetry } from '../config/database.js';
 
 export const sourceRepository = {
   async findById(id) {
     const prisma = getPrismaClient();
     if (!prisma) return null;
-    return prisma.source.findUnique({ where: { id } });
+    return executeWithDbRetry(() => prisma.source.findUnique({ where: { id } }));
   },
 
   async findByUrl(organizationId, url) {
     const prisma = getPrismaClient();
     if (!prisma) return null;
-    return prisma.source.findUnique({
+    return executeWithDbRetry(() => prisma.source.findUnique({
       where: {
         organizationId_url: { organizationId, url }
       }
-    });
+    }));
   },
 
   async upsertSource(data) {
     const prisma = getPrismaClient();
     if (!prisma) throw new Error('Database is not configured.');
-    return prisma.source.upsert({
+    return executeWithDbRetry(() => prisma.source.upsert({
       where: {
         organizationId_url: {
           organizationId: data.organizationId,
@@ -33,7 +33,7 @@ export const sourceRepository = {
         collectedAt: new Date()
       },
       create: data
-    });
+    }));
   }
 };
 

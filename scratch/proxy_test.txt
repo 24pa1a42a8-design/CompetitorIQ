@@ -1,0 +1,2 @@
+Direct Express (5000): HTTP 200, duration 88262ms, success: true, eventCount: 100
+Vite Proxy (5174): HTTP 200, duration 60112ms, success: true, eventCount: 100

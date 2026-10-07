@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   ArrowLeft, ExternalLink, Plus, Globe, Calendar, MapPin, 
   Sparkles, PieChart, BarChart2, Users, Activity, TrendingUp, 
   ChevronDown, RefreshCw, AlertCircle
 } from 'lucide-react';
 import HindsightFlowWidget from '../components/common/HindsightFlowWidget';
+import CompetitorLogo from '../components/common/CompetitorLogo';
 import apiService from '../services/apiService';
 
 export default function CompetitorProfileView({ onNavigate, selectedCompetitor = 'Oracle', onOpenEvidence, dateFilter }) {
@@ -14,27 +15,50 @@ export default function CompetitorProfileView({ onNavigate, selectedCompetitor =
   const [error, setError] = useState(null);
 
   const compName = typeof selectedCompetitor === 'string' ? selectedCompetitor : 'Oracle';
+  const reqIdRef = useRef(0);
+  const abortControllerRef = useRef(null);
 
   const fetchProfileData = async () => {
+    reqIdRef.current += 1;
+    const currentReqId = reqIdRef.current;
+
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     setLoading(true);
     setError(null);
     try {
-      const params = { query: compName, limit: 30 };
+      const params = { query: compName, limit: 30, signal: controller.signal };
       if (dateFilter?.startDate) params.startDate = dateFilter.startDate;
       if (dateFilter?.endDate) params.endDate = dateFilter.endDate;
 
       const res = await apiService.getEvents(params);
+      if (currentReqId !== reqIdRef.current) return;
+
       const rawEvents = res?.data?.events || res?.data || [];
       setEvents(Array.isArray(rawEvents) ? rawEvents : []);
     } catch (err) {
-      setError(err.message || 'Failed to load competitor events.');
+      if (err.name === 'AbortError' || err.isCancelled) return;
+      if (currentReqId === reqIdRef.current) {
+        setError(err.message || 'Failed to load competitor events.');
+      }
     } finally {
-      setLoading(false);
+      if (currentReqId === reqIdRef.current) {
+        setLoading(false);
+      }
     }
   };
 
   useEffect(() => {
     fetchProfileData();
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
   }, [selectedCompetitor, dateFilter?.startDate, dateFilter?.endDate]);
 
   return (
@@ -61,9 +85,7 @@ export default function CompetitorProfileView({ onNavigate, selectedCompetitor =
       <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-2xs space-y-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-orange-600 text-white font-black text-2xl flex items-center justify-center shadow-xs">
-              {compName[0]}
-            </div>
+            <CompetitorLogo name={compName} size={36} showContainer containerClassName="w-14 h-14 rounded-2xl" />
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-2xl font-black text-slate-900 tracking-tight">{compName}</h1>

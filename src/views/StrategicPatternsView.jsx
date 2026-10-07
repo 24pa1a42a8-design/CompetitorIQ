@@ -4,7 +4,6 @@ import {
   Activity, CheckCircle2, TrendingUp, Sparkles, RefreshCw, AlertCircle,
   BarChart3, HelpCircle, Layers, Eye, Cpu, ChevronRight, X
 } from 'lucide-react';
-import HindsightFlowWidget from '../components/common/HindsightFlowWidget';
 import apiService from '../services/apiService';
 
 const ANALYSIS_TYPES = [
@@ -37,7 +36,10 @@ export default function StrategicPatternsView({ onNavigate, onOpenEvidence, date
   // Detail Modal / Traceability
   const [selectedAnalysis, setSelectedAnalysis] = useState(null);
 
+  const reqIdRef = React.useRef(0);
+
   const loadData = async () => {
+    const currentReqId = ++reqIdRef.current;
     setLoading(true);
     setError(null);
     try {
@@ -54,6 +56,8 @@ export default function StrategicPatternsView({ onNavigate, onOpenEvidence, date
         apiService.getCompetitors().catch(() => ({ data: [] }))
       ]);
 
+      if (currentReqId !== reqIdRef.current) return;
+
       let loadedAnalyses = analysesRes?.data || [];
       if (loadedAnalyses.length === 0 && !selectedCompetitor && selectedType === 'ALL') {
         try {
@@ -68,13 +72,18 @@ export default function StrategicPatternsView({ onNavigate, onOpenEvidence, date
         }
       }
 
+      if (currentReqId !== reqIdRef.current) return;
       setAnalyses(Array.isArray(loadedAnalyses) ? loadedAnalyses : []);
       const comps = compRes?.data || [];
       setCompetitors(Array.isArray(comps) ? comps : []);
     } catch (err) {
+      if (currentReqId !== reqIdRef.current) return;
+      if (err.name === 'AbortError' || err.isCancelled) return;
       setError(err.message || 'Failed to load strategic intelligence analyses.');
     } finally {
-      setLoading(false);
+      if (currentReqId === reqIdRef.current) {
+        setLoading(false);
+      }
     }
   };
 
@@ -119,14 +128,7 @@ export default function StrategicPatternsView({ onNavigate, onOpenEvidence, date
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6 font-sans text-slate-800">
-      {/* Hindsight Banner */}
-      <HindsightFlowWidget 
-        variant="banner" 
-        defaultStage="reflect" 
-        stageMessage="Synthesizing multi-quarter competitor trajectories, event velocity ratios, and strategic implications" 
-        memoriesCount={analyses.length}
-        confidenceScore="95%"
-      />
+
 
       {/* Hero Header */}
       <div className="bg-slate-900 text-white p-7 rounded-2xl border border-slate-800 shadow-md flex flex-col md:flex-row items-start justify-between gap-4">

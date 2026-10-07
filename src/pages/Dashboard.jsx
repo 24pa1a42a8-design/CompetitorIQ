@@ -233,6 +233,12 @@ export default function Dashboard() {
           currentView={currentView} 
           setCurrentView={setCurrentView}
           selectedCompetitor={selectedCompetitor}
+          onSelectCompetitor={(id) => {
+            setSelectedCompetitor(id);
+            setCurrentView('competitor_profile');
+          }}
+          onOpenEvidence={handleOpenEvidence}
+          onNavigate={handleNavigate}
           breadcrumbs={breadcrumbsMap[currentView] || []}
           dateFilter={dateFilter}
           onDateChange={setDateFilter}

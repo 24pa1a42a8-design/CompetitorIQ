@@ -1,0 +1,13 @@
+{
+  "countsByCompany": {
+    "Microsoft": 0,
+    "AWS": 315,
+    "Google Cloud": 56,
+    "Oracle": 90,
+    "Salesforce": 14,
+    "IBM": 14
+  },
+  "totalEvents": 1475,
+  "totalSources": 651,
+  "totalAlerts": 746
+}

@@ -6,6 +6,8 @@ import {
 } from 'lucide-react';
 import HindsightFlowWidget from '../components/common/HindsightFlowWidget';
 import MonitoringStatusWidget from '../components/common/MonitoringStatusWidget';
+import CompetitorLogo from '../components/common/CompetitorLogo';
+import CompetitorIQLogo from '../components/common/CompetitorIQLogo';
 import apiService from '../services/apiService';
 
 export default function DashboardView({ onNavigate, onNavigateToAgent, onSelectCompetitor, onOpenEvidence, dateFilter }) {
@@ -55,7 +57,10 @@ export default function DashboardView({ onNavigate, onNavigateToAgent, onSelectC
     }
   };
 
+  const reqIdRef = React.useRef(0);
+
   const fetchDashboardData = async () => {
+    const currentReqId = ++reqIdRef.current;
     setLoading(true);
     setError(null);
     try {
@@ -69,6 +74,8 @@ export default function DashboardView({ onNavigate, onNavigateToAgent, onSelectC
         apiService.getHindsightStatus().catch(() => null)
       ]);
 
+      if (currentReqId !== reqIdRef.current) return;
+
       const rawEvents = eventsRes?.data?.events || eventsRes?.data || eventsRes?.events || [];
       const evts = Array.isArray(rawEvents) ? rawEvents : [];
       const rawComps = compRes?.data || [];
@@ -78,9 +85,13 @@ export default function DashboardView({ onNavigate, onNavigateToAgent, onSelectC
       setCompetitors(comps);
       setHindsightStatus(hsRes?.data || null);
     } catch (err) {
+      if (currentReqId !== reqIdRef.current) return;
+      if (err.name === 'AbortError' || err.isCancelled) return;
       setError(err.message || 'Failed to load dashboard data from backend server.');
     } finally {
-      setLoading(false);
+      if (currentReqId === reqIdRef.current) {
+        setLoading(false);
+      }
     }
   };
 
@@ -127,9 +138,12 @@ export default function DashboardView({ onNavigate, onNavigateToAgent, onSelectC
                 PostgreSQL + Prisma Active
               </span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mt-2">
-              Competitive Landscape Overview
-            </h1>
+            <div className="flex items-center gap-3 mt-2">
+              <CompetitorIQLogo size={36} className="shrink-0" />
+              <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                Competitive Landscape Overview
+              </h1>
+            </div>
             <p className="text-xs sm:text-sm text-slate-500 mt-1">
               Autonomous telemetry, price tracking, product release monitoring, and grounded AI strategic briefs.
             </p>
@@ -313,8 +327,9 @@ export default function DashboardView({ onNavigate, onNavigateToAgent, onSelectC
                         <button
                           type="button"
                           onClick={() => onSelectCompetitor && onSelectCompetitor(evt.competitor?.name || 'Microsoft')}
-                          className="text-xs font-bold text-slate-900 bg-slate-100 hover:bg-orange-50 hover:text-orange-700 px-2 py-0.5 rounded transition-colors text-left"
+                          className="text-xs font-bold text-slate-900 bg-slate-100 hover:bg-orange-50 hover:text-orange-700 px-2 py-0.5 rounded transition-colors text-left inline-flex items-center gap-1.5"
                         >
+                          <CompetitorLogo name={evt.competitor?.name || 'Microsoft'} size={14} />
                           {evt.competitor?.name || 'Competitor'}
                         </button>
                         <span className="text-[10px] font-extrabold uppercase tracking-wider text-orange-700 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full">

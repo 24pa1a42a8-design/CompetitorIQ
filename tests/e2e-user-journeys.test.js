@@ -1,5 +1,25 @@
-import test from 'node:test';
+import test, { before, after } from 'node:test';
 import assert from 'node:assert';
+import app from '../server/app.js';
+
+let serverInstance = null;
+
+before(async () => {
+  try {
+    const res = await fetch('http://localhost:5000/api/health/ready');
+    if (res.ok) return;
+  } catch {
+    await new Promise((resolve) => {
+      serverInstance = app.listen(5000, () => resolve());
+    });
+  }
+});
+
+after(() => {
+  if (serverInstance) {
+    serverInstance.close();
+  }
+});
 
 test('CompetitorIQ End-to-End User Journeys Verification', async (t) => {
   const BASE_URL = 'http://localhost:5000/api';

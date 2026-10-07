@@ -1,0 +1,12 @@
+Duration: 88934ms
+HTTP Status: 200
+Success: true
+Event Count: 100
+Alert Count: 92
+Pattern Count: 15
+Supporting Events Count: 100
+Executive Summary Title: A. Executive Summary
+Executive Summary Observations: ["Identified 100 verified competitive event(s) across 7 tracked enterprise entities over the 90-day window.","Triggered 92 total automated alerts (91 High/Critical severity).","Extracted 15 multi-event Connect-the-Dots strategic patterns across agentic AI acceleration, custom silicon deployments, and consumption monetization."]
+Competitor Activity Count: 7
+Timeline Count: 15
+Recommended Actions Count: 3

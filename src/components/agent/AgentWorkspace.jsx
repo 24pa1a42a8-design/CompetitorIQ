@@ -4,6 +4,7 @@ import {
   XCircle, TrendingUp, User, PlusCircle, ChevronDown, ChevronUp, History
 } from 'lucide-react';
 import HindsightFlowWidget from '../common/HindsightFlowWidget';
+import CompetitorIQLogo from '../common/CompetitorIQLogo';
 import AgentActivityPanel from './AgentActivityPanel';
 import apiService from '../../services/apiService';
 
@@ -509,13 +510,16 @@ export default function AgentWorkspace({ onNavigate, onOpenEvidence, initialQuer
           </span>
         </div>
 
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-            CompetitorIQ AI Research Agent
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-3xl leading-relaxed">
-            Query competitor moves, pricing shifts, and strategic patterns. The agent understands intent, executes tool plans, retrieves PostgreSQL events, queries Hindsight memories, and outputs strictly grounded briefs with facts, observations, and inferences.
-          </p>
+        <div className="flex items-start gap-3.5">
+          <CompetitorIQLogo size={38} className="shrink-0 mt-0.5" />
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+              CompetitorIQ AI Research Agent
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-3xl leading-relaxed">
+              Query competitor moves, pricing shifts, and strategic patterns. The agent understands intent, executes tool plans, retrieves PostgreSQL events, queries Hindsight memories, and outputs strictly grounded briefs with facts, observations, and inferences.
+            </p>
+          </div>
         </div>
 
         {/* Input Form */}

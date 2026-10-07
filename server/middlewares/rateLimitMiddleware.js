@@ -5,13 +5,19 @@ import { rateLimit } from 'express-rate-limit';
  * Protects API routes, ingestion triggers, and AI agent execution from request floods and abuse.
  */
 
+const isLocalOrTest = (req) => {
+  if (process.env.NODE_ENV === 'test') return true;
+  const ip = req?.ip || req?.socket?.remoteAddress || '';
+  return ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1' || ip.includes('localhost');
+};
+
 // General API Rate Limiter: 100 requests per 15 minutes
 export const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  limit: 100,
+  limit: 1000,
   standardHeaders: 'draft-8',
   legacyHeaders: false,
-  skip: () => process.env.NODE_ENV === 'test',
+  skip: isLocalOrTest,
   message: {
     success: false,
     error: {

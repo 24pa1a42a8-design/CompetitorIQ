@@ -5,15 +5,19 @@ import { ollamaService } from '../services/ollamaService.js';
 import { monitoringScheduler } from '../services/monitoringScheduler.js';
 
 export async function getHealthStatus(req, res) {
-  return res.status(200).json({
-    success: true,
+  const dbStatus = await checkDatabaseHealth();
+  const isConnected = dbStatus === 'ok';
+
+  return res.status(isConnected ? 200 : 503).json({
+    success: isConnected,
     data: {
-      status: 'ok',
+      status: isConnected ? 'ok' : 'degraded',
+      database: isConnected ? 'connected' : 'disconnected',
       service: 'competitoriq-backend',
       timestamp: new Date().toISOString(),
       environment: env.NODE_ENV
     },
-    error: null,
+    error: isConnected ? null : 'PostgreSQL database disconnected',
     meta: {
       requestId: req.id || undefined
     }

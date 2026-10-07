@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Users, ArrowRight, RefreshCw, AlertCircle, CheckCircle2, Database, Zap
 } from 'lucide-react';
 import apiService from '../services/apiService';
+import CompetitorLogo from '../components/common/CompetitorLogo';
 
 export default function CompetitorEcosystemView({ onNavigate, onSelectCompetitor }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -15,21 +16,44 @@ export default function CompetitorEcosystemView({ onNavigate, onSelectCompetitor
   const [ingestingCompetitors, setIngestingCompetitors] = useState({});
   const [ingestionResult, setIngestionResult] = useState(null);
 
+  const reqIdRef = useRef(0);
+  const abortControllerRef = useRef(null);
+
   const fetchCompetitors = async () => {
+    reqIdRef.current += 1;
+    const currentReqId = reqIdRef.current;
+
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     setLoading(true);
     setError(null);
     try {
-      const res = await apiService.getCompetitors();
+      const res = await apiService.getCompetitors({ signal: controller.signal });
+      if (currentReqId !== reqIdRef.current) return;
       setCompetitors(res?.data || []);
     } catch (err) {
-      setError(err.message || 'Failed to load competitors list.');
+      if (err.name === 'AbortError' || err.isCancelled) return;
+      if (currentReqId === reqIdRef.current) {
+        setError(err.message || 'Failed to load competitors list.');
+      }
     } finally {
-      setLoading(false);
+      if (currentReqId === reqIdRef.current) {
+        setLoading(false);
+      }
     }
   };
 
   useEffect(() => {
     fetchCompetitors();
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
   }, []);
 
   const defaultCompetitors = [
@@ -208,9 +232,7 @@ export default function CompetitorEcosystemView({ onNavigate, onSelectCompetitor
               >
                 <div className="flex items-center justify-between border-b border-stone-100 pb-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-slate-900 text-white font-black text-lg flex items-center justify-center shadow-xs">
-                      {(comp.name || 'C')[0]}
-                    </div>
+                    <CompetitorLogo name={comp.name} size={28} showContainer containerClassName="w-10 h-10 rounded-xl" />
                     <div>
                       <div className="flex items-center gap-2">
                         <h3 className="text-base font-black text-slate-900 group-hover:text-orange-600 transition">{comp.name}</h3>

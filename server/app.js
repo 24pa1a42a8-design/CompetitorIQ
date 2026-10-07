@@ -18,6 +18,7 @@ import strategicAnalysisRoutes from './routes/strategicAnalysisRoutes.js';
 import competitiveComparisonRoutes from './routes/competitiveComparisonRoutes.js';
 import executiveReportRoutes from './routes/executiveReportRoutes.js';
 import monitoringRoutes from './routes/monitoringRoutes.js';
+import searchRoutes from './routes/searchRoutes.js';
 import { authMiddleware } from './middlewares/authMiddleware.js';
 
 const app = express();
@@ -88,6 +89,8 @@ app.use('/api/strategic-analysis', strategicAnalysisRoutes);
 app.use('/api/competitive-comparison', competitiveComparisonRoutes);
 app.use('/api/executive-reports', executiveReportRoutes);
 app.use('/api/monitoring', monitoringRoutes);
+app.use('/api/search', searchRoutes);
+app.use('/api/v1/search', searchRoutes);
 
 // 404 Handler
 app.use((req, res) => {

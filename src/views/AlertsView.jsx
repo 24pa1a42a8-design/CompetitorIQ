@@ -3,7 +3,6 @@ import {
   Search, ShieldAlert, Clock, CheckCircle2, 
   Sparkles, AlertTriangle, Check, RefreshCw, Eye
 } from 'lucide-react';
-import HindsightFlowWidget from '../components/common/HindsightFlowWidget';
 import apiService from '../services/apiService';
 
 export default function AlertsView({ onNavigate, onOpenEvidence }) {
@@ -15,11 +14,15 @@ export default function AlertsView({ onNavigate, onOpenEvidence }) {
   const [selectedAlert, setSelectedAlert] = useState(null);
   const [evaluating, setEvaluating] = useState(false);
 
+  const reqIdRef = React.useRef(0);
+
   const fetchAlerts = async () => {
+    const currentReqId = ++reqIdRef.current;
     setLoading(true);
     setError(null);
     try {
       const res = await apiService.getAlerts({ limit: 50 });
+      if (currentReqId !== reqIdRef.current) return;
       let loadedAlerts = res?.data || [];
       
       // Fallback: If no alerts exist yet, evaluate alerts for existing events
@@ -27,18 +30,24 @@ export default function AlertsView({ onNavigate, onOpenEvidence }) {
         try {
           await apiService.evaluateAlerts({});
           const retryRes = await apiService.getAlerts({ limit: 50 });
+          if (currentReqId !== reqIdRef.current) return;
           loadedAlerts = retryRes?.data || [];
         } catch {
           // Ignore eval error on fallback
         }
       }
 
+      if (currentReqId !== reqIdRef.current) return;
       setAlerts(loadedAlerts);
     } catch (err) {
+      if (currentReqId !== reqIdRef.current) return;
+      if (err.name === 'AbortError' || err.isCancelled) return;
       console.error('Failed to load competitive alerts:', err);
       setError(err.message || 'Failed to load intelligence alerts');
     } finally {
-      setLoading(false);
+      if (currentReqId === reqIdRef.current) {
+        setLoading(false);
+      }
     }
   };
 
@@ -150,14 +159,7 @@ export default function AlertsView({ onNavigate, onOpenEvidence }) {
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6 animate-in fade-in duration-150 font-sans text-slate-800">
-      {/* Hindsight Intelligence Banner */}
-      <HindsightFlowWidget 
-        variant="banner" 
-        defaultStage="retain" 
-        stageMessage="Deterministic Alert Engine evaluating real-time competitor signals stored in PostgreSQL" 
-        memoriesCount={alerts.length}
-        confidenceScore="100%"
-      />
+
 
       {/* Top Header */}
       <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">

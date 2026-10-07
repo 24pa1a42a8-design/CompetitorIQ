@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   BrainCircuit, Database, Search, Sparkles, 
   Download, CheckCircle2, Share2, RefreshCw, AlertTriangle
@@ -13,13 +13,33 @@ export default function HindsightMemoryView({ onNavigate, onOpenEvidence }) {
   const [hsStatus, setHsStatus] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const reqIdRef = useRef(0);
+  const abortControllerRef = useRef(null);
+
   const fetchHindsightData = async () => {
+    reqIdRef.current += 1;
+    const currentReqId = reqIdRef.current;
+
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     setLoading(true);
     try {
       const [eventsRes, statusRes] = await Promise.all([
-        apiService.getEvents({ limit: 20 }).catch(() => ({ data: [] })),
-        apiService.getHindsightStatus().catch(() => null)
+        apiService.getEvents({ limit: 20, signal: controller.signal }).catch((err) => {
+          if (err.name === 'AbortError') throw err;
+          return { data: [] };
+        }),
+        apiService.getHindsightStatus({ signal: controller.signal }).catch((err) => {
+          if (err.name === 'AbortError') throw err;
+          return null;
+        })
       ]);
+
+      if (currentReqId !== reqIdRef.current) return;
 
       const rawEvents = eventsRes?.data?.events || eventsRes?.data || [];
       const evts = Array.isArray(rawEvents) ? rawEvents : [];
@@ -29,14 +49,22 @@ export default function HindsightMemoryView({ onNavigate, onOpenEvidence }) {
         setSelectedMemId(evts[0].id);
       }
     } catch (err) {
+      if (err.name === 'AbortError' || err.isCancelled) return;
       console.error('Failed to load Hindsight memory view data:', err);
     } finally {
-      setLoading(false);
+      if (currentReqId === reqIdRef.current) {
+        setLoading(false);
+      }
     }
   };
 
   useEffect(() => {
     fetchHindsightData();
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
   }, []);
 
   const handleSearch = async (e) => {
@@ -45,11 +73,15 @@ export default function HindsightMemoryView({ onNavigate, onOpenEvidence }) {
     if (!term.trim()) {
       fetchHindsightData();
     } else {
+      reqIdRef.current += 1;
+      const currentReqId = reqIdRef.current;
       try {
         const res = await apiService.getEvents({ query: term, limit: 15 });
+        if (currentReqId !== reqIdRef.current) return;
         const raw = res?.data?.events || res?.data || [];
         setMemories(Array.isArray(raw) ? raw : []);
       } catch (err) {
+        if (err.name === 'AbortError' || err.isCancelled) return;
         console.error('Search error:', err);
       }
     }

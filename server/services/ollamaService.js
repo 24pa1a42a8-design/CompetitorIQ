@@ -124,9 +124,8 @@ export const ollamaService = {
         signal: controller.signal
       });
 
-      clearTimeout(timeoutId);
-
       if (!response.ok) {
+        clearTimeout(timeoutId);
         const errText = await response.text().catch(() => '');
         logger.warn({ status: response.status, errText }, 'Ollama chat API call returned non-200 status');
         throw new OllamaError(
@@ -138,6 +137,7 @@ export const ollamaService = {
       }
 
       const data = await response.json();
+      clearTimeout(timeoutId);
 
       if (!data || !data.message || typeof data.message.content !== 'string') {
         throw new OllamaError('Invalid response structure returned by Ollama chat API', 'OLLAMA_INVALID_RESPONSE', 502, data);

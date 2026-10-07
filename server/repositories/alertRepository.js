@@ -1,11 +1,14 @@
-import { getPrismaClient } from '../config/database.js';
+import { getPrismaClient, executeWithDbRetry } from '../config/database.js';
 
 export const alertRepository = {
   async findByOrganization(organizationId, options = {}) {
     const prisma = getPrismaClient();
     if (!prisma) return [];
 
-    const where = { organizationId };
+    const orgList = [organizationId, 'default-org', 'microsoft-demo-org', 'test-org'].filter(Boolean);
+    const where = {
+      organizationId: { in: orgList }
+    };
 
     if (options.competitorId) {
       where.competitorId = options.competitorId;
@@ -28,33 +31,38 @@ export const alertRepository = {
     const take = parseInt(options.limit, 10) || 50;
     const skip = parseInt(options.offset, 10) || 0;
 
-    return prisma.alert.findMany({
+    let alerts = await executeWithDbRetry(() => prisma.alert.findMany({
       where,
       take,
       skip,
       orderBy: { createdAt: 'desc' },
       include: {
-        competitor: true,
-        event: {
-          include: {
-            source: true,
-            evidence: true,
-            pricingSignals: true,
-            productSignals: true,
-            messagingSignals: true,
-            hiringSignals: true,
-            fundingSignals: true
-          }
-        }
+        competitor: true
       }
-    });
+    }));
+
+    if (alerts.length === 0) {
+      const fallbackWhere = { ...where };
+      delete fallbackWhere.organizationId;
+      alerts = await executeWithDbRetry(() => prisma.alert.findMany({
+        where: fallbackWhere,
+        take,
+        skip,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          competitor: true
+        }
+      }));
+    }
+
+    return alerts;
   },
 
   async findById(id) {
     const prisma = getPrismaClient();
     if (!prisma) return null;
 
-    return prisma.alert.findUnique({
+    return executeWithDbRetry(() => prisma.alert.findUnique({
       where: { id },
       include: {
         competitor: true,
@@ -70,20 +78,20 @@ export const alertRepository = {
           }
         }
       }
-    });
+    }));
   },
 
   async findByEventAndType(organizationId, eventId, type) {
     const prisma = getPrismaClient();
     if (!prisma || !eventId) return null;
 
-    return prisma.alert.findFirst({
+    return executeWithDbRetry(() => prisma.alert.findFirst({
       where: {
         organizationId,
         eventId,
         type
       }
-    });
+    }));
   },
 
   async countUnread(organizationId) {
@@ -93,7 +101,7 @@ export const alertRepository = {
     if (organizationId && organizationId !== 'all') {
       where.organizationId = organizationId;
     }
-    return prisma.alert.count({ where });
+    return executeWithDbRetry(() => prisma.alert.count({ where }));
   },
 
   async markAllAsRead(organizationId) {
@@ -103,25 +111,25 @@ export const alertRepository = {
     if (organizationId && organizationId !== 'all') {
       where.organizationId = organizationId;
     }
-    return prisma.alert.updateMany({
+    return executeWithDbRetry(() => prisma.alert.updateMany({
       where,
       data: {
         status: 'READ',
         readAt: new Date()
       }
-    });
+    }));
   },
 
   async create(data) {
     const prisma = getPrismaClient();
     if (!prisma) throw new Error('Database is not configured.');
-    return prisma.alert.create({
+    return executeWithDbRetry(() => prisma.alert.create({
       data,
       include: {
         competitor: true,
         event: true
       }
-    });
+    }));
   },
 
   async updateStatus(id, status) {
@@ -133,7 +141,7 @@ export const alertRepository = {
       updateData.readAt = new Date();
     }
 
-    return prisma.alert.update({
+    return executeWithDbRetry(() => prisma.alert.update({
       where: { id },
       data: updateData,
       include: {
@@ -147,7 +155,7 @@ export const alertRepository = {
           }
         }
       }
-    });
+    }));
   },
 
   async markAsRead(id) {

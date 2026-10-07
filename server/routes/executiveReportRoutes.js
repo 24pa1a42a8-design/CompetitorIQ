@@ -4,6 +4,7 @@ import { executiveReportController } from '../controllers/executiveReportControl
 const router = Router();
 
 router.get('/', executiveReportController.getReports);
+router.get('/latest', executiveReportController.getLatestReport);
 router.get('/:id', executiveReportController.getReportById);
 router.post('/generate', executiveReportController.generate);
 

@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Filter, Calendar, ShieldCheck, Sparkles, ArrowRight, Search, 
   ExternalLink, Clock, TrendingUp, ChevronDown, CheckCircle2, RefreshCw, AlertCircle
 } from 'lucide-react';
-import HindsightFlowWidget from '../components/common/HindsightFlowWidget';
+import CompetitorLogo from '../components/common/CompetitorLogo';
 import apiService from '../services/apiService';
 
 export default function ActivityTimelineView({ onOpenEvidence, onNavigate, dateFilter }) {
@@ -13,41 +13,66 @@ export default function ActivityTimelineView({ onOpenEvidence, onNavigate, dateF
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const fetchEvents = async () => {
+  const reqIdRef = React.useRef(0);
+
+  const fetchEvents = async (forceRefetch = false) => {
+    if (!forceRefetch && events.length > 0) return;
+    const currentReqId = ++reqIdRef.current;
     setLoading(true);
     setError(null);
+    const startTime = performance.now();
     try {
-      const params = { limit: 100 };
+      const params = { limit: 250 };
       if (dateFilter?.startDate) params.startDate = dateFilter.startDate;
       if (dateFilter?.endDate) params.endDate = dateFilter.endDate;
 
+      console.log(`[ACTIVITY_API] request=GET /ingestion/events?limit=250`);
       const res = await apiService.getEvents(params);
+      if (currentReqId !== reqIdRef.current) return;
       const rawEvents = res?.data?.events || res?.data || [];
-      setEvents(Array.isArray(rawEvents) ? rawEvents : []);
+      const loaded = Array.isArray(rawEvents) ? rawEvents : [];
+      setEvents(loaded);
+      const duration = Math.round(performance.now() - startTime);
+      console.log(`[ACTIVITY_API] duration=${duration}ms count=${loaded.length}`);
     } catch (err) {
+      if (currentReqId !== reqIdRef.current) return;
+      if (err.name === 'AbortError' || err.isCancelled) return;
       setError(err.message || 'Failed to fetch competitive activity events.');
     } finally {
-      setLoading(false);
+      if (currentReqId === reqIdRef.current) {
+        setLoading(false);
+      }
     }
   };
 
   useEffect(() => {
-    fetchEvents();
+    fetchEvents(true);
   }, [dateFilter?.startDate, dateFilter?.endDate]);
 
-  const eventList = Array.isArray(events) ? events : [];
-  const filteredEvents = eventList.filter(e => {
-    if (filterType !== 'ALL' && e.eventType !== filterType) return false;
-    if (searchTag) {
-      const q = searchTag.toLowerCase();
-      return (
+  const handleFilterClick = (type) => {
+    console.log(`[ACTIVITY_FILTER] selectedType=${type}`);
+    setFilterType(type);
+  };
+
+  const filteredEvents = useMemo(() => {
+    let list = Array.isArray(events) ? events : [];
+    
+    if (filterType !== 'ALL') {
+      list = list.filter(e => (e.eventType || '').toUpperCase() === filterType);
+    }
+    
+    if (searchTag && searchTag.trim()) {
+      const q = searchTag.trim().toLowerCase();
+      list = list.filter(e =>
         (e.title && e.title.toLowerCase().includes(q)) ||
         (e.summary && e.summary.toLowerCase().includes(q)) ||
         (e.competitor?.name && e.competitor.name.toLowerCase().includes(q))
       );
     }
-    return true;
-  });
+    
+    console.log(`[ACTIVITY_RESULT] filterType=${filterType} count=${list.length}`);
+    return list;
+  }, [events, filterType, searchTag]);
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6 animate-in fade-in duration-150 font-sans">
@@ -65,7 +90,7 @@ export default function ActivityTimelineView({ onOpenEvidence, onNavigate, dateF
 
         <div className="flex items-center gap-3">
           <button
-            onClick={fetchEvents}
+            onClick={() => fetchEvents(true)}
             disabled={loading}
             className="px-3 py-2 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-lg transition-colors flex items-center gap-1.5"
           >
@@ -80,12 +105,7 @@ export default function ActivityTimelineView({ onOpenEvidence, onNavigate, dateF
         </div>
       </div>
 
-      <HindsightFlowWidget 
-        variant="banner" 
-        defaultStage="retain" 
-        stageMessage="Ingested competitive signals stored with deterministic SHA-256 content hashes" 
-        memoriesCount={events.length}
-      />
+
 
       {/* Filter and Search Bar */}
       <div className="bg-white p-4 rounded-xl border border-stone-200/90 shadow-2xs flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -104,8 +124,8 @@ export default function ActivityTimelineView({ onOpenEvidence, onNavigate, dateF
           {['ALL', 'PRODUCT', 'PRICING', 'FEATURE', 'HIRING', 'FUNDING', 'EXPANSION'].map((type) => (
             <button
               key={type}
-              onClick={() => setFilterType(type)}
-              className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors whitespace-nowrap ${
+              onClick={() => handleFilterClick(type)}
+              className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors whitespace-nowrap cursor-pointer ${
                 filterType === type 
                   ? 'bg-orange-600 text-white shadow-2xs' 
                   : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
@@ -121,7 +141,7 @@ export default function ActivityTimelineView({ onOpenEvidence, onNavigate, dateF
       {loading && (
         <div className="p-12 text-center bg-white rounded-2xl border border-stone-200/90 shadow-2xs space-y-3">
           <RefreshCw className="w-8 h-8 text-orange-600 animate-spin mx-auto" />
-          <p className="text-sm font-semibold text-slate-700">Loading Activity Timeline...</p>
+          <p className="text-sm font-semibold text-slate-700">Loading {filterType} Intelligence Stream...</p>
         </div>
       )}
 
@@ -132,7 +152,7 @@ export default function ActivityTimelineView({ onOpenEvidence, onNavigate, dateF
           <h3 className="text-sm font-bold text-rose-900">Failed to Load Activity Timeline</h3>
           <p className="text-xs text-rose-700">{error}</p>
           <button
-            onClick={fetchEvents}
+            onClick={() => fetchEvents(true)}
             className="px-4 py-2 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-lg transition-colors"
           >
             Retry
@@ -144,8 +164,8 @@ export default function ActivityTimelineView({ onOpenEvidence, onNavigate, dateF
       {!loading && !error && filteredEvents.length === 0 && (
         <div className="p-12 text-center bg-white rounded-2xl border border-stone-200/90 shadow-2xs space-y-3">
           <Clock className="w-8 h-8 text-slate-400 mx-auto" />
-          <h3 className="text-sm font-bold text-slate-800">No Events Found</h3>
-          <p className="text-xs text-slate-500">No competitive intelligence events match your filter criteria.</p>
+          <h3 className="text-sm font-bold text-slate-800">No verified events in this period</h3>
+          <p className="text-xs text-slate-500">No verified competitive intelligence events match the '{filterType}' category filter for the selected time window.</p>
         </div>
       )}
 
@@ -156,14 +176,12 @@ export default function ActivityTimelineView({ onOpenEvidence, onNavigate, dateF
             <div key={evt.id} className="bg-white p-5 rounded-2xl border border-stone-200/90 shadow-2xs hover:border-stone-300 transition-all space-y-3">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-black text-slate-900 bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-md">
+                  <span className="text-xs font-black text-slate-900 bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-md inline-flex items-center gap-1.5">
+                    <CompetitorLogo name={evt.competitor?.name || 'Competitor'} size={14} />
                     {evt.competitor?.name || 'Competitor'}
                   </span>
                   <span className="text-[10px] font-extrabold uppercase tracking-wider text-orange-700 bg-orange-50 border border-orange-200 px-2.5 py-0.5 rounded-full">
                     {evt.eventType}
-                  </span>
-                  <span className="text-xs font-mono text-slate-400">
-                    {evt.eventDate ? new Date(evt.eventDate).toLocaleDateString() : 'Recent'}
                   </span>
                 </div>
 

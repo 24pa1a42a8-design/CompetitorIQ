@@ -1,8 +1,13 @@
 import crypto from 'crypto';
 import { classifyEvent } from './classifier.js';
+import { resolveCompetitorFromSource } from './competitorResolver.js';
+import { extractPublicationDate } from './dateExtractor.js';
 
 export function generateContentHash(competitorId, title, summary, eventDate) {
-  const normalizedString = `${competitorId.toLowerCase().trim()}:${title.toLowerCase().trim()}:${summary.toLowerCase().trim()}:${new Date(eventDate).toISOString().substring(0, 10)}`;
+  const dateStr = eventDate
+    ? (eventDate instanceof Date ? eventDate : new Date(eventDate)).toISOString().substring(0, 10)
+    : 'nodate';
+  const normalizedString = `${competitorId.toLowerCase().trim()}:${title.toLowerCase().trim()}:${summary.toLowerCase().trim()}:${dateStr}`;
   return crypto.createHash('sha256').update(normalizedString).digest('hex');
 }
 
@@ -17,16 +22,22 @@ export function sanitizeText(text = '') {
 }
 
 export function normalizeIngestionItem(rawItem) {
-  const competitorId = (rawItem.competitorId || rawItem.competitor || rawItem.entity || 'general-competitor').toString().trim();
-  const competitorName = (rawItem.competitorName || rawItem.competitor || competitorId).toString().trim();
+  // Deterministically resolve competitor from source URL, publisher, and identity metadata
+  const resolvedComp = resolveCompetitorFromSource(rawItem);
+
+  const competitorId = resolvedComp ? resolvedComp.slug : (rawItem.competitorId || rawItem.competitor || 'general-competitor').toString().trim();
+  const competitorName = resolvedComp ? resolvedComp.name : (rawItem.competitorName || rawItem.competitor || competitorId).toString().trim();
   const title = sanitizeText(rawItem.title || rawItem.summary || 'Competitor Intelligence Event');
   const summary = sanitizeText(rawItem.summary || rawItem.description || title);
   const description = sanitizeText(rawItem.description || '');
   const source = sanitizeText(rawItem.source || 'Public Web Telemetry');
   const sourceUrl = (rawItem.sourceUrl || rawItem.url || `https://intelligence.competitoriq.com/sources/${competitorId}`).trim();
-  const eventDate = rawItem.eventDate || rawItem.publishedAt || rawItem.timestamp || new Date().toISOString();
-  const detectedAt = rawItem.detectedAt || new Date().toISOString();
   
+  // Extract real source publication date
+  const extractedDate = extractPublicationDate(rawItem);
+  const eventDate = extractedDate || (rawItem.eventDate ? new Date(rawItem.eventDate) : null);
+  const detectedAt = rawItem.detectedAt ? new Date(rawItem.detectedAt) : new Date();
+
   const rawType = (rawItem.eventType || '').toUpperCase().trim();
   const EVENT_TYPE_MAP = {
     PRICING: 'PRICING',
@@ -74,8 +85,8 @@ export function normalizeIngestionItem(rawItem) {
     imageUrl,
     author,
     category,
-    eventDate: new Date(eventDate),
-    detectedAt: new Date(detectedAt),
+    eventDate,
+    detectedAt,
     importance,
     confidence,
     evidenceExcerpt,

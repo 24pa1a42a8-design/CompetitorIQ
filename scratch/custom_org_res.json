@@ -1,0 +1,1417 @@
+{
+  "success": true,
+  "data": {
+    "success": true,
+    "id": "dbee6106-0f12-4013-8af6-6e4b8972ddd1",
+    "title": "Microsoft Executive Competitive Intelligence Brief (EXECUTIVE SUMMARY, 90d Window)",
+    "reportType": "EXECUTIVE_SUMMARY",
+    "windowDays": 90,
+    "timeframe": {
+      "startDate": "2026-07-08T10:54:13.291Z",
+      "endDate": "2026-10-06T10:54:13.291Z"
+    },
+    "competitorsIncluded": [
+      {
+        "id": "930b351d-9b09-4634-89e0-bb37f0d4c601",
+        "name": "AWS",
+        "slug": "general-competitor"
+      },
+      {
+        "id": "ff3aa1f3-37ee-41c6-b1cb-78cfb6f88d10",
+        "name": "AWS",
+        "slug": "aws"
+      },
+      {
+        "id": "f8cca828-c32e-4093-8fbf-92a2664b25a6",
+        "name": "Amazon Web Services",
+        "slug": "aws"
+      },
+      {
+        "id": "4e06a4ae-b551-4e4a-a208-8784b9281b36",
+        "name": "BigQuery",
+        "slug": "bigquery-1790866798743"
+      },
+      {
+        "id": "171c5bee-1cdf-4422-9f8c-4a30b45e6bb1",
+        "name": "BigQuery",
+        "slug": "bigquery-1790676118738"
+      },
+      {
+        "id": "e04b2b6e-ac95-4e9b-b630-4ba2ec0a9a33",
+        "name": "BigQuery",
+        "slug": "bigquery-1790862472992"
+      },
+      {
+        "id": "cb8e452e-a91a-4a3f-8033-12b97277c201",
+        "name": "BigQuery",
+        "slug": "bigquery-1790671192921"
+      },
+      {
+        "id": "7455f1f1-59ad-4b75-9a87-8d0a6c8282b9",
+        "name": "BigQuery",
+        "slug": "bigquery-1790663855920"
+      },
+      {
+        "id": "becad83e-5575-407a-9996-070e7f6742fb",
+        "name": "BigQuery",
+        "slug": "bigquery-1790655770715"
+      },
+      {
+        "id": "c0f1bca8-17f2-47a0-9449-bb82f41ef354",
+        "name": "BigQuery",
+        "slug": "bigquery-1790649841334"
+      },
+      {
+        "id": "a0036d5c-847c-46e7-a25b-55a2a8558e5c",
+        "name": "BigQuery",
+        "slug": "bigquery-1790657895070"
+      },
+      {
+        "id": "7a72fa08-0e1d-46d1-814d-03ed721d2fbd",
+        "name": "BigQuery",
+        "slug": "bigquery-1790674866117"
+      },
+      {
+        "id": "b25ac380-e7c3-4039-b263-430dc21ddd97",
+        "name": "BigQuery",
+        "slug": "bigquery-1790860667991"
+      },
+      {
+        "id": "77d12954-211d-4783-8feb-d0adc82e2ca0",
+        "name": "BigQuery",
+        "slug": "bigquery-1790651295588"
+      },
+      {
+        "id": "0c09ae95-72e7-4b22-85e5-43a88f00a13e",
+        "name": "BigQuery",
+        "slug": "bigquery-1790648921621"
+      },
+      {
+        "id": "7493e630-92a7-4d0a-8a04-825e6da4b7e1",
+        "name": "BigQuery",
+        "slug": "bigquery-1790648302360"
+      },
+      {
+        "id": "02b636f4-9b64-4c73-a44a-df6e8e317528",
+        "name": "BigQuery",
+        "slug": "bigquery-1790654921593"
+      },
+      {
+        "id": "395e366b-23be-47af-afd6-8a241f7e2bf0",
+        "name": "BigQuery",
+        "slug": "bigquery-1790662959595"
+      },
+      {
+        "id": "e1088ded-a927-4ecf-b761-87ee3664462c",
+        "name": "BigQuery",
+        "slug": "bigquery-1790651662741"
+      },
+      {
+        "id": "768a1814-49fe-4030-a01e-68fa23eb4ca5",
+        "name": "BigQuery",
+        "slug": "bigquery-1790664979980"
+      }
+    ],
+    "metadata": {
+      "generatedAt": "2026-10-06T10:54:13.291Z",
+      "eventCount": 42,
+      "alertCount": 0,
+      "patternCount": 3,
+      "strategicAnalysisCount": 0,
+      "hindsightStatus": "UNAVAILABLE_SERVICE_ERROR"
+    },
+    "sections": {
+      "executiveSummary": {
+        "title": "A. Executive Summary",
+        "facts": [
+          "Microsoft recorded 0 high-impact strategic event(s), including Copilot Studio autonomous AI agents, Azure AI Foundry updates, and $30B GAIIP infrastructure partnership.",
+          "Monitored competitors (AWS, Google Cloud, Oracle, Salesforce, IBM) logged 42 total verified competitive moves across AI agents, cloud silicon, and consumption pricing models."
+        ],
+        "observations": [
+          "Identified 42 verified competitive event(s) across 20 tracked enterprise entities over the 90-day window.",
+          "Triggered 0 total automated alerts (0 High/Critical severity).",
+          "Extracted 3 multi-event Connect-the-Dots strategic patterns across agentic AI acceleration, custom silicon deployments, and consumption monetization."
+        ],
+        "inferences": [
+          "Microsoft maintains strong leadership in enterprise agent deployment with Copilot Studio and M365 Copilot, but faces aggressive pricing pressure from Salesforce Agentforce ($2/conversation) and context window competition from Google Cloud Gemini 1.5 Pro (2M tokens).",
+          "Capital expenditure in hyperscale AI datacenters and custom silicon (Azure Maia vs AWS Trainium2 vs Google Trillium) remains the core competitive moat determining long-term inference unit economics."
+        ],
+        "microsoftPosition": "Leading enterprise workflow AI agent market; accelerating cloud infrastructure investment.",
+        "biggestThreats": [
+          "Salesforce Agentforce $2/conversation consumption pricing undermining $30/user/mo seat licensing.",
+          "Google Vertex AI Gemini 1.5 Pro 2M token context window superior for massive document & video reasoning.",
+          "AWS Trainium2 64k-chip ultra-cluster deployment lowering rival cloud LLM training costs."
+        ],
+        "biggestOpportunities": [
+          "Global expansion of Oracle Database@Azure to capture mission-critical enterprise database workloads.",
+          "Copilot Studio autonomous agent deployment across Dynamics 365, M365, and third-party SaaS ecosystems.",
+          "GAIIP $30B infrastructure consortium securing energy and datacenter capacity ahead of cloud peers."
+        ],
+        "strategicDirection": "Focus on multi-agent enterprise orchestration, custom Maia silicon scale, and multi-cloud database integration."
+      },
+      "competitorActivity": [
+        {
+          "competitorId": "930b351d-9b09-4634-89e0-bb37f0d4c601",
+          "competitorName": "AWS",
+          "totalEvents": 42,
+          "categoryBreakdown": {
+            "ANNOUNCEMENT": 20,
+            "PRODUCT": 21,
+            "PRICING": 1
+          },
+          "recentEventsCount": 42,
+          "highCriticalAlertsCount": 0,
+          "notableEvents": [
+            {
+              "id": "00c60087-0f85-4828-9d7d-f107c04d2a5c",
+              "title": "Happy 20th Birthday, Amazon EC2",
+              "summary": "On the 20th Anniversary, we recognize how AWS has continued to push the boundaries of what cloud computing can deliver, building custom silicon for general-purpose and AI workloads and expanding EC2 into new form factors and deployment models that our customers in 2006 could not have imagined.",
+              "eventType": "ANNOUNCEMENT",
+              "eventDate": "2026-10-06T10:17:41.622Z",
+              "sourceName": "AWS News Blog",
+              "sourceUrl": "https://aws.amazon.com/blogs/aws/happy-20th-birthday-amazon-ec2/"
+            },
+            {
+              "id": "0533a541-3e70-4cc5-a939-5d046d623b4d",
+              "title": "AWS Weekly Roundup: Welcome DuckLabs to the team, Agentic Resource Discovery (ARD), and more (August 31, 2026)",
+              "summary": "The news that interested me the most last week was the DuckLabs acquisition. AWS has signed a definitive agreement to acquire DuckLabs, the Amsterdam-based company behind DuckDB, the popular open source analytical database that runs in-process and executes SQL directly against files like Parquet, CSV, and JSON. DuckDB stays open source under its in",
+              "eventType": "ANNOUNCEMENT",
+              "eventDate": "2026-10-06T10:17:34.347Z",
+              "sourceName": "AWS News Blog",
+              "sourceUrl": "https://aws.amazon.com/blogs/aws/aws-weekly-roundup-welcome-ducklabs-to-the-team-agentic-resource-discovery-ard-and-more-august-31-2026/"
+            },
+            {
+              "id": "44a70415-dbae-4fae-bac3-df4716eb0f0b",
+              "title": "Amazon EC2 R9g and R9gd instances powered by AWS Graviton5 processors are now generally available",
+              "summary": "Amazon EC2 R9g and R9gd instances powered by AWS Graviton5 are now generally available, delivering up to 25% better compute performance than R8g, ideal for databases, in-memory caches, and real-time analytics.",
+              "eventType": "ANNOUNCEMENT",
+              "eventDate": "2026-10-06T10:17:29.462Z",
+              "sourceName": "AWS News Blog",
+              "sourceUrl": "https://aws.amazon.com/blogs/aws/amazon-ec2-r9g-and-r9gd-instances-powered-by-aws-graviton5-processors-are-now-generally-available/"
+            },
+            {
+              "id": "24efc7ff-2507-4c7f-849c-75ee305f13f5",
+              "title": "AWS Weekly Roundup: Claude Fable 5.1 on AWS, Amazon Linux 2027 preview, AWS Certified AI Business Strategist, and more (September 7, 2026)",
+              "summary": "Last week, Claude Fable 5.1 became available on AWS. According to Anthropic, Claude Fable 5.1 delivers frontier intelligence for ambitious tasks across coding, scientific research, and enterprise workflows. Claude Fable 5.1 is built for long-running, high-stakes work that runs for hours and spans many applications. It can own more of a software pro",
+              "eventType": "ANNOUNCEMENT",
+              "eventDate": "2026-10-06T10:17:19.517Z",
+              "sourceName": "AWS News Blog",
+              "sourceUrl": "https://aws.amazon.com/blogs/aws/aws-weekly-roundup-claude-fable-5-1-on-aws-amazon-linux-2027-preview-aws-certified-ai-business-strategist-and-more-september-7-2026/"
+            }
+          ]
+        },
+        {
+          "competitorId": "ff3aa1f3-37ee-41c6-b1cb-78cfb6f88d10",
+          "competitorName": "AWS",
+          "totalEvents": 0,
+          "categoryBreakdown": {},
+          "recentEventsCount": 0,
+          "highCriticalAlertsCount": 0,
+          "notableEvents": []
+        },
+        {
+          "competitorId": "f8cca828-c32e-4093-8fbf-92a2664b25a6",
+          "competitorName": "Amazon Web Services",
+          "totalEvents": 0,
+          "categoryBreakdown": {},
+          "recentEventsCount": 0,
+          "highCriticalAlertsCount": 0,
+          "notableEvents": []
+        },
+        {
+          "competitorId": "4e06a4ae-b551-4e4a-a208-8784b9281b36",
+          "competitorName": "BigQuery",
+          "totalEvents": 0,
+          "categoryBreakdown": {},
+          "recentEventsCount": 0,
+          "highCriticalAlertsCount": 0,
+          "notableEvents": []
+        },
+        {
+          "competitorId": "171c5bee-1cdf-4422-9f8c-4a30b45e6bb1",
+          "competitorName": "BigQuery",
+          "totalEvents": 0,
+          "categoryBreakdown": {},
+          "recentEventsCount": 0,
+          "highCriticalAlertsCount": 0,
+          "notableEvents": []
+        },
+        {
+          "competitorId": "e04b2b6e-ac95-4e9b-b630-4ba2ec0a9a33",
+          "competitorName": "BigQuery",
+          "totalEvents": 0,
+          "categoryBreakdown": {},
+          "recentEventsCount": 0,
+          "highCriticalAlertsCount": 0,
+          "notableEvents": []
+        },
+        {
+          "competitorId": "cb8e452e-a91a-4a3f-8033-12b97277c201",
+          "competitorName": "BigQuery",
+          "totalEvents": 0,
+          "categoryBreakdown": {},
+          "recentEventsCount": 0,
+          "highCriticalAlertsCount": 0,
+          "notableEvents": []
+        },
+        {
+          "competitorId": "7455f1f1-59ad-4b75-9a87-8d0a6c8282b9",
+          "competitorName": "BigQuery",
+          "totalEvents": 0,
+          "categoryBreakdown": {},
+          "recentEventsCount": 0,
+          "highCriticalAlertsCount": 0,
+          "notableEvents": []
+        },
+        {
+          "competitorId": "becad83e-5575-407a-9996-070e7f6742fb",
+          "competitorName": "BigQuery",
+          "totalEvents": 0,
+          "categoryBreakdown": {},
+          "recentEventsCount": 0,
+          "highCriticalAlertsCount": 0,
+          "notableEvents": []
+        },
+        {
+          "competitorId": "c0f1bca8-17f2-47a0-9449-bb82f41ef354",
+          "competitorName": "BigQuery",
+          "totalEvents": 0,
+          "categoryBreakdown": {},
+          "recentEventsCount": 0,
+          "highCriticalAlertsCount": 0,
+          "notableEvents": []
+        },
+        {
+          "competitorId": "a0036d5c-847c-46e7-a25b-55a2a8558e5c",
+          "competitorName": "BigQuery",
+          "totalEvents": 0,
+          "categoryBreakdown": {},
+          "recentEventsCount": 0,
+          "highCriticalAlertsCount": 0,
+          "notableEvents": []
+        },
+        {
+          "competitorId": "7a72fa08-0e1d-46d1-814d-03ed721d2fbd",
+          "competitorName": "BigQuery",
+          "totalEvents": 0,
+          "categoryBreakdown": {},
+          "recentEventsCount": 0,
+          "highCriticalAlertsCount": 0,
+          "notableEvents": []
+        },
+        {
+          "competitorId": "b25ac380-e7c3-4039-b263-430dc21ddd97",
+          "competitorName": "BigQuery",
+          "totalEvents": 0,
+          "categoryBreakdown": {},
+          "recentEventsCount": 0,
+          "highCriticalAlertsCount": 0,
+          "notableEvents": []
+        },
+        {
+          "competitorId": "77d12954-211d-4783-8feb-d0adc82e2ca0",
+          "competitorName": "BigQuery",
+          "totalEvents": 0,
+          "categoryBreakdown": {},
+          "recentEventsCount": 0,
+          "highCriticalAlertsCount": 0,
+          "notableEvents": []
+        },
+        {
+          "competitorId": "0c09ae95-72e7-4b22-85e5-43a88f00a13e",
+          "competitorName": "BigQuery",
+          "totalEvents": 0,
+          "categoryBreakdown": {},
+          "recentEventsCount": 0,
+          "highCriticalAlertsCount": 0,
+          "notableEvents": []
+        },
+        {
+          "competitorId": "7493e630-92a7-4d0a-8a04-825e6da4b7e1",
+          "competitorName": "BigQuery",
+          "totalEvents": 0,
+          "categoryBreakdown": {},
+          "recentEventsCount": 0,
+          "highCriticalAlertsCount": 0,
+          "notableEvents": []
+        },
+        {
+          "competitorId": "02b636f4-9b64-4c73-a44a-df6e8e317528",
+          "competitorName": "BigQuery",
+          "totalEvents": 0,
+          "categoryBreakdown": {},
+          "recentEventsCount": 0,
+          "highCriticalAlertsCount": 0,
+          "notableEvents": []
+        },
+        {
+          "competitorId": "395e366b-23be-47af-afd6-8a241f7e2bf0",
+          "competitorName": "BigQuery",
+          "totalEvents": 0,
+          "categoryBreakdown": {},
+          "recentEventsCount": 0,
+          "highCriticalAlertsCount": 0,
+          "notableEvents": []
+        },
+        {
+          "competitorId": "e1088ded-a927-4ecf-b761-87ee3664462c",
+          "competitorName": "BigQuery",
+          "totalEvents": 0,
+          "categoryBreakdown": {},
+          "recentEventsCount": 0,
+          "highCriticalAlertsCount": 0,
+          "notableEvents": []
+        },
+        {
+          "competitorId": "768a1814-49fe-4030-a01e-68fa23eb4ca5",
+          "competitorName": "BigQuery",
+          "totalEvents": 0,
+          "categoryBreakdown": {},
+          "recentEventsCount": 0,
+          "highCriticalAlertsCount": 0,
+          "notableEvents": []
+        }
+      ],
+      "comparisonMatrix": [
+        {
+          "dimension": "AI Agents & Orchestration",
+          "microsoft": "Copilot Studio autonomous agents (Home, Code, Autopilot) across Dynamics 365 & M365.",
+          "aws": "Amazon Bedrock Custom Model Import & agentic guardrails.",
+          "googleCloud": "Vertex AI Agent Builder & Spanner queues for agentic state.",
+          "oracle": "Fusion Agentic Applications & Fusion Claw framework.",
+          "salesforce": "Agentforce Atlas Reasoning Engine digital workers.",
+          "ibm": "watsonx Granite 3.0 & IBM Bob agent orchestration."
+        },
+        {
+          "dimension": "Cloud AI Infrastructure & Silicon",
+          "microsoft": "Azure Maia 100 AI accelerator & Cobalt 100 ARM CPU; $30B GAIIP consortium.",
+          "aws": "AWS Trainium2 64k-chip UltraClusters & $4B Anthropic partnership.",
+          "googleCloud": "Trillium 6th-Gen TPU (4.7x compute boost) & AI Hypercomputer.",
+          "oracle": "OCI Exadata & multi-cloud Oracle Database@Azure expansion.",
+          "salesforce": "Data Cloud & Einstein 1 Platform on multi-cloud infrastructure.",
+          "ibm": "IBM Cloud watsonx AI sovereignty & hybrid cloud governance."
+        },
+        {
+          "dimension": "Commercial Pricing & Monetization",
+          "microsoft": "$30/user/month seat licensing for M365 Copilot commercial add-on.",
+          "aws": "Pay-as-you-go serverless Bedrock token pricing & reserved instances.",
+          "googleCloud": "Trillium $1.85/hr preemptible TPU pods & FinOps AI cost controls.",
+          "oracle": "Universal credits & integrated OCI Exadata consumption pricing.",
+          "salesforce": "$2 per conversation usage-based consumption pricing for Agentforce.",
+          "ibm": "Granite 3.0 Apache 2.0 open weights & watsonx capacity licensing."
+        },
+        {
+          "dimension": "Ecosystem & Strategic Partnerships",
+          "microsoft": "OpenAI deep partnership, BlackRock GAIIP consortium, Oracle Database@Azure.",
+          "aws": "Anthropic $4B strategic commitment, OpenAI Bedrock integrations.",
+          "googleCloud": "Multi-cloud partnership with Oracle OCI and broad open-weights model support.",
+          "oracle": "Multi-cloud strategy with Azure and Google Cloud Interconnect.",
+          "salesforce": "Workday, NVIDIA, and enterprise SaaS ecosystem integrations.",
+          "ibm": "Hugging Face open source collaboration and Red Hat OpenShift AI integration."
+        }
+      ],
+      "comparison": [
+        {
+          "dimension": "AI Agents & Orchestration",
+          "microsoft": "Copilot Studio autonomous agents (Home, Code, Autopilot) across Dynamics 365 & M365.",
+          "aws": "Amazon Bedrock Custom Model Import & agentic guardrails.",
+          "googleCloud": "Vertex AI Agent Builder & Spanner queues for agentic state.",
+          "oracle": "Fusion Agentic Applications & Fusion Claw framework.",
+          "salesforce": "Agentforce Atlas Reasoning Engine digital workers.",
+          "ibm": "watsonx Granite 3.0 & IBM Bob agent orchestration."
+        },
+        {
+          "dimension": "Cloud AI Infrastructure & Silicon",
+          "microsoft": "Azure Maia 100 AI accelerator & Cobalt 100 ARM CPU; $30B GAIIP consortium.",
+          "aws": "AWS Trainium2 64k-chip UltraClusters & $4B Anthropic partnership.",
+          "googleCloud": "Trillium 6th-Gen TPU (4.7x compute boost) & AI Hypercomputer.",
+          "oracle": "OCI Exadata & multi-cloud Oracle Database@Azure expansion.",
+          "salesforce": "Data Cloud & Einstein 1 Platform on multi-cloud infrastructure.",
+          "ibm": "IBM Cloud watsonx AI sovereignty & hybrid cloud governance."
+        },
+        {
+          "dimension": "Commercial Pricing & Monetization",
+          "microsoft": "$30/user/month seat licensing for M365 Copilot commercial add-on.",
+          "aws": "Pay-as-you-go serverless Bedrock token pricing & reserved instances.",
+          "googleCloud": "Trillium $1.85/hr preemptible TPU pods & FinOps AI cost controls.",
+          "oracle": "Universal credits & integrated OCI Exadata consumption pricing.",
+          "salesforce": "$2 per conversation usage-based consumption pricing for Agentforce.",
+          "ibm": "Granite 3.0 Apache 2.0 open weights & watsonx capacity licensing."
+        },
+        {
+          "dimension": "Ecosystem & Strategic Partnerships",
+          "microsoft": "OpenAI deep partnership, BlackRock GAIIP consortium, Oracle Database@Azure.",
+          "aws": "Anthropic $4B strategic commitment, OpenAI Bedrock integrations.",
+          "googleCloud": "Multi-cloud partnership with Oracle OCI and broad open-weights model support.",
+          "oracle": "Multi-cloud strategy with Azure and Google Cloud Interconnect.",
+          "salesforce": "Workday, NVIDIA, and enterprise SaaS ecosystem integrations.",
+          "ibm": "Hugging Face open source collaboration and Red Hat OpenShift AI integration."
+        }
+      ],
+      "keySignals": [
+        {
+          "category": "PRICING_SIGNALS",
+          "events": [
+            {
+              "title": "Agentforce Standard Conversation Commercial Terms",
+              "summary": "Agentforce Standard Conversation Commercial Terms Salesforce established commercial terms for Agentforce at $2.00 per conversation with consumption-based volume discounts available for enterprise agreements. $2.00 / conversation",
+              "competitorName": "AWS",
+              "date": "6/10/2026",
+              "sourceUrl": "https://salesforce.com/pricing"
+            }
+          ]
+        },
+        {
+          "category": "PRODUCT_SIGNALS",
+          "events": [
+            {
+              "title": "Azure OpenAI Service Releases OpenAI o1-preview and o1-mini Reasoning Models",
+              "summary": "Microsoft launched OpenAI o1 reasoning series models in Azure OpenAI Service and GitHub Copilot, giving enterprise customers access to advanced scientific and mathematical inference models with enterprise compliance.",
+              "competitorName": "AWS",
+              "date": "6/10/2026",
+              "sourceUrl": "https://azure.microsoft.com/en-us/blog/openai-o1-preview-and-o1-mini-now-available-in-azure-openai-service-and-github/"
+            },
+            {
+              "title": "Agent Script",
+              "summary": "Agent Script Agent Script gives builders precise control to create business-ready agents that deliver reliable results.",
+              "competitorName": "AWS",
+              "date": "6/10/2026",
+              "sourceUrl": "https://www.salesforce.com/agentforce/"
+            },
+            {
+              "title": "Agent Builder",
+              "summary": "Agent Builder Configure Agentforce, Subagents, Actions, and Instructions in a few clicks.",
+              "competitorName": "AWS",
+              "date": "6/10/2026",
+              "sourceUrl": "https://www.salesforce.com/agentforce/"
+            },
+            {
+              "title": "Agent Development Lifecycle",
+              "summary": "Agent Development Lifecycle Build, run, and scale AI agents with a complete set of tools.",
+              "competitorName": "AWS",
+              "date": "6/10/2026",
+              "sourceUrl": "https://www.salesforce.com/agentforce/"
+            },
+            {
+              "title": "Event Support",
+              "summary": "Event Support Automate communications about event information and details, book sessions, provide event logistics and surveys. Benefit : Personalised marketing, streamlined experience.",
+              "competitorName": "AWS",
+              "date": "6/10/2026",
+              "sourceUrl": "https://www.salesforce.com/agentforce/"
+            },
+            {
+              "title": "Product Recommendation",
+              "summary": "Product Recommendation Automate communications about event information and details, book sessions, provide event logistics and surveys. Benefit : Personalised marketing, streamlined experience.",
+              "competitorName": "AWS",
+              "date": "6/10/2026",
+              "sourceUrl": "https://www.salesforce.com/agentforce/"
+            },
+            {
+              "title": "Sales Development",
+              "summary": "Sales Development Drive growth around the clock by autonomously answering product questions, handling objections and booking meetings for sales reps. Benefit : Efficiency boost, increased win rates, shorter deal cycles.",
+              "competitorName": "AWS",
+              "date": "6/10/2026",
+              "sourceUrl": "https://www.salesforce.com/agentforce/"
+            },
+            {
+              "title": "Appointment Scheduling",
+              "summary": "Appointment Scheduling Schedule appointments based on history and context, send appointment follow-ups, send reschedule and reminder notifications. Benefit : Accelerated scale and personalisation, op cost savings.",
+              "competitorName": "AWS",
+              "date": "6/10/2026",
+              "sourceUrl": "https://www.salesforce.com/agentforce/"
+            },
+            {
+              "title": "Employee Support",
+              "summary": "Employee Support Give every employee a task-specific, highly specialised AI agent to help them by answering questions and automating routine tasks. Benefit : Higher productivity, faster resolution time.",
+              "competitorName": "AWS",
+              "date": "6/10/2026",
+              "sourceUrl": "https://www.salesforce.com/agentforce/"
+            },
+            {
+              "title": "Explore Customer Proof",
+              "summary": "Explore Customer Proof Hear how customers across every industry are using Agentforce to transform their business.",
+              "competitorName": "AWS",
+              "date": "6/10/2026",
+              "sourceUrl": "https://www.salesforce.com/agentforce/"
+            },
+            {
+              "title": "Experience Agentforce",
+              "summary": "Experience Agentforce Explore real AI agents driving live results for global brands. See how they configured them in Agentforce.",
+              "competitorName": "AWS",
+              "date": "6/10/2026",
+              "sourceUrl": "https://www.salesforce.com/agentforce/"
+            },
+            {
+              "title": "How Agentforce Works",
+              "summary": "How Agentforce Works Data. Reasoning. Actions. See what really makes Agentforce work.",
+              "competitorName": "AWS",
+              "date": "6/10/2026",
+              "sourceUrl": "https://www.salesforce.com/agentforce/"
+            },
+            {
+              "title": "Why Agentforce",
+              "summary": "Why Agentforce The best customer experiences start with service. So does Agentforce. On the phone. Online. In apps. Humans and agents help customers better together.",
+              "competitorName": "AWS",
+              "date": "6/10/2026",
+              "sourceUrl": "https://www.salesforce.com/agentforce/"
+            },
+            {
+              "title": "Over 18K companies already run on Agentforce. Join them.",
+              "summary": "Over 18K companies already run on Agentforce. Join them.",
+              "competitorName": "AWS",
+              "date": "6/10/2026",
+              "sourceUrl": "https://www.salesforce.com/agentforce/"
+            },
+            {
+              "title": "IT Service",
+              "summary": "IT Service Resolving help desk ticket | Patching system alert | Resetting user access",
+              "competitorName": "AWS",
+              "date": "6/10/2026",
+              "sourceUrl": "https://www.salesforce.com/agentforce/"
+            },
+            {
+              "title": "GLM 5.3 by Z.ai is now generally available on Amazon Bedrock",
+              "summary": "Amazon Bedrock now supports GLM 5.3 from Z.ai, giving you a powerful new option for agentic coding and long-horizon software engineering work. Customers using GLM 5.3 on Amazon Bedrock have access to the latest open weight model with the AWS security and compliance posture. GLM 5.3 is Z.ai’s flagship model, a mixture-of-experts architectu",
+              "competitorName": "AWS",
+              "date": "6/10/2026",
+              "sourceUrl": "https://aws.amazon.com/about-aws/whats-new/2026/10/amazon-bedrock-glm-5-3/"
+            },
+            {
+              "title": "Sales Service",
+              "summary": "Sales Service Qualifying inbound lead | Updating opportunity | Closing renewal deal",
+              "competitorName": "AWS",
+              "date": "6/10/2026",
+              "sourceUrl": "https://www.salesforce.com/agentforce/"
+            },
+            {
+              "title": "Employee Service",
+              "summary": "Employee Service Processing leave request | Answering HR policy query | Onboarding new hire",
+              "competitorName": "AWS",
+              "date": "6/10/2026",
+              "sourceUrl": "https://www.salesforce.com/agentforce/"
+            },
+            {
+              "title": "Field Service",
+              "summary": "Field Service Scheduling technician visit | Updating work order status | Confirming parts availability",
+              "competitorName": "AWS",
+              "date": "6/10/2026",
+              "sourceUrl": "https://www.salesforce.com/agentforce/"
+            },
+            {
+              "title": "Contact Centre",
+              "summary": "Contact Centre Routing incoming call | Pulling customer history | Logging interaction notes",
+              "competitorName": "AWS",
+              "date": "6/10/2026",
+              "sourceUrl": "https://www.salesforce.com/agentforce/"
+            },
+            {
+              "title": "Customer service",
+              "summary": "Customer service Resolving open case | Drafting follow-up email | Escalating to specialist",
+              "competitorName": "AWS",
+              "date": "6/10/2026",
+              "sourceUrl": "https://www.salesforce.com/agentforce/"
+            }
+          ]
+        },
+        {
+          "category": "HIRING_SIGNALS",
+          "events": []
+        },
+        {
+          "category": "EXPANSION_SIGNALS",
+          "events": []
+        }
+      ],
+      "patterns": [
+        {
+          "id": "pat-1",
+          "patternTitle": "Autonomous AI Agent Enterprise Rollout",
+          "summary": "Microsoft Copilot Studio, Salesforce Agentforce, and Oracle Fusion Claw are transitioning enterprise AI from conversational chatbots to autonomous action-executing digital agents.",
+          "confidence": "HIGH",
+          "facts": [
+            "Microsoft launched Copilot Studio autonomous agents across Dynamics 365.",
+            "Salesforce announced Agentforce autonomous digital workers at $2/conversation.",
+            "Oracle launched Fusion Agentic Applications powered by AI Database 23ai."
+          ],
+          "observations": [
+            "Enterprise buyers prioritizing agentic execution over basic Q&A chat."
+          ],
+          "inferences": [
+            "Orchestration layers and business context integration dictate market adoption."
+          ]
+        },
+        {
+          "id": "pat-2",
+          "patternTitle": "Custom Silicon & Hyperscale Infrastructure Arms Race",
+          "summary": "Microsoft, AWS, and Google Cloud are accelerating proprietary chip deployments (Maia 100, Trainium2, Trillium) to reduce third-party GPU dependence and optimize LLM inference unit economics.",
+          "confidence": "HIGH",
+          "facts": [
+            "Microsoft co-founded $30B GAIIP consortium and expanded Maia 100 silicon team.",
+            "AWS deployed Trainium2 64k-chip UltraClusters following $4B Anthropic deal.",
+            "Google Cloud unveiled Trillium 6th-gen TPU with 4.7x compute boost per chip."
+          ],
+          "observations": [
+            "Hyperscalers building proprietary hardware stacks to protect cloud gross margins."
+          ],
+          "inferences": [
+            "Cost-per-token efficiency will determine enterprise cloud win rates."
+          ]
+        },
+        {
+          "id": "pat-3",
+          "patternTitle": "Monetization Shift: Consumption Digital Labor vs Seat Licensing",
+          "summary": "Salesforce $2/conversation pricing introduces consumption-based digital labor billing, directly competing with Microsoft $30/user/month seat licensing.",
+          "confidence": "HIGH",
+          "facts": [
+            "Microsoft established M365 Copilot at $30/user/month annual commitment.",
+            "Salesforce launched Agentforce at $2/conversation consumption model.",
+            "Google Cloud added Vertex AI FinOps tools to monitor consumption budgets."
+          ],
+          "observations": [
+            "Enterprise CFOs seeking predictable ROI on generative AI spending."
+          ],
+          "inferences": [
+            "Hybrid pricing models combining base seats with consumption tiers will emerge as standard."
+          ]
+        }
+      ],
+      "alerts": [],
+      "strategicAnalysis": [
+        {
+          "id": "rec-1",
+          "title": "Introduce Consumption Tiering for Copilot Studio Autonomous Agents",
+          "recommendation": "Supplement the $30/user/month M365 Copilot seat license with a pay-per-agentic-execution option to counter Salesforce Agentforce $2/conversation pricing.",
+          "evidenceReference": "Salesforce Agentforce $2/conversation pricing announcement (Salesforce Official Newsroom)",
+          "impact": "HIGH",
+          "targetTimeframe": "30-60 Days"
+        },
+        {
+          "id": "rec-2",
+          "title": "Accelerate Azure Maia 100 Silicon Deployment in Primary Datacenter Hubs",
+          "recommendation": "Prioritize Maia 100 accelerator cluster rollout across US East and West Europe regions to lower inference costs against AWS Trainium2 and Google Trillium TPU pods.",
+          "evidenceReference": "AWS 64k-chip Trainium2 UltraClusters and Google Trillium 6th-gen TPU release notes",
+          "impact": "CRITICAL",
+          "targetTimeframe": "90 Days"
+        },
+        {
+          "id": "rec-3",
+          "title": "Expand Multi-Model Context Window Support in Azure AI Foundry",
+          "recommendation": "Provide native 2M+ token multimodal context options on Azure AI Foundry to match Google Cloud Gemini 1.5 Pro capability for document-heavy enterprise accounts.",
+          "evidenceReference": "Google Cloud Vertex AI Gemini 1.5 Pro 2M token context window GA announcement",
+          "impact": "HIGH",
+          "targetTimeframe": "60 Days"
+        }
+      ],
+      "recommendedActions": [
+        {
+          "id": "rec-1",
+          "title": "Introduce Consumption Tiering for Copilot Studio Autonomous Agents",
+          "recommendation": "Supplement the $30/user/month M365 Copilot seat license with a pay-per-agentic-execution option to counter Salesforce Agentforce $2/conversation pricing.",
+          "evidenceReference": "Salesforce Agentforce $2/conversation pricing announcement (Salesforce Official Newsroom)",
+          "impact": "HIGH",
+          "targetTimeframe": "30-60 Days"
+        },
+        {
+          "id": "rec-2",
+          "title": "Accelerate Azure Maia 100 Silicon Deployment in Primary Datacenter Hubs",
+          "recommendation": "Prioritize Maia 100 accelerator cluster rollout across US East and West Europe regions to lower inference costs against AWS Trainium2 and Google Trillium TPU pods.",
+          "evidenceReference": "AWS 64k-chip Trainium2 UltraClusters and Google Trillium 6th-gen TPU release notes",
+          "impact": "CRITICAL",
+          "targetTimeframe": "90 Days"
+        },
+        {
+          "id": "rec-3",
+          "title": "Expand Multi-Model Context Window Support in Azure AI Foundry",
+          "recommendation": "Provide native 2M+ token multimodal context options on Azure AI Foundry to match Google Cloud Gemini 1.5 Pro capability for document-heavy enterprise accounts.",
+          "evidenceReference": "Google Cloud Vertex AI Gemini 1.5 Pro 2M token context window GA announcement",
+          "impact": "HIGH",
+          "targetTimeframe": "60 Days"
+        }
+      ],
+      "timeline": [
+        {
+          "id": "00c60087-0f85-4828-9d7d-f107c04d2a5c",
+          "date": "Oct 6, 2026",
+          "company": "AWS",
+          "eventType": "ANNOUNCEMENT",
+          "title": "Happy 20th Birthday, Amazon EC2",
+          "importance": "MEDIUM",
+          "sourceUrl": "https://aws.amazon.com/blogs/aws/happy-20th-birthday-amazon-ec2/",
+          "sourceTitle": "AWS News Blog"
+        },
+        {
+          "id": "0533a541-3e70-4cc5-a939-5d046d623b4d",
+          "date": "Oct 6, 2026",
+          "company": "AWS",
+          "eventType": "ANNOUNCEMENT",
+          "title": "AWS Weekly Roundup: Welcome DuckLabs to the team, Agentic Resource Discovery (ARD), and more (August 31, 2026)",
+          "importance": "MEDIUM",
+          "sourceUrl": "https://aws.amazon.com/blogs/aws/aws-weekly-roundup-welcome-ducklabs-to-the-team-agentic-resource-discovery-ard-and-more-august-31-2026/",
+          "sourceTitle": "AWS News Blog"
+        },
+        {
+          "id": "44a70415-dbae-4fae-bac3-df4716eb0f0b",
+          "date": "Oct 6, 2026",
+          "company": "AWS",
+          "eventType": "ANNOUNCEMENT",
+          "title": "Amazon EC2 R9g and R9gd instances powered by AWS Graviton5 processors are now generally available",
+          "importance": "MEDIUM",
+          "sourceUrl": "https://aws.amazon.com/blogs/aws/amazon-ec2-r9g-and-r9gd-instances-powered-by-aws-graviton5-processors-are-now-generally-available/",
+          "sourceTitle": "AWS News Blog"
+        },
+        {
+          "id": "24efc7ff-2507-4c7f-849c-75ee305f13f5",
+          "date": "Oct 6, 2026",
+          "company": "AWS",
+          "eventType": "ANNOUNCEMENT",
+          "title": "AWS Weekly Roundup: Claude Fable 5.1 on AWS, Amazon Linux 2027 preview, AWS Certified AI Business Strategist, and more (September 7, 2026)",
+          "importance": "MEDIUM",
+          "sourceUrl": "https://aws.amazon.com/blogs/aws/aws-weekly-roundup-claude-fable-5-1-on-aws-amazon-linux-2027-preview-aws-certified-ai-business-strategist-and-more-september-7-2026/",
+          "sourceTitle": "AWS News Blog"
+        },
+        {
+          "id": "289faafc-0a18-4391-8e58-e2cbb9ca6b95",
+          "date": "Oct 6, 2026",
+          "company": "AWS",
+          "eventType": "ANNOUNCEMENT",
+          "title": "Introducing Amazon EBS Volume Clones across AWS accounts",
+          "importance": "MEDIUM",
+          "sourceUrl": "https://aws.amazon.com/blogs/aws/introducing-amazon-ebs-volume-clones-across-aws-accounts/",
+          "sourceTitle": "AWS News Blog"
+        },
+        {
+          "id": "2bd7699f-7bef-420d-92b9-3f5b7c340154",
+          "date": "Oct 6, 2026",
+          "company": "AWS",
+          "eventType": "ANNOUNCEMENT",
+          "title": "AWS Weekly Roundup: OpenAI GPT-6 Astra on Amazon Bedrock, Amazon Quick desktop GA, Kiro for students, and more (September 14, 2026)",
+          "importance": "MEDIUM",
+          "sourceUrl": "https://aws.amazon.com/blogs/aws/aws-weekly-roundup-openai-gpt-6-astra-on-amazon-bedrock-amazon-quick-desktop-ga-kiro-for-students-and-more-september-14-2026/",
+          "sourceTitle": "AWS News Blog"
+        },
+        {
+          "id": "4e2ae8eb-0cdb-4f04-b000-de78f0711fbe",
+          "date": "Oct 6, 2026",
+          "company": "AWS",
+          "eventType": "ANNOUNCEMENT",
+          "title": "AWS reimagines the getting started experience",
+          "importance": "MEDIUM",
+          "sourceUrl": "https://aws.amazon.com/blogs/aws/aws-reimagines-the-getting-started-experience/",
+          "sourceTitle": "AWS News Blog"
+        },
+        {
+          "id": "0d43a602-051d-4bfc-8277-f13d34fc6ce2",
+          "date": "Oct 6, 2026",
+          "company": "AWS",
+          "eventType": "ANNOUNCEMENT",
+          "title": "AWS Elastic Beanstalk introduces Cluster Mode",
+          "importance": "MEDIUM",
+          "sourceUrl": "https://aws.amazon.com/blogs/aws/aws-elastic-beanstalk-introduces-cluster-mode/",
+          "sourceTitle": "AWS News Blog"
+        },
+        {
+          "id": "117106d3-b14f-47f7-b4be-2b424d0a19cf",
+          "date": "Oct 6, 2026",
+          "company": "AWS",
+          "eventType": "ANNOUNCEMENT",
+          "title": "New low-cost burstable Amazon EC2 T8i instances are generally available",
+          "importance": "MEDIUM",
+          "sourceUrl": "https://aws.amazon.com/blogs/aws/new-low-cost-burstable-amazon-ec2-t8i-instances-are-generally-available/",
+          "sourceTitle": "AWS News Blog"
+        },
+        {
+          "id": "76514737-c92a-4802-9ba1-53d4b5736c0f",
+          "date": "Oct 6, 2026",
+          "company": "AWS",
+          "eventType": "ANNOUNCEMENT",
+          "title": "AWS Weekly Roundup: AWS Builder Center mobile apps, Amazon Connect Talent GA, Amazon Corretto 27, and more (September 21, 2026)",
+          "importance": "MEDIUM",
+          "sourceUrl": "https://aws.amazon.com/blogs/aws/aws-weekly-roundup-aws-builder-center-mobile-apps-amazon-connect-talent-ga-amazon-corretto-27-and-more-september-14-2026/",
+          "sourceTitle": "AWS News Blog"
+        },
+        {
+          "id": "b3cacb60-3366-4dda-ba23-ed708c830944",
+          "date": "Oct 6, 2026",
+          "company": "AWS",
+          "eventType": "ANNOUNCEMENT",
+          "title": "Introducing Amazon CloudWatch Omni: AI-powered observability for generative AI and agentic workloads",
+          "importance": "MEDIUM",
+          "sourceUrl": "https://aws.amazon.com/blogs/aws/introducing-amazon-cloudwatch-omni-ai-powered-observability-for-generative-ai-and-agentic-workloads/",
+          "sourceTitle": "AWS News Blog"
+        },
+        {
+          "id": "94fc947e-6679-42ac-96a1-c67a8d82311a",
+          "date": "Oct 6, 2026",
+          "company": "AWS",
+          "eventType": "ANNOUNCEMENT",
+          "title": "Now on Amazon CloudWatch Omni: collaborative AI-powered observability for your applications",
+          "importance": "MEDIUM",
+          "sourceUrl": "https://aws.amazon.com/blogs/aws/introducing-amazon-cloudwatch-omni-collaborative-ai-powered-observability-for-your-applications/",
+          "sourceTitle": "AWS News Blog"
+        },
+        {
+          "id": "39553e37-c6bc-4245-b051-edf3c26fdc73",
+          "date": "Oct 6, 2026",
+          "company": "AWS",
+          "eventType": "ANNOUNCEMENT",
+          "title": "Introducing enhanced custom event buses in Amazon EventBridge for enterprise-scale event-driven applications",
+          "importance": "MEDIUM",
+          "sourceUrl": "https://aws.amazon.com/blogs/aws/introducing-enhanced-custom-event-buses-in-amazon-eventbridge-for-enterprise-scale-event-driven-applications/",
+          "sourceTitle": "AWS News Blog"
+        },
+        {
+          "id": "7e121324-a4c1-47d8-82bb-3338109a85de",
+          "date": "Oct 6, 2026",
+          "company": "AWS",
+          "eventType": "ANNOUNCEMENT",
+          "title": "AWS Weekly Roundup: GPT-6 Sol and Luna, Claude Opus 5.5 on Amazon Bedrock, Strands harness, and more (September 28, 2026)",
+          "importance": "MEDIUM",
+          "sourceUrl": "https://aws.amazon.com/blogs/aws/aws-weekly-roundup-gpt-6-sol-and-luna-claude-opus-5-5-on-amazon-bedrock-strands-harness-and-more-september-28-2026/",
+          "sourceTitle": "AWS News Blog"
+        },
+        {
+          "id": "d33b4068-5ba7-4545-ba85-ad3c5c66ca3c",
+          "date": "Oct 6, 2026",
+          "company": "AWS",
+          "eventType": "ANNOUNCEMENT",
+          "title": "Celebrating Our Newest AWS Heroes – September 2026",
+          "importance": "MEDIUM",
+          "sourceUrl": "https://aws.amazon.com/blogs/aws/celebrating-our-newest-aws-heroes-september-2026/",
+          "sourceTitle": "AWS News Blog"
+        }
+      ],
+      "watchItems": [
+        {
+          "competitorName": "Salesforce",
+          "category": "MONETIZATION_ADOPTION",
+          "observation": "Tracking enterprise deal win/loss ratios against Agentforce $2/conversation billing.",
+          "watchFocus": "Evaluate commercial customer feedback on per-conversation vs per-user seat pricing."
+        },
+        {
+          "competitorName": "Google Cloud",
+          "category": "MODEL_CONTEXT_WINDOW",
+          "observation": "Gemini 1.5 Pro 2M token context adoption in legal and financial service accounts.",
+          "watchFocus": "Monitor developer migration towards Vertex AI long-context multimodal processing."
+        },
+        {
+          "competitorName": "AWS",
+          "category": "CUSTOM_SILICON_BENCHMARKS",
+          "observation": "Trainium2 64k-chip cluster training efficiency vs Azure Maia 100 benchmarks.",
+          "watchFocus": "Track Anthropic Claude model performance on AWS Trainium hardware."
+        }
+      ],
+      "dataLimitations": [
+        "Report scope is strictly bounded to the selected 90-day timeframe (8/7/2026 to 6/10/2026).",
+        "Public telemetry cannot verify internal R&D roadmap budgets or unreleased board-level strategic initiatives.",
+        "Every event claim in this report is grounded in primary official corporate press releases, blogs, or pricing portals.",
+        "Hindsight Memory Layer Status: UNAVAILABLE_SERVICE_ERROR."
+      ]
+    },
+    "supportingEvents": [
+      {
+        "id": "00c60087-0f85-4828-9d7d-f107c04d2a5c",
+        "title": "Happy 20th Birthday, Amazon EC2",
+        "summary": "On the 20th Anniversary, we recognize how AWS has continued to push the boundaries of what cloud computing can deliver, building custom silicon for general-purpose and AI workloads and expanding EC2 into new form factors and deployment models that our customers in 2006 could not have imagined.",
+        "description": "On the 20th Anniversary, we recognize how AWS has continued to push the boundaries of what cloud computing can deliver, building custom silicon for general-purpose and AI workloads and expanding EC2 into new form factors and deployment models that our customers in 2006 could not have imagined.",
+        "eventType": "ANNOUNCEMENT",
+        "eventDate": "2026-10-06T10:17:41.622Z",
+        "competitorName": "AWS",
+        "sourceName": "AWS News Blog",
+        "sourceUrl": "https://aws.amazon.com/blogs/aws/happy-20th-birthday-amazon-ec2/",
+        "evidenceExcerpt": "On the 20th Anniversary, we recognize how AWS has continued to push the boundaries of what cloud computing can deliver, building custom silicon for general-purpose and AI workloads and expanding EC2 into new form factors and deployment models that our customers in 2006 could not have imagined."
+      },
+      {
+        "id": "0533a541-3e70-4cc5-a939-5d046d623b4d",
+        "title": "AWS Weekly Roundup: Welcome DuckLabs to the team, Agentic Resource Discovery (ARD), and more (August 31, 2026)",
+        "summary": "The news that interested me the most last week was the DuckLabs acquisition. AWS has signed a definitive agreement to acquire DuckLabs, the Amsterdam-based company behind DuckDB, the popular open source analytical database that runs in-process and executes SQL directly against files like Parquet, CSV, and JSON. DuckDB stays open source under its in",
+        "description": "The news that interested me the most last week was the DuckLabs acquisition. AWS has signed a definitive agreement to acquire DuckLabs, the Amsterdam-based company behind DuckDB, the popular open source analytical database that runs in-process and executes SQL directly against files like Parquet, CSV, and JSON. DuckDB stays open source under its in",
+        "eventType": "ANNOUNCEMENT",
+        "eventDate": "2026-10-06T10:17:34.347Z",
+        "competitorName": "AWS",
+        "sourceName": "AWS News Blog",
+        "sourceUrl": "https://aws.amazon.com/blogs/aws/aws-weekly-roundup-welcome-ducklabs-to-the-team-agentic-resource-discovery-ard-and-more-august-31-2026/",
+        "evidenceExcerpt": "The news that interested me the most last week was the DuckLabs acquisition. AWS has signed a definitive agreement to acquire DuckLabs, the Amsterdam-based company behind DuckDB, the popular open source analytical database that runs in-process and executes SQL directly against files like Parquet, CSV, and JSON. DuckDB stays open source under its independent foundation […]"
+      },
+      {
+        "id": "44a70415-dbae-4fae-bac3-df4716eb0f0b",
+        "title": "Amazon EC2 R9g and R9gd instances powered by AWS Graviton5 processors are now generally available",
+        "summary": "Amazon EC2 R9g and R9gd instances powered by AWS Graviton5 are now generally available, delivering up to 25% better compute performance than R8g, ideal for databases, in-memory caches, and real-time analytics.",
+        "description": "Amazon EC2 R9g and R9gd instances powered by AWS Graviton5 are now generally available, delivering up to 25% better compute performance than R8g, ideal for databases, in-memory caches, and real-time analytics.",
+        "eventType": "ANNOUNCEMENT",
+        "eventDate": "2026-10-06T10:17:29.462Z",
+        "competitorName": "AWS",
+        "sourceName": "AWS News Blog",
+        "sourceUrl": "https://aws.amazon.com/blogs/aws/amazon-ec2-r9g-and-r9gd-instances-powered-by-aws-graviton5-processors-are-now-generally-available/",
+        "evidenceExcerpt": "Amazon EC2 R9g and R9gd instances powered by AWS Graviton5 are now generally available, delivering up to 25% better compute performance than R8g, ideal for databases, in-memory caches, and real-time analytics."
+      },
+      {
+        "id": "24efc7ff-2507-4c7f-849c-75ee305f13f5",
+        "title": "AWS Weekly Roundup: Claude Fable 5.1 on AWS, Amazon Linux 2027 preview, AWS Certified AI Business Strategist, and more (September 7, 2026)",
+        "summary": "Last week, Claude Fable 5.1 became available on AWS. According to Anthropic, Claude Fable 5.1 delivers frontier intelligence for ambitious tasks across coding, scientific research, and enterprise workflows. Claude Fable 5.1 is built for long-running, high-stakes work that runs for hours and spans many applications. It can own more of a software pro",
+        "description": "Last week, Claude Fable 5.1 became available on AWS. According to Anthropic, Claude Fable 5.1 delivers frontier intelligence for ambitious tasks across coding, scientific research, and enterprise workflows. Claude Fable 5.1 is built for long-running, high-stakes work that runs for hours and spans many applications. It can own more of a software pro",
+        "eventType": "ANNOUNCEMENT",
+        "eventDate": "2026-10-06T10:17:19.517Z",
+        "competitorName": "AWS",
+        "sourceName": "AWS News Blog",
+        "sourceUrl": "https://aws.amazon.com/blogs/aws/aws-weekly-roundup-claude-fable-5-1-on-aws-amazon-linux-2027-preview-aws-certified-ai-business-strategist-and-more-september-7-2026/",
+        "evidenceExcerpt": "Last week, Claude Fable 5.1 became available on AWS. According to Anthropic, Claude Fable 5.1 delivers frontier intelligence for ambitious tasks across coding, scientific research, and enterprise workflows. Claude Fable 5.1 is built for long-running, high-stakes work that runs for hours and spans many applications. It can own more of a software project on its […]"
+      },
+      {
+        "id": "289faafc-0a18-4391-8e58-e2cbb9ca6b95",
+        "title": "Introducing Amazon EBS Volume Clones across AWS accounts",
+        "summary": "AWS introduces Amazon EBS Volume Clones with cross-account copy, so you can create copies of your EBS volumes into other AWS accounts and optionally re-encrypt them with an AWS Key Management Service (AWS KMS) key in the target account.",
+        "description": "AWS introduces Amazon EBS Volume Clones with cross-account copy, so you can create copies of your EBS volumes into other AWS accounts and optionally re-encrypt them with an AWS Key Management Service (AWS KMS) key in the target account.",
+        "eventType": "ANNOUNCEMENT",
+        "eventDate": "2026-10-06T10:17:14.295Z",
+        "competitorName": "AWS",
+        "sourceName": "AWS News Blog",
+        "sourceUrl": "https://aws.amazon.com/blogs/aws/introducing-amazon-ebs-volume-clones-across-aws-accounts/",
+        "evidenceExcerpt": "AWS introduces Amazon EBS Volume Clones with cross-account copy, so you can create copies of your EBS volumes into other AWS accounts and optionally re-encrypt them with an AWS Key Management Service (AWS KMS) key in the target account."
+      },
+      {
+        "id": "2bd7699f-7bef-420d-92b9-3f5b7c340154",
+        "title": "AWS Weekly Roundup: OpenAI GPT-6 Astra on Amazon Bedrock, Amazon Quick desktop GA, Kiro for students, and more (September 14, 2026)",
+        "summary": "There’s a particular energy to mid-September in New York. Pumpkin spice lattes are flowing, temperatures are dropping, and it’s nearly sweater weather. The city is back at full speed, and so is the AWS launch calendar. This week that energy showed up in a new frontier model on Amazon Bedrock, a desktop app for Amazon […]",
+        "description": "There’s a particular energy to mid-September in New York. Pumpkin spice lattes are flowing, temperatures are dropping, and it’s nearly sweater weather. The city is back at full speed, and so is the AWS launch calendar. This week that energy showed up in a new frontier model on Amazon Bedrock, a desktop app for Amazon […]",
+        "eventType": "ANNOUNCEMENT",
+        "eventDate": "2026-10-06T10:17:04.746Z",
+        "competitorName": "AWS",
+        "sourceName": "AWS News Blog",
+        "sourceUrl": "https://aws.amazon.com/blogs/aws/aws-weekly-roundup-openai-gpt-6-astra-on-amazon-bedrock-amazon-quick-desktop-ga-kiro-for-students-and-more-september-14-2026/",
+        "evidenceExcerpt": "There’s a particular energy to mid-September in New York. Pumpkin spice lattes are flowing, temperatures are dropping, and it’s nearly sweater weather. The city is back at full speed, and so is the AWS launch calendar. This week that energy showed up in a new frontier model on Amazon Bedrock, a desktop app for Amazon […]"
+      },
+      {
+        "id": "4e2ae8eb-0cdb-4f04-b000-de78f0711fbe",
+        "title": "AWS reimagines the getting started experience",
+        "summary": "AWS has reimagined the getting started experience with smart and sensible defaults to help developers get started fast so that they can focus on building. New customers can sign up and get started right away with $100 in Free Tier credits, managed project environments, and simplified team and resource permissions. If their workload evolves, custome",
+        "description": "AWS has reimagined the getting started experience with smart and sensible defaults to help developers get started fast so that they can focus on building. New customers can sign up and get started right away with $100 in Free Tier credits, managed project environments, and simplified team and resource permissions. If their workload evolves, custome",
+        "eventType": "ANNOUNCEMENT",
+        "eventDate": "2026-10-06T10:16:58.561Z",
+        "competitorName": "AWS",
+        "sourceName": "AWS News Blog",
+        "sourceUrl": "https://aws.amazon.com/blogs/aws/aws-reimagines-the-getting-started-experience/",
+        "evidenceExcerpt": "AWS has reimagined the getting started experience with smart and sensible defaults to help developers get started fast so that they can focus on building. New customers can sign up and get started right away with $100 in Free Tier credits, managed project environments, and simplified team and resource permissions. If their workload evolves, customers can activate advanced features to access the full breadth and depth of AWS in one step, with no migration required."
+      },
+      {
+        "id": "0d43a602-051d-4bfc-8277-f13d34fc6ce2",
+        "title": "AWS Elastic Beanstalk introduces Cluster Mode",
+        "summary": "Run an application on AWS Elastic Beanstalk Cluster Mode without provisioning or operating the compute underneath it. You provide a container image or source code; Elastic Beanstalk with service-operated compute creates and operates the environment that runs it.",
+        "description": "Run an application on AWS Elastic Beanstalk Cluster Mode without provisioning or operating the compute underneath it. You provide a container image or source code; Elastic Beanstalk with service-operated compute creates and operates the environment that runs it.",
+        "eventType": "ANNOUNCEMENT",
+        "eventDate": "2026-10-06T10:16:49.318Z",
+        "competitorName": "AWS",
+        "sourceName": "AWS News Blog",
+        "sourceUrl": "https://aws.amazon.com/blogs/aws/aws-elastic-beanstalk-introduces-cluster-mode/",
+        "evidenceExcerpt": "Run an application on AWS Elastic Beanstalk Cluster Mode without provisioning or operating the compute underneath it. You provide a container image or source code; Elastic Beanstalk with service-operated compute creates and operates the environment that runs it."
+      },
+      {
+        "id": "117106d3-b14f-47f7-b4be-2b424d0a19cf",
+        "title": "New low-cost burstable Amazon EC2 T8i instances are generally available",
+        "summary": "AWS introduces new low-cost burstable Amazon EC2 T8i instances powered by custom sixth generation Intel Xeon Scalable Processors (Granite Rapids), available only on AWS. T8i instances are among the lowest-cost EC2 instances and deliver up to 30% better price performance over previous generation T3 instances.",
+        "description": "AWS introduces new low-cost burstable Amazon EC2 T8i instances powered by custom sixth generation Intel Xeon Scalable Processors (Granite Rapids), available only on AWS. T8i instances are among the lowest-cost EC2 instances and deliver up to 30% better price performance over previous generation T3 instances.",
+        "eventType": "ANNOUNCEMENT",
+        "eventDate": "2026-10-06T10:16:42.690Z",
+        "competitorName": "AWS",
+        "sourceName": "AWS News Blog",
+        "sourceUrl": "https://aws.amazon.com/blogs/aws/new-low-cost-burstable-amazon-ec2-t8i-instances-are-generally-available/",
+        "evidenceExcerpt": "AWS introduces new low-cost burstable Amazon EC2 T8i instances powered by custom sixth generation Intel Xeon Scalable Processors (Granite Rapids), available only on AWS. T8i instances are among the lowest-cost EC2 instances and deliver up to 30% better price performance over previous generation T3 instances."
+      },
+      {
+        "id": "76514737-c92a-4802-9ba1-53d4b5736c0f",
+        "title": "AWS Weekly Roundup: AWS Builder Center mobile apps, Amazon Connect Talent GA, Amazon Corretto 27, and more (September 21, 2026)",
+        "summary": "Living in the Netherlands, I spend a fair amount of time on trains, and that is usually where I catch up on what the builder community is writing. Until now, that meant opening a laptop or squinting at a browser tab on my phone. This week I found myself scrolling through trending articles and checking […]",
+        "description": "Living in the Netherlands, I spend a fair amount of time on trains, and that is usually where I catch up on what the builder community is writing. Until now, that meant opening a laptop or squinting at a browser tab on my phone. This week I found myself scrolling through trending articles and checking […]",
+        "eventType": "ANNOUNCEMENT",
+        "eventDate": "2026-10-06T10:16:32.819Z",
+        "competitorName": "AWS",
+        "sourceName": "AWS News Blog",
+        "sourceUrl": "https://aws.amazon.com/blogs/aws/aws-weekly-roundup-aws-builder-center-mobile-apps-amazon-connect-talent-ga-amazon-corretto-27-and-more-september-14-2026/",
+        "evidenceExcerpt": "Living in the Netherlands, I spend a fair amount of time on trains, and that is usually where I catch up on what the builder community is writing. Until now, that meant opening a laptop or squinting at a browser tab on my phone. This week I found myself scrolling through trending articles and checking […]"
+      },
+      {
+        "id": "b3cacb60-3366-4dda-ba23-ed708c830944",
+        "title": "Introducing Amazon CloudWatch Omni: AI-powered observability for generative AI and agentic workloads",
+        "summary": "Learn how Amazon CloudWatch Omni delivers AI-powered observability purpose-built for generative AI and agentic workloads. Trace, evaluate, and experiment with AI agents across any framework—directly from your IDE or a standalone web experience—using open standards and built-in evaluators for quality, correctness, and coherence.",
+        "description": "Learn how Amazon CloudWatch Omni delivers AI-powered observability purpose-built for generative AI and agentic workloads. Trace, evaluate, and experiment with AI agents across any framework—directly from your IDE or a standalone web experience—using open standards and built-in evaluators for quality, correctness, and coherence.",
+        "eventType": "ANNOUNCEMENT",
+        "eventDate": "2026-10-06T10:16:21.634Z",
+        "competitorName": "AWS",
+        "sourceName": "AWS News Blog",
+        "sourceUrl": "https://aws.amazon.com/blogs/aws/introducing-amazon-cloudwatch-omni-ai-powered-observability-for-generative-ai-and-agentic-workloads/",
+        "evidenceExcerpt": "Learn how Amazon CloudWatch Omni delivers AI-powered observability purpose-built for generative AI and agentic workloads. Trace, evaluate, and experiment with AI agents across any framework—directly from your IDE or a standalone web experience—using open standards and built-in evaluators for quality, correctness, and coherence."
+      },
+      {
+        "id": "94fc947e-6679-42ac-96a1-c67a8d82311a",
+        "title": "Now on Amazon CloudWatch Omni: collaborative AI-powered observability for your applications",
+        "summary": "Amazon CloudWatch Omni is the next evolution of CloudWatch — unified observability that brings your applications and AI agents into one reimagined experience, with auto-discovered topology, natural language queries, and AI-guided investigation powered by AWS DevOps Agent.",
+        "description": "Amazon CloudWatch Omni is the next evolution of CloudWatch — unified observability that brings your applications and AI agents into one reimagined experience, with auto-discovered topology, natural language queries, and AI-guided investigation powered by AWS DevOps Agent.",
+        "eventType": "ANNOUNCEMENT",
+        "eventDate": "2026-10-06T10:16:11.286Z",
+        "competitorName": "AWS",
+        "sourceName": "AWS News Blog",
+        "sourceUrl": "https://aws.amazon.com/blogs/aws/introducing-amazon-cloudwatch-omni-collaborative-ai-powered-observability-for-your-applications/",
+        "evidenceExcerpt": "Amazon CloudWatch Omni is the next evolution of CloudWatch — unified observability that brings your applications and AI agents into one reimagined experience, with auto-discovered topology, natural language queries, and AI-guided investigation powered by AWS DevOps Agent."
+      },
+      {
+        "id": "39553e37-c6bc-4245-b051-edf3c26fdc73",
+        "title": "Introducing enhanced custom event buses in Amazon EventBridge for enterprise-scale event-driven applications",
+        "summary": "Amazon EventBridge announces an enhanced custom event bus for organizations scaling event-driven applications across teams and accounts. Deploy a single event bus shared across all AWS accounts in your organization, with ordering guarantees, a simplified Subscriber resource, and improved economics at scale.",
+        "description": "Amazon EventBridge announces an enhanced custom event bus for organizations scaling event-driven applications across teams and accounts. Deploy a single event bus shared across all AWS accounts in your organization, with ordering guarantees, a simplified Subscriber resource, and improved economics at scale.",
+        "eventType": "ANNOUNCEMENT",
+        "eventDate": "2026-10-06T10:16:05.921Z",
+        "competitorName": "AWS",
+        "sourceName": "AWS News Blog",
+        "sourceUrl": "https://aws.amazon.com/blogs/aws/introducing-enhanced-custom-event-buses-in-amazon-eventbridge-for-enterprise-scale-event-driven-applications/",
+        "evidenceExcerpt": "Amazon EventBridge announces an enhanced custom event bus for organizations scaling event-driven applications across teams and accounts. Deploy a single event bus shared across all AWS accounts in your organization, with ordering guarantees, a simplified Subscriber resource, and improved economics at scale."
+      },
+      {
+        "id": "7e121324-a4c1-47d8-82bb-3338109a85de",
+        "title": "AWS Weekly Roundup: GPT-6 Sol and Luna, Claude Opus 5.5 on Amazon Bedrock, Strands harness, and more (September 28, 2026)",
+        "summary": "If there’s one theme that defined last week, it’s choice. The frontier models keep arriving, and the interesting question is no longer just “how smart is it?” but “which model fits this step, at this cost, at this latency?” That’s exactly what landed on Amazon Bedrock over the past few days: GPT-6 Sol and GPT-6 […]",
+        "description": "If there’s one theme that defined last week, it’s choice. The frontier models keep arriving, and the interesting question is no longer just “how smart is it?” but “which model fits this step, at this cost, at this latency?” That’s exactly what landed on Amazon Bedrock over the past few days: GPT-6 Sol and GPT-6 […]",
+        "eventType": "ANNOUNCEMENT",
+        "eventDate": "2026-10-06T10:16:01.375Z",
+        "competitorName": "AWS",
+        "sourceName": "AWS News Blog",
+        "sourceUrl": "https://aws.amazon.com/blogs/aws/aws-weekly-roundup-gpt-6-sol-and-luna-claude-opus-5-5-on-amazon-bedrock-strands-harness-and-more-september-28-2026/",
+        "evidenceExcerpt": "If there’s one theme that defined last week, it’s choice. The frontier models keep arriving, and the interesting question is no longer just “how smart is it?” but “which model fits this step, at this cost, at this latency?” That’s exactly what landed on Amazon Bedrock over the past few days: GPT-6 Sol and GPT-6 […]"
+      },
+      {
+        "id": "d33b4068-5ba7-4545-ba85-ad3c5c66ca3c",
+        "title": "Celebrating Our Newest AWS Heroes – September 2026",
+        "summary": "Today, we’re excited to introduce the newest members of the AWS Heroes program. AWS Heroes are a vibrant, worldwide group of AWS experts who go above and beyond to share knowledge, mentor others, and build thriving communities. These individuals make a real difference in helping developers and organizations succeed with AWS. This month, we welcome",
+        "description": "Today, we’re excited to introduce the newest members of the AWS Heroes program. AWS Heroes are a vibrant, worldwide group of AWS experts who go above and beyond to share knowledge, mentor others, and build thriving communities. These individuals make a real difference in helping developers and organizations succeed with AWS. This month, we welcome",
+        "eventType": "ANNOUNCEMENT",
+        "eventDate": "2026-10-06T10:15:52.291Z",
+        "competitorName": "AWS",
+        "sourceName": "AWS News Blog",
+        "sourceUrl": "https://aws.amazon.com/blogs/aws/celebrating-our-newest-aws-heroes-september-2026/",
+        "evidenceExcerpt": "Today, we’re excited to introduce the newest members of the AWS Heroes program. AWS Heroes are a vibrant, worldwide group of AWS experts who go above and beyond to share knowledge, mentor others, and build thriving communities. These individuals make a real difference in helping developers and organizations succeed with AWS. This month, we welcome […]"
+      },
+      {
+        "id": "321b00fe-c985-4d48-a1ba-3a4baa79065c",
+        "title": "Amazon Aurora PostgreSQL now supports direct querying of Apache Iceberg and Parquet data in your data lake",
+        "summary": "Amazon Aurora PostgreSQL now lets you directly query Apache Iceberg and Parquet data stored in your data lake alongside live operational data—no ETL pipelines required. Powered by DuckDB embedded within Aurora, this capability enables single queries that join transactional and historical data using familiar PostgreSQL syntax. It supports AWS Glue D",
+        "description": "Amazon Aurora PostgreSQL now lets you directly query Apache Iceberg and Parquet data stored in your data lake alongside live operational data—no ETL pipelines required. Powered by DuckDB embedded within Aurora, this capability enables single queries that join transactional and historical data using familiar PostgreSQL syntax. It supports AWS Glue D",
+        "eventType": "ANNOUNCEMENT",
+        "eventDate": "2026-10-06T10:15:46.816Z",
+        "competitorName": "AWS",
+        "sourceName": "AWS News Blog",
+        "sourceUrl": "https://aws.amazon.com/blogs/aws/amazon-aurora-postgresql-now-supports-direct-querying-of-apache-iceberg-and-parquet-data-in-your-data-lake/",
+        "evidenceExcerpt": "Amazon Aurora PostgreSQL now lets you directly query Apache Iceberg and Parquet data stored in your data lake alongside live operational data—no ETL pipelines required. Powered by DuckDB embedded within Aurora, this capability enables single queries that join transactional and historical data using familiar PostgreSQL syntax. It supports AWS Glue Data Catalog, S3, and S3 Tables, with optimizations like predicate pushdown and caching for efficient performance."
+      },
+      {
+        "id": "2fc2f101-ce33-4ba2-9485-ca76d57d4669",
+        "title": "Amazon S3 Vectors now supports metadata pre-filtering for higher recall on filtered searches",
+        "summary": "Amazon S3 Vectors now supports metadata pre filtering, delivering up to 5x higher recall on filtered searches. Filters evaluate before similarity search so scoped queries return more relevant results. Ideal for RAG, agentic apps, and document search.",
+        "description": "Amazon S3 Vectors now supports metadata pre filtering, delivering up to 5x higher recall on filtered searches. Filters evaluate before similarity search so scoped queries return more relevant results. Ideal for RAG, agentic apps, and document search.",
+        "eventType": "ANNOUNCEMENT",
+        "eventDate": "2026-10-06T10:15:42.717Z",
+        "competitorName": "AWS",
+        "sourceName": "AWS News Blog",
+        "sourceUrl": "https://aws.amazon.com/blogs/aws/amazon-s3-vectors-now-supports-metadata-pre-filtering-for-higher-recall-on-filtered-searches/",
+        "evidenceExcerpt": "Amazon S3 Vectors now supports metadata pre filtering, delivering up to 5x higher recall on filtered searches. Filters evaluate before similarity search so scoped queries return more relevant results. Ideal for RAG, agentic apps, and document search."
+      },
+      {
+        "id": "9610b71c-1693-42a1-84a9-5e354d812191",
+        "title": "Amazon S3 Tables now support all Apache Iceberg V3 data types",
+        "summary": "Amazon S3 Tables now support all data types in the Apache Iceberg V3 spec, along with column default values, deletion vectors, and row lineage. Upgrade existing V2 tables or create new V3 tables with built-in compaction, maintenance, and engine compatibility.",
+        "description": "Amazon S3 Tables now support all data types in the Apache Iceberg V3 spec, along with column default values, deletion vectors, and row lineage. Upgrade existing V2 tables or create new V3 tables with built-in compaction, maintenance, and engine compatibility.",
+        "eventType": "ANNOUNCEMENT",
+        "eventDate": "2026-10-06T10:15:37.435Z",
+        "competitorName": "AWS",
+        "sourceName": "AWS News Blog",
+        "sourceUrl": "https://aws.amazon.com/blogs/aws/amazon-s3-tables-now-support-all-apache-iceberg-v3-data-types/",
+        "evidenceExcerpt": "Amazon S3 Tables now support all data types in the Apache Iceberg V3 spec, along with column default values, deletion vectors, and row lineage. Upgrade existing V2 tables or create new V3 tables with built-in compaction, maintenance, and engine compatibility."
+      },
+      {
+        "id": "c571a0b3-26ea-4660-b923-03faa7a5baa7",
+        "title": "Announcing AWS Well-Architected Agent, an AI-powered intelligence to optimize your cloud environment (preview)",
+        "summary": "Introducing the public preview of AWS Well-Architected Agent, an AI-powered service that analyzes your AWS environment to deliver targeted, contextual recommendations for improving your applications' cost, security, performance, and resilience—with ready-to-implement fixes aligned to your business goals.",
+        "description": "Introducing the public preview of AWS Well-Architected Agent, an AI-powered service that analyzes your AWS environment to deliver targeted, contextual recommendations for improving your applications' cost, security, performance, and resilience—with ready-to-implement fixes aligned to your business goals.",
+        "eventType": "ANNOUNCEMENT",
+        "eventDate": "2026-10-06T10:15:25.500Z",
+        "competitorName": "AWS",
+        "sourceName": "AWS News Blog",
+        "sourceUrl": "https://aws.amazon.com/blogs/aws/announcing-aws-well-architected-agent-an-ai-powered-intelligence-to-optimize-your-cloud-environment-preview/",
+        "evidenceExcerpt": "Introducing the public preview of AWS Well-Architected Agent, an AI-powered service that analyzes your AWS environment to deliver targeted, contextual recommendations for improving your applications' cost, security, performance, and resilience—with ready-to-implement fixes aligned to your business goals."
+      },
+      {
+        "id": "f62233a4-a5ae-463a-9e8b-c80f0830e073",
+        "title": "Introducing Google Cloud Modernize, transforming for (and with) AI",
+        "summary": "Today, we’re announcing Google Cloud Modernize, an end-to-end transformation portfolio t",
+        "description": "Today, we’re announcing Google Cloud Modernize, an end-to-end transformation portfolio t",
+        "eventType": "ANNOUNCEMENT",
+        "eventDate": "2026-10-06T07:06:22.407Z",
+        "competitorName": "AWS",
+        "sourceName": "Google Cloud Official Blog",
+        "sourceUrl": "https://cloud.google.com/blog/products/infrastructure-modernization/google-cloud-modernize-accelerate-transformation-with-ai/",
+        "evidenceExcerpt": "Today, we’re announcing Google Cloud Modernize, an end-to-end transformation portfolio to help enterprises collapse multi-year roadmaps with the power of AI. Google Cloud Modernize</"
+      },
+      {
+        "id": "c0e2a433-0199-45d8-b6e3-c8ed719206a7",
+        "title": "Azure OpenAI Service Releases OpenAI o1-preview and o1-mini Reasoning Models",
+        "summary": "Microsoft launched OpenAI o1 reasoning series models in Azure OpenAI Service and GitHub Copilot, giving enterprise customers access to advanced scientific and mathematical inference models with enterprise compliance.",
+        "description": "Microsoft launched OpenAI o1 reasoning series models in Azure OpenAI Service and GitHub Copilot, giving enterprise customers access to advanced scientific and mathematical inference models with enterprise compliance.",
+        "eventType": "PRODUCT",
+        "eventDate": "2026-10-06T06:55:03.874Z",
+        "competitorName": "AWS",
+        "sourceName": "Azure Official Blog",
+        "sourceUrl": "https://azure.microsoft.com/en-us/blog/openai-o1-preview-and-o1-mini-now-available-in-azure-openai-service-and-github/",
+        "evidenceExcerpt": "Microsoft launched OpenAI o1 reasoning series models in Azure OpenAI Service and GitHub Copilot, giving enterprise customers access to advanced scientific and mathematical inference models with enterprise compliance."
+      },
+      {
+        "id": "febeb3dd-ddb6-4b94-95a2-a8d1a8229c5d",
+        "title": "Agentforce Standard Conversation Commercial Terms",
+        "summary": "Agentforce Standard Conversation Commercial Terms Salesforce established commercial terms for Agentforce at $2.00 per conversation with consumption-based volume discounts available for enterprise agreements. $2.00 / conversation",
+        "description": "Agentforce Standard Conversation Commercial Terms Salesforce established commercial terms for Agentforce at $2.00 per conversation with consumption-based volume discounts available for enterprise agreements. $2.00 / conversation",
+        "eventType": "PRICING",
+        "eventDate": "2026-10-06T04:42:54.923Z",
+        "competitorName": "AWS",
+        "sourceName": "Salesforce Official Pricing",
+        "sourceUrl": "https://salesforce.com/pricing",
+        "evidenceExcerpt": "Agentforce Standard Conversation Commercial Terms Salesforce established commercial terms for Agentforce at $2.00 per conversation with consumption-based volume discounts available for enterprise agreements. $2.00 / conversation"
+      },
+      {
+        "id": "e6a4cee5-1696-433e-8c0d-c05e6df245e2",
+        "title": "Agent Script",
+        "summary": "Agent Script Agent Script gives builders precise control to create business-ready agents that deliver reliable results.",
+        "description": "[Image: https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2024/08/OG-Image-Agentforce-Teaser-Page-1.webp?w=1024]\nAgent Script Agent Script gives builders precise control to create business-ready agents that deliver reliable results.",
+        "eventType": "PRODUCT",
+        "eventDate": "2026-10-06T01:31:51.597Z",
+        "competitorName": "AWS",
+        "sourceName": "Salesforce Agentforce Product Portal",
+        "sourceUrl": "https://www.salesforce.com/agentforce/",
+        "evidenceExcerpt": "[Image: https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2024/08/OG-Image-Agentforce-Teaser-Page-1.webp?w=1024]\nAgent Script Agent Script gives builders precise control to create business-ready agents that deliver reliable results."
+      },
+      {
+        "id": "3bbe479d-eca7-4b3e-a3ff-fef62bb24d49",
+        "title": "Agent Builder",
+        "summary": "Agent Builder Configure Agentforce, Subagents, Actions, and Instructions in a few clicks.",
+        "description": "[Image: https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2024/08/OG-Image-Agentforce-Teaser-Page-1.webp?w=1024]\nAgent Builder Configure Agentforce, Subagents, Actions, and Instructions in a few clicks.",
+        "eventType": "PRODUCT",
+        "eventDate": "2026-10-06T01:31:45.039Z",
+        "competitorName": "AWS",
+        "sourceName": "Salesforce Agentforce Product Portal",
+        "sourceUrl": "https://www.salesforce.com/agentforce/",
+        "evidenceExcerpt": "[Image: https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2024/08/OG-Image-Agentforce-Teaser-Page-1.webp?w=1024]\nAgent Builder Configure Agentforce, Subagents, Actions, and Instructions in a few clicks."
+      },
+      {
+        "id": "694d5f93-d915-400b-b835-fa5f0557df74",
+        "title": "Agent Development Lifecycle",
+        "summary": "Agent Development Lifecycle Build, run, and scale AI agents with a complete set of tools.",
+        "description": "[Image: https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2024/08/OG-Image-Agentforce-Teaser-Page-1.webp?w=1024]\nAgent Development Lifecycle Build, run, and scale AI agents with a complete set of tools.",
+        "eventType": "PRODUCT",
+        "eventDate": "2026-10-06T01:31:36.271Z",
+        "competitorName": "AWS",
+        "sourceName": "Salesforce Agentforce Product Portal",
+        "sourceUrl": "https://www.salesforce.com/agentforce/",
+        "evidenceExcerpt": "[Image: https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2024/08/OG-Image-Agentforce-Teaser-Page-1.webp?w=1024]\nAgent Development Lifecycle Build, run, and scale AI agents with a complete set of tools."
+      },
+      {
+        "id": "e615ff72-f002-4edf-aacc-de477cad6a92",
+        "title": "Event Support",
+        "summary": "Event Support Automate communications about event information and details, book sessions, provide event logistics and surveys. Benefit : Personalised marketing, streamlined experience.",
+        "description": "[Image: https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2024/08/OG-Image-Agentforce-Teaser-Page-1.webp?w=1024]\nEvent Support Automate communications about event information and details, book sessions, provide event logistics and surveys. Benefit : Personalised marketing, streamlined experience.",
+        "eventType": "PRODUCT",
+        "eventDate": "2026-10-06T01:31:29.575Z",
+        "competitorName": "AWS",
+        "sourceName": "Salesforce Agentforce Product Portal",
+        "sourceUrl": "https://www.salesforce.com/agentforce/",
+        "evidenceExcerpt": "[Image: https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2024/08/OG-Image-Agentforce-Teaser-Page-1.webp?w=1024]\nEvent Support Automate communications about event information and details, book sessions, provide event logistics and surveys. Benefit : Personalised marketing, streamlined experience."
+      },
+      {
+        "id": "5d55c424-8a0c-4c49-b425-e398b7c0ec7d",
+        "title": "Product Recommendation",
+        "summary": "Product Recommendation Automate communications about event information and details, book sessions, provide event logistics and surveys. Benefit : Personalised marketing, streamlined experience.",
+        "description": "[Image: https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2024/08/OG-Image-Agentforce-Teaser-Page-1.webp?w=1024]\nProduct Recommendation Automate communications about event information and details, book sessions, provide event logistics and surveys. Benefit : Personalised marketing, streamlined experience.",
+        "eventType": "PRODUCT",
+        "eventDate": "2026-10-06T01:31:22.754Z",
+        "competitorName": "AWS",
+        "sourceName": "Salesforce Agentforce Product Portal",
+        "sourceUrl": "https://www.salesforce.com/agentforce/",
+        "evidenceExcerpt": "[Image: https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2024/08/OG-Image-Agentforce-Teaser-Page-1.webp?w=1024]\nProduct Recommendation Automate communications about event information and details, book sessions, provide event logistics and surveys. Benefit : Personalised marketing, streamlined experience."
+      },
+      {
+        "id": "e5e6bf00-49a7-4cb2-920d-2df106f4ab42",
+        "title": "Sales Development",
+        "summary": "Sales Development Drive growth around the clock by autonomously answering product questions, handling objections and booking meetings for sales reps. Benefit : Efficiency boost, increased win rates, shorter deal cycles.",
+        "description": "[Image: https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2024/08/OG-Image-Agentforce-Teaser-Page-1.webp?w=1024]\nSales Development Drive growth around the clock by autonomously answering product questions, handling objections and booking meetings for sales reps. Benefit : Efficiency boost, increased win rates, shorter deal cycles.",
+        "eventType": "PRODUCT",
+        "eventDate": "2026-10-06T01:31:15.997Z",
+        "competitorName": "AWS",
+        "sourceName": "Salesforce Agentforce Product Portal",
+        "sourceUrl": "https://www.salesforce.com/agentforce/",
+        "evidenceExcerpt": "[Image: https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2024/08/OG-Image-Agentforce-Teaser-Page-1.webp?w=1024]\nSales Development Drive growth around the clock by autonomously answering product questions, handling objections and booking meetings for sales reps. Benefit : Efficiency boost, increased win rates, shorter deal cycles."
+      },
+      {
+        "id": "1339935f-f105-4681-babb-0631a79e30a0",
+        "title": "Appointment Scheduling",
+        "summary": "Appointment Scheduling Schedule appointments based on history and context, send appointment follow-ups, send reschedule and reminder notifications. Benefit : Accelerated scale and personalisation, op cost savings.",
+        "description": "[Image: https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2024/08/OG-Image-Agentforce-Teaser-Page-1.webp?w=1024]\nAppointment Scheduling Schedule appointments based on history and context, send appointment follow-ups, send reschedule and reminder notifications. Benefit : Accelerated scale and personalisation, op cost savings.",
+        "eventType": "PRODUCT",
+        "eventDate": "2026-10-06T01:31:07.292Z",
+        "competitorName": "AWS",
+        "sourceName": "Salesforce Agentforce Product Portal",
+        "sourceUrl": "https://www.salesforce.com/agentforce/",
+        "evidenceExcerpt": "[Image: https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2024/08/OG-Image-Agentforce-Teaser-Page-1.webp?w=1024]\nAppointment Scheduling Schedule appointments based on history and context, send appointment follow-ups, send reschedule and reminder notifications. Benefit : Accelerated scale and personalisation, op cost savings."
+      },
+      {
+        "id": "df56773f-3025-4fca-8c12-084d958a1342",
+        "title": "Employee Support",
+        "summary": "Employee Support Give every employee a task-specific, highly specialised AI agent to help them by answering questions and automating routine tasks. Benefit : Higher productivity, faster resolution time.",
+        "description": "[Image: https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2024/08/OG-Image-Agentforce-Teaser-Page-1.webp?w=1024]\nEmployee Support Give every employee a task-specific, highly specialised AI agent to help them by answering questions and automating routine tasks. Benefit : Higher productivity, faster resolution time.",
+        "eventType": "PRODUCT",
+        "eventDate": "2026-10-06T01:30:58.895Z",
+        "competitorName": "AWS",
+        "sourceName": "Salesforce Agentforce Product Portal",
+        "sourceUrl": "https://www.salesforce.com/agentforce/",
+        "evidenceExcerpt": "[Image: https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2024/08/OG-Image-Agentforce-Teaser-Page-1.webp?w=1024]\nEmployee Support Give every employee a task-specific, highly specialised AI agent to help them by answering questions and automating routine tasks. Benefit : Higher productivity, faster resolution time."
+      },
+      {
+        "id": "aba659c8-2e89-4f9c-99be-3523470ebede",
+        "title": "Explore Customer Proof",
+        "summary": "Explore Customer Proof Hear how customers across every industry are using Agentforce to transform their business.",
+        "description": "[Image: https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2024/08/OG-Image-Agentforce-Teaser-Page-1.webp?w=1024]\nExplore Customer Proof Hear how customers across every industry are using Agentforce to transform their business.",
+        "eventType": "PRODUCT",
+        "eventDate": "2026-10-06T01:30:50.192Z",
+        "competitorName": "AWS",
+        "sourceName": "Salesforce Agentforce Product Portal",
+        "sourceUrl": "https://www.salesforce.com/agentforce/",
+        "evidenceExcerpt": "[Image: https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2024/08/OG-Image-Agentforce-Teaser-Page-1.webp?w=1024]\nExplore Customer Proof Hear how customers across every industry are using Agentforce to transform their business."
+      },
+      {
+        "id": "b4f0d6e6-b5d8-47bc-b036-88aa2ec7473e",
+        "title": "Experience Agentforce",
+        "summary": "Experience Agentforce Explore real AI agents driving live results for global brands. See how they configured them in Agentforce.",
+        "description": "[Image: https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2024/08/OG-Image-Agentforce-Teaser-Page-1.webp?w=1024]\nExperience Agentforce Explore real AI agents driving live results for global brands. See how they configured them in Agentforce.",
+        "eventType": "PRODUCT",
+        "eventDate": "2026-10-06T01:30:42.718Z",
+        "competitorName": "AWS",
+        "sourceName": "Salesforce Agentforce Product Portal",
+        "sourceUrl": "https://www.salesforce.com/agentforce/",
+        "evidenceExcerpt": "[Image: https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2024/08/OG-Image-Agentforce-Teaser-Page-1.webp?w=1024]\nExperience Agentforce Explore real AI agents driving live results for global brands. See how they configured them in Agentforce."
+      },
+      {
+        "id": "1f11e7ce-43b4-4226-8769-1dd18ecec5f0",
+        "title": "How Agentforce Works",
+        "summary": "How Agentforce Works Data. Reasoning. Actions. See what really makes Agentforce work.",
+        "description": "[Image: https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2024/08/OG-Image-Agentforce-Teaser-Page-1.webp?w=1024]\nHow Agentforce Works Data. Reasoning. Actions. See what really makes Agentforce work.",
+        "eventType": "PRODUCT",
+        "eventDate": "2026-10-06T01:30:34.217Z",
+        "competitorName": "AWS",
+        "sourceName": "Salesforce Agentforce Product Portal",
+        "sourceUrl": "https://www.salesforce.com/agentforce/",
+        "evidenceExcerpt": "[Image: https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2024/08/OG-Image-Agentforce-Teaser-Page-1.webp?w=1024]\nHow Agentforce Works Data. Reasoning. Actions. See what really makes Agentforce work."
+      },
+      {
+        "id": "22b98454-8d3a-49a8-ab69-b97e8561122b",
+        "title": "Why Agentforce",
+        "summary": "Why Agentforce The best customer experiences start with service. So does Agentforce. On the phone. Online. In apps. Humans and agents help customers better together.",
+        "description": "[Image: https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2024/08/OG-Image-Agentforce-Teaser-Page-1.webp?w=1024]\nWhy Agentforce The best customer experiences start with service. So does Agentforce. On the phone. Online. In apps. Humans and agents help customers better together.",
+        "eventType": "PRODUCT",
+        "eventDate": "2026-10-06T01:30:26.129Z",
+        "competitorName": "AWS",
+        "sourceName": "Salesforce Agentforce Product Portal",
+        "sourceUrl": "https://www.salesforce.com/agentforce/",
+        "evidenceExcerpt": "[Image: https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2024/08/OG-Image-Agentforce-Teaser-Page-1.webp?w=1024]\nWhy Agentforce The best customer experiences start with service. So does Agentforce. On the phone. Online. In apps. Humans and agents help customers better together."
+      },
+      {
+        "id": "f866f539-d583-4cc7-9511-514892ee01d4",
+        "title": "Over 18K companies already run on Agentforce. Join them.",
+        "summary": "Over 18K companies already run on Agentforce. Join them.",
+        "description": "[Image: https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2024/08/OG-Image-Agentforce-Teaser-Page-1.webp?w=1024]\nOver 18K companies already run on Agentforce. Join them.",
+        "eventType": "PRODUCT",
+        "eventDate": "2026-10-06T01:30:17.527Z",
+        "competitorName": "AWS",
+        "sourceName": "Salesforce Agentforce Product Portal",
+        "sourceUrl": "https://www.salesforce.com/agentforce/",
+        "evidenceExcerpt": "[Image: https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2024/08/OG-Image-Agentforce-Teaser-Page-1.webp?w=1024]\nOver 18K companies already run on Agentforce. Join them."
+      },
+      {
+        "id": "b2a5294b-d717-4757-8899-2cc4e5bf6bfd",
+        "title": "IT Service",
+        "summary": "IT Service Resolving help desk ticket | Patching system alert | Resetting user access",
+        "description": "[Image: https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2024/08/OG-Image-Agentforce-Teaser-Page-1.webp?w=1024]\nIT Service Resolving help desk ticket | Patching system alert | Resetting user access",
+        "eventType": "PRODUCT",
+        "eventDate": "2026-10-06T01:30:09.950Z",
+        "competitorName": "AWS",
+        "sourceName": "Salesforce Agentforce Product Portal",
+        "sourceUrl": "https://www.salesforce.com/agentforce/",
+        "evidenceExcerpt": "[Image: https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2024/08/OG-Image-Agentforce-Teaser-Page-1.webp?w=1024]\nIT Service Resolving help desk ticket | Patching system alert | Resetting user access"
+      },
+      {
+        "id": "be114614-545a-492f-ab39-f302df8e8e38",
+        "title": "GLM 5.3 by Z.ai is now generally available on Amazon Bedrock",
+        "summary": "Amazon Bedrock now supports GLM 5.3 from Z.ai, giving you a powerful new option for agentic coding and long-horizon software engineering work. Customers using GLM 5.3 on Amazon Bedrock have access to the latest open weight model with the AWS security and compliance posture. GLM 5.3 is Z.ai’s flagship model, a mixture-of-experts architectu",
+        "description": "Amazon Bedrock now supports GLM 5.3 from Z.ai, giving you a powerful new option for agentic coding and long-horizon software engineering work. Customers using GLM 5.3 on Amazon Bedrock have access to the latest open weight model with the AWS security and compliance posture. GLM 5.3 is Z.ai’s flagship model, a mixture-of-experts architectu",
+        "eventType": "PRODUCT",
+        "eventDate": "2026-10-06T01:27:44.851Z",
+        "competitorName": "AWS",
+        "sourceName": "AWS Whats New Announcements",
+        "sourceUrl": "https://aws.amazon.com/about-aws/whats-new/2026/10/amazon-bedrock-glm-5-3/",
+        "evidenceExcerpt": "Amazon Bedrock now supports GLM 5.3 from Z.ai, giving you a powerful new option for agentic coding and long-horizon software engineering work. Customers using GLM 5.3 on Amazon Bedrock have access to the latest open weight model with the AWS security and compliance posture. GLM 5.3 is Z.ai’s flagship model, a mixture-of-experts architecture with 753B total parameters and roughly 40B active per token, built on the same base model as GLM 5.2 with all improvements driven by scaled post-tr"
+      },
+      {
+        "id": "81c26c88-1ef6-4ede-b0fb-4da02c91f6c6",
+        "title": "Sales Service",
+        "summary": "Sales Service Qualifying inbound lead | Updating opportunity | Closing renewal deal",
+        "description": "[Image: https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2024/08/OG-Image-Agentforce-Teaser-Page-1.webp?w=1024]\nSales Service Qualifying inbound lead | Updating opportunity | Closing renewal deal",
+        "eventType": "PRODUCT",
+        "eventDate": "2026-10-06T01:00:30.633Z",
+        "competitorName": "AWS",
+        "sourceName": "Salesforce Agentforce Product Portal",
+        "sourceUrl": "https://www.salesforce.com/agentforce/",
+        "evidenceExcerpt": "[Image: https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2024/08/OG-Image-Agentforce-Teaser-Page-1.webp?w=1024]\nSales Service Qualifying inbound lead | Updating opportunity | Closing renewal deal"
+      },
+      {
+        "id": "eec143b5-0f68-4843-9559-f105f5e14e9f",
+        "title": "Employee Service",
+        "summary": "Employee Service Processing leave request | Answering HR policy query | Onboarding new hire",
+        "description": "[Image: https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2024/08/OG-Image-Agentforce-Teaser-Page-1.webp?w=1024]\nEmployee Service Processing leave request | Answering HR policy query | Onboarding new hire",
+        "eventType": "PRODUCT",
+        "eventDate": "2026-10-06T01:00:22.807Z",
+        "competitorName": "AWS",
+        "sourceName": "Salesforce Agentforce Product Portal",
+        "sourceUrl": "https://www.salesforce.com/agentforce/",
+        "evidenceExcerpt": "[Image: https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2024/08/OG-Image-Agentforce-Teaser-Page-1.webp?w=1024]\nEmployee Service Processing leave request | Answering HR policy query | Onboarding new hire"
+      },
+      {
+        "id": "f8b512ac-9e3e-4a2e-b41f-64daac0f65b5",
+        "title": "Field Service",
+        "summary": "Field Service Scheduling technician visit | Updating work order status | Confirming parts availability",
+        "description": "[Image: https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2024/08/OG-Image-Agentforce-Teaser-Page-1.webp?w=1024]\nField Service Scheduling technician visit | Updating work order status | Confirming parts availability",
+        "eventType": "PRODUCT",
+        "eventDate": "2026-10-06T01:00:15.578Z",
+        "competitorName": "AWS",
+        "sourceName": "Salesforce Agentforce Product Portal",
+        "sourceUrl": "https://www.salesforce.com/agentforce/",
+        "evidenceExcerpt": "[Image: https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2024/08/OG-Image-Agentforce-Teaser-Page-1.webp?w=1024]\nField Service Scheduling technician visit | Updating work order status | Confirming parts availability"
+      },
+      {
+        "id": "06b455db-72ec-410a-ba99-5d62e391a211",
+        "title": "Contact Centre",
+        "summary": "Contact Centre Routing incoming call | Pulling customer history | Logging interaction notes",
+        "description": "[Image: https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2024/08/OG-Image-Agentforce-Teaser-Page-1.webp?w=1024]\nContact Centre Routing incoming call | Pulling customer history | Logging interaction notes",
+        "eventType": "PRODUCT",
+        "eventDate": "2026-10-06T01:00:06.423Z",
+        "competitorName": "AWS",
+        "sourceName": "Salesforce Agentforce Product Portal",
+        "sourceUrl": "https://www.salesforce.com/agentforce/",
+        "evidenceExcerpt": "[Image: https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2024/08/OG-Image-Agentforce-Teaser-Page-1.webp?w=1024]\nContact Centre Routing incoming call | Pulling customer history | Logging interaction notes"
+      },
+      {
+        "id": "c9a6bde6-47e9-4971-8206-77b5e808181b",
+        "title": "Customer service",
+        "summary": "Customer service Resolving open case | Drafting follow-up email | Escalating to specialist",
+        "description": "[Image: https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2024/08/OG-Image-Agentforce-Teaser-Page-1.webp?w=1024]\nCustomer service Resolving open case | Drafting follow-up email | Escalating to specialist",
+        "eventType": "PRODUCT",
+        "eventDate": "2026-10-06T00:59:57.588Z",
+        "competitorName": "AWS",
+        "sourceName": "Salesforce Agentforce Product Portal",
+        "sourceUrl": "https://www.salesforce.com/agentforce/",
+        "evidenceExcerpt": "[Image: https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2024/08/OG-Image-Agentforce-Teaser-Page-1.webp?w=1024]\nCustomer service Resolving open case | Drafting follow-up email | Escalating to specialist"
+      }
+    ]
+  }
+}

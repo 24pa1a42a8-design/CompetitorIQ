@@ -13,12 +13,24 @@ export default function TopNavbar({
   setCurrentView, 
   breadcrumbs, 
   selectedCompetitor = 'Microsoft',
+  onSelectCompetitor,
+  onOpenEvidence,
+  onNavigate,
   dateFilter,
   onDateChange,
   onOpenNotificationDetail,
   onOpenAccountModal
 }) {
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState(null);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState(null);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  const searchInputRef = useRef(null);
+  const searchAbortRef = useRef(null);
+  const searchTimeoutRef = useRef(null);
+
   const [activeDropdown, setActiveDropdown] = useState(null); // 'date' | 'views' | 'notifications' | 'profile' | null
   
   // Date filter state
@@ -112,19 +124,137 @@ export default function TopNavbar({
     }
   };
 
+  // Search execution with 300ms debounce & cancellation of stale requests
+  useEffect(() => {
+    const trimmed = searchQuery.trim();
+    if (!trimmed) {
+      setSearchResults(null);
+      setIsSearching(false);
+      setSearchError(null);
+      setIsSearchOpen(false);
+      if (searchAbortRef.current) {
+        searchAbortRef.current.abort();
+      }
+      return;
+    }
+
+    setIsSearchOpen(true);
+    setIsSearching(true);
+    setSearchError(null);
+
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    searchTimeoutRef.current = setTimeout(async () => {
+      if (searchAbortRef.current) {
+        searchAbortRef.current.abort();
+      }
+      const controller = new AbortController();
+      searchAbortRef.current = controller;
+
+      try {
+        const res = await apiService.search(trimmed, controller.signal);
+        if (res && res.success) {
+          setSearchResults(res.data || { competitors: [], events: [], signals: [] });
+        } else {
+          setSearchResults({ competitors: [], events: [], signals: [] });
+        }
+      } catch (err) {
+        if (err.name === 'AbortError' || err.isCancelled) return;
+        console.error('Global search error:', err);
+        setSearchError('Search is temporarily unavailable.');
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsSearching(false);
+        }
+      }
+    }, 300);
+
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, [searchQuery]);
+
+  // Keyboard shortcut listener (Cmd+K / Ctrl+K)
+  useEffect(() => {
+    const handleGlobalKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        if (searchInputRef.current) {
+          searchInputRef.current.focus();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, []);
+
+  // Search result selection handlers
+  const handleCompetitorClick = (comp) => {
+    setIsSearchOpen(false);
+    if (onSelectCompetitor) {
+      onSelectCompetitor(comp.name || comp.slug);
+    } else if (setCurrentView) {
+      setCurrentView('competitor_profile');
+    }
+  };
+
+  const handleEventClick = (evt) => {
+    setIsSearchOpen(false);
+    if (onOpenEvidence) {
+      onOpenEvidence({
+        title: evt.title,
+        excerpt: evt.summary || evt.description,
+        publisher: evt.competitor?.name || 'Competitor Event',
+        publishedAt: evt.eventDate,
+        sourceType: evt.eventType || 'EVENT',
+        confidence: evt.confidence || 0.95
+      });
+    } else if (onNavigate) {
+      onNavigate('activity_timeline');
+    } else if (setCurrentView) {
+      setCurrentView('activity_timeline');
+    }
+  };
+
+  const handleSignalClick = (sig) => {
+    setIsSearchOpen(false);
+    if (onOpenNotificationDetail) {
+      onOpenNotificationDetail(sig);
+    } else if (onOpenEvidence) {
+      onOpenEvidence({
+        title: sig.title,
+        excerpt: sig.summary,
+        publisher: sig.competitor?.name || 'Alert Signal',
+        publishedAt: sig.createdAt,
+        sourceType: sig.alertType || 'SIGNAL',
+        confidence: 1.0
+      });
+    } else if (onNavigate) {
+      onNavigate('alerts');
+    } else if (setCurrentView) {
+      setCurrentView('alerts');
+    }
+  };
+
   // Reusable outside-click and escape key behavior
   useEffect(() => {
-    if (!activeDropdown) return;
+    if (!activeDropdown && !isSearchOpen) return;
 
     const handlePointerDown = (event) => {
       if (navRef.current && !navRef.current.contains(event.target)) {
         setActiveDropdown(null);
+        setIsSearchOpen(false);
       }
     };
 
     const handleKeyDown = (event) => {
       if (event.key === 'Escape') {
         setActiveDropdown(null);
+        setIsSearchOpen(false);
       }
     };
 
@@ -135,7 +265,7 @@ export default function TopNavbar({
       document.removeEventListener('pointerdown', handlePointerDown);
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [activeDropdown]);
+  }, [activeDropdown, isSearchOpen]);
 
   // Date selection handlers
   const handleSelectPreset = (preset) => {
@@ -229,17 +359,174 @@ export default function TopNavbar({
     >
       {/* Search Input Bar */}
       <div className="relative w-96 max-w-md hidden sm:block">
-        <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+        <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 z-10 pointer-events-none" />
         <input
+          ref={searchInputRef}
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
+          onFocus={() => {
+            if (searchQuery.trim()) setIsSearchOpen(true);
+          }}
           placeholder="Search Oracle, IBM, AWS, Salesforce, pricing..."
           className="w-full bg-[#F8FAFC] border border-stone-200/90 rounded-full pl-10 pr-10 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition duration-150"
         />
-        <kbd className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono text-slate-400 bg-white border border-stone-200 rounded px-1.5 py-0.5">
-          ⌘K
-        </kbd>
+        {searchQuery ? (
+          <button
+            type="button"
+            onClick={() => {
+              setSearchQuery('');
+              setIsSearchOpen(false);
+              setSearchResults(null);
+            }}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-bold bg-stone-200/60 hover:bg-stone-200 rounded-full w-4 h-4 flex items-center justify-center transition"
+            title="Clear search"
+          >
+            ×
+          </button>
+        ) : (
+          <kbd className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono text-slate-400 bg-white border border-stone-200 rounded px-1.5 py-0.5 pointer-events-none">
+            ⌘K
+          </kbd>
+        )}
+
+        {/* Search Results Dropdown Popup */}
+        {isSearchOpen && (
+          <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-stone-200/90 shadow-xl rounded-2xl p-4 overflow-y-auto max-h-[75vh] z-50 animate-in fade-in duration-100 font-sans">
+            {isSearching ? (
+              <div className="py-6 text-center text-xs text-slate-500 flex items-center justify-center gap-2">
+                <RefreshCw className="w-4 h-4 animate-spin text-orange-600" />
+                <span>Searching database for "{searchQuery}"...</span>
+              </div>
+            ) : searchError ? (
+              <div className="py-4 text-center text-xs text-red-600 bg-red-50 rounded-xl border border-red-100 flex items-center justify-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{searchError}</span>
+              </div>
+            ) : searchResults ? (
+              (() => {
+                const comps = searchResults.competitors || [];
+                const evts = searchResults.events || [];
+                const sigs = searchResults.signals || [];
+                const totalCount = comps.length + evts.length + sigs.length;
+
+                if (totalCount === 0) {
+                  return (
+                    <div className="py-6 text-center text-xs text-slate-500">
+                      No results found for “<span className="font-semibold text-slate-800">{searchQuery}</span>”
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className="space-y-4">
+                    {/* COMPETITORS SECTION */}
+                    {comps.length > 0 && (
+                      <div>
+                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 px-1 flex items-center justify-between">
+                          <span>Competitors ({comps.length})</span>
+                        </div>
+                        <div className="space-y-1">
+                          {comps.map((c) => (
+                            <button
+                              key={c.id}
+                              type="button"
+                              onClick={() => handleCompetitorClick(c)}
+                              className="w-full text-left p-2 hover:bg-orange-50/60 rounded-xl transition flex items-center justify-between group border border-transparent hover:border-orange-100"
+                            >
+                              <div className="flex items-center gap-2.5">
+                                <div className="w-7 h-7 rounded-lg bg-slate-900 text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-2xs">
+                                  {c.name.slice(0, 2).toUpperCase()}
+                                </div>
+                                <div>
+                                  <div className="text-xs font-bold text-slate-900 group-hover:text-orange-700">
+                                    {c.name}
+                                  </div>
+                                  {c.industry && (
+                                    <div className="text-[10px] text-slate-500">
+                                      {c.industry}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                              <span className="text-[10px] font-semibold text-orange-600 opacity-0 group-hover:opacity-100 transition">
+                                View Profile →
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* EVENTS SECTION */}
+                    {evts.length > 0 && (
+                      <div>
+                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 px-1">
+                          Events ({evts.length})
+                        </div>
+                        <div className="space-y-1">
+                          {evts.map((e) => (
+                            <button
+                              key={e.id}
+                              type="button"
+                              onClick={() => handleEventClick(e)}
+                              className="w-full text-left p-2 hover:bg-slate-50 rounded-xl transition group border border-transparent hover:border-stone-200"
+                            >
+                              <div className="flex items-center justify-between gap-2 mb-0.5">
+                                <span className="text-xs font-bold text-slate-800 line-clamp-1 group-hover:text-orange-600">
+                                  {e.title}
+                                </span>
+                                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-orange-100 text-orange-800 uppercase shrink-0">
+                                  {e.eventType}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2 text-[10px] text-slate-500">
+                                <span className="font-semibold text-slate-700">{e.competitor?.name || 'Competitor'}</span>
+                                <span>•</span>
+                                <span>{new Date(e.eventDate).toLocaleDateString()}</span>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* SIGNALS SECTION */}
+                    {sigs.length > 0 && (
+                      <div>
+                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 px-1">
+                          Signals ({sigs.length})
+                        </div>
+                        <div className="space-y-1">
+                          {sigs.map((s) => (
+                            <button
+                              key={s.id}
+                              type="button"
+                              onClick={() => handleSignalClick(s)}
+                              className="w-full text-left p-2 hover:bg-amber-50/50 rounded-xl transition group border border-transparent hover:border-amber-200"
+                            >
+                              <div className="flex items-center justify-between gap-2 mb-0.5">
+                                <span className="text-xs font-bold text-slate-900 line-clamp-1 group-hover:text-amber-800">
+                                  {s.title}
+                                </span>
+                                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 uppercase shrink-0">
+                                  {s.alertType || 'SIGNAL'}
+                                </span>
+                              </div>
+                              <p className="text-[10px] text-slate-500 line-clamp-1">
+                                {s.summary}
+                              </p>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()
+            ) : null}
+          </div>
+        )}
       </div>
 
       {/* Nav Controls Group */}

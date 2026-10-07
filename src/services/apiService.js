@@ -60,6 +60,9 @@ class ApiService {
     const url = `${this.baseUrl}${endpoint}`;
     const dynamicOrgId = options.headers?.['x-organization-id'] || this.getOrganizationId();
     const dynamicToken = options.headers?.Authorization || this.getAuthToken();
+    const requestId = Math.random().toString(36).substring(2, 9);
+    const startTime = Date.now();
+    const method = (options.method || 'GET').toUpperCase();
 
     const headers = {
       'Content-Type': 'application/json',
@@ -69,17 +72,26 @@ class ApiService {
     };
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), options.timeout || 45000);
+    let isTimedOut = false;
+    const timeoutMs = options.timeout || 30000;
+    const timeoutId = setTimeout(() => {
+      isTimedOut = true;
+      controller.abort();
+    }, timeoutMs);
 
     if (options.signal) {
       if (options.signal.aborted) {
         clearTimeout(timeoutId);
         const cancelErr = new Error('Request was cancelled.');
         cancelErr.name = 'AbortError';
+        cancelErr.code = 'ERR_CANCELED';
+        cancelErr.isCancelled = true;
         throw cancelErr;
       }
       options.signal.addEventListener('abort', () => controller.abort(), { once: true });
     }
+
+    console.log(`[API START] requestId=${requestId} ${method} ${endpoint}`);
 
     try {
       const response = await fetch(url, {
@@ -98,17 +110,30 @@ class ApiService {
         error.status = response.status;
         error.code = data?.error?.code || 'API_ERROR';
         error.details = data;
+        console.log(`[API ERROR] requestId=${requestId} status=${response.status} duration=${Date.now() - startTime}ms error=${errorMsg}`);
         throw error;
       }
 
+      console.log(`[API END] requestId=${requestId} status=${response.status} duration=${Date.now() - startTime}ms`);
       return data;
     } catch (err) {
       clearTimeout(timeoutId);
-      if (err.name === 'AbortError') {
-        const timeoutError = new Error('Request timed out or was cancelled. Please try again.');
-        timeoutError.code = 'TIMEOUT';
-        throw timeoutError;
+      if (err.name === 'AbortError' || err.isCancelled) {
+        if (isTimedOut) {
+          console.log(`[API TIMEOUT] requestId=${requestId} duration=${Date.now() - startTime}ms timeout=${timeoutMs}ms`);
+          const timeoutError = new Error(`Request timed out after ${timeoutMs / 1000}s. Please try again.`);
+          timeoutError.name = 'TimeoutError';
+          timeoutError.code = 'TIMEOUT';
+          throw timeoutError;
+        }
+        console.log(`[API CANCELLED] requestId=${requestId} duration=${Date.now() - startTime}ms reason=user_navigation`);
+        const cancelError = new Error('Request was cancelled.');
+        cancelError.name = 'AbortError';
+        cancelError.code = 'ERR_CANCELED';
+        cancelError.isCancelled = true;
+        throw cancelError;
       }
+      console.log(`[API ERROR] requestId=${requestId} duration=${Date.now() - startTime}ms error=${err.message}`);
       throw err;
     }
   }
@@ -347,11 +372,33 @@ class ApiService {
     return this.request(`/executive-reports/${id}`);
   }
 
-  async generateExecutiveReport(params = {}) {
-    return this.request('/executive-reports/generate', {
-      method: 'POST',
-      body: JSON.stringify(params)
+  async getLatestExecutiveReport(params = {}) {
+    const query = new URLSearchParams();
+    if (params.reportType) query.append('reportType', params.reportType);
+    if (params.windowDays) query.append('windowDays', params.windowDays);
+    if (Array.isArray(params.competitorIds) && params.competitorIds.length > 0) {
+      query.append('competitorIds', params.competitorIds.join(','));
+    }
+    const queryString = query.toString() ? `?${query.toString()}` : '';
+    const res = await this.request(`/executive-reports/latest${queryString}`, {
+      timeout: 30000,
+      signal: params.signal
     });
+
+    const reportPayload = res?.data?.report || res?.data?.data || (res?.data?.metadata ? res.data : null) || res?.data || res;
+    return reportPayload;
+  }
+
+  async generateExecutiveReport(params = {}) {
+    const res = await this.request('/executive-reports/generate', {
+      method: 'POST',
+      body: JSON.stringify(params),
+      timeout: 30000,
+      signal: params.signal
+    });
+
+    const reportPayload = res?.data?.report || res?.data?.data || (res?.data?.metadata ? res.data : null) || res?.data || res;
+    return reportPayload;
   }
 
   // Continuous Competitor Monitoring Layer
@@ -392,6 +439,14 @@ class ApiService {
       method: 'POST',
       body: JSON.stringify({})
     });
+  }
+
+  async search(query, signal = null) {
+    if (!query || !query.trim()) {
+      return { success: true, data: { competitors: [], events: [], signals: [] } };
+    }
+    const params = new URLSearchParams({ q: query.trim() });
+    return this.request(`/search?${params.toString()}`, { signal });
   }
 }
 

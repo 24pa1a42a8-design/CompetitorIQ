@@ -3,7 +3,6 @@ import {
   GitBranch, Sparkles, ShieldAlert, RefreshCw, ExternalLink, AlertCircle,
   CheckCircle2, ArrowRight, HelpCircle, Eye, Database, Layers
 } from 'lucide-react';
-import HindsightFlowWidget from '../components/common/HindsightFlowWidget';
 import apiService from '../services/apiService';
 
 export default function ConnectTheDotsView({ onNavigate, onOpenEvidence, dateFilter }) {
@@ -14,7 +13,10 @@ export default function ConnectTheDotsView({ onNavigate, onOpenEvidence, dateFil
   const [error, setError] = useState(null);
   const [selectedPattern, setSelectedPattern] = useState(null);
 
-  const fetchPatterns = async () => {
+  const reqIdRef = React.useRef(0);
+
+  const fetchPatterns = async (targetTab = activeTab) => {
+    const currentReqId = ++reqIdRef.current;
     setLoading(true);
     setError(null);
     try {
@@ -22,11 +24,22 @@ export default function ConnectTheDotsView({ onNavigate, onOpenEvidence, dateFil
       if (dateFilter?.startDate) params.startDate = dateFilter.startDate;
       if (dateFilter?.endDate) params.endDate = dateFilter.endDate;
 
+      if (targetTab === 'HIGH_CONFIDENCE') {
+        params.confidence = 'HIGH';
+      } else if (targetTab === 'PRICING_PRODUCT') {
+        params.patternType = 'PRICING_PRODUCT';
+      } else if (targetTab === 'HIRING_PRODUCT') {
+        params.patternType = 'HIRING_PRODUCT';
+      } else if (targetTab === 'FUNDING_EXPANSION') {
+        params.patternType = 'FUNDING_EXPANSION';
+      }
+
       const res = await apiService.getConnectDotsPatterns(params);
+      if (currentReqId !== reqIdRef.current) return;
       let loadedPatterns = res?.data || [];
 
       // If no patterns stored in DB yet, trigger analysis over ingested events
-      if (loadedPatterns.length === 0) {
+      if (loadedPatterns.length === 0 && targetTab === 'ALL') {
         try {
           const evalRes = await apiService.analyzeConnectDots({});
           if (evalRes?.data?.patterns) {
@@ -37,13 +50,23 @@ export default function ConnectTheDotsView({ onNavigate, onOpenEvidence, dateFil
         }
       }
 
+      if (currentReqId !== reqIdRef.current) return;
       setPatterns(loadedPatterns);
     } catch (err) {
+      if (currentReqId !== reqIdRef.current) return;
+      if (err.name === 'AbortError' || err.isCancelled) return;
       console.error('Failed to load Connect-the-Dots patterns:', err);
       setError(err.message || 'Failed to load pattern analysis chain data.');
     } finally {
-      setLoading(false);
+      if (currentReqId === reqIdRef.current) {
+        setLoading(false);
+      }
     }
+  };
+
+  const handleTabClick = (tabId) => {
+    setActiveTab(tabId);
+    fetchPatterns(tabId);
   };
 
   const handleRunAnalysis = async () => {
@@ -54,7 +77,7 @@ export default function ConnectTheDotsView({ onNavigate, onOpenEvidence, dateFil
       if (evalRes?.data?.patterns) {
         setPatterns(evalRes.data.patterns);
       } else {
-        await fetchPatterns();
+        await fetchPatterns(activeTab);
       }
     } catch (err) {
       console.error('Failed to trigger pattern analysis:', err);
@@ -65,26 +88,34 @@ export default function ConnectTheDotsView({ onNavigate, onOpenEvidence, dateFil
   };
 
   useEffect(() => {
-    fetchPatterns();
+    fetchPatterns(activeTab);
   }, [dateFilter?.startDate, dateFilter?.endDate]);
 
-  const filteredPatterns = patterns.filter(pattern => {
-    if (activeTab === 'ALL') return true;
-    if (activeTab === 'HIGH_CONFIDENCE') return pattern.confidence === 'HIGH';
-    if (activeTab === 'PRICING_PRODUCT') return pattern.patternType === 'PRICING_TO_PRODUCT' || (pattern.title && pattern.title.includes('Pricing'));
-    if (activeTab === 'HIRING_PRODUCT') return pattern.patternType === 'HIRING_TO_PRODUCT' || (pattern.title && pattern.title.includes('Hiring'));
-    if (activeTab === 'FUNDING_EXPANSION') return pattern.patternType === 'FUNDING_TO_EXPANSION' || (pattern.title && pattern.title.includes('Funding'));
-    return true;
-  });
+  const PATTERN_LABELS = {
+    PRICING_PRODUCT: 'Pricing → Product',
+    HIRING_PRODUCT: 'Hiring → Product',
+    FUNDING_EXPANSION: 'Funding → Expansion',
+    PRODUCT_TO_MESSAGING: 'Product → Messaging'
+  };
 
-  const getConfidenceBadge = (confidence) => {
+  const filteredPatterns = React.useMemo(() => {
+    if (!patterns || !Array.isArray(patterns)) return [];
+    if (activeTab === 'ALL') return patterns;
+    if (activeTab === 'HIGH_CONFIDENCE') {
+      return patterns.filter(p => (p.confidence || '').toUpperCase() === 'HIGH');
+    }
+    return patterns.filter(p => p.patternType === activeTab);
+  }, [patterns, activeTab]);
+
+  const getConfidenceBadge = (confidence, score) => {
+    const label = confidence ? `${confidence} CONFIDENCE${score ? ` (${score}%)` : ''}` : 'CONFIDENCE';
     switch (confidence) {
       case 'HIGH':
-        return <span className="text-[10px] font-black text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full uppercase">HIGH CONFIDENCE</span>;
+        return <span className="text-[10px] font-black text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full uppercase">{label}</span>;
       case 'MEDIUM':
-        return <span className="text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full uppercase">MEDIUM CONFIDENCE</span>;
+        return <span className="text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full uppercase">{label}</span>;
       default:
-        return <span className="text-[10px] font-bold text-slate-600 bg-slate-100 border border-slate-200 px-2.5 py-0.5 rounded-full uppercase">LOW CONFIDENCE</span>;
+        return <span className="text-[10px] font-bold text-slate-600 bg-slate-100 border border-slate-200 px-2.5 py-0.5 rounded-full uppercase">{label}</span>;
     }
   };
 
@@ -95,14 +126,7 @@ export default function ConnectTheDotsView({ onNavigate, onOpenEvidence, dateFil
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6 animate-in fade-in duration-150 font-sans text-slate-800">
-      {/* Hindsight Intelligence Banner */}
-      <HindsightFlowWidget 
-        variant="banner" 
-        defaultStage="reflect" 
-        stageMessage="Connecting multi-event sequences across competitors to expose hidden strategic initiatives" 
-        memoriesCount={patterns.length}
-        confidenceScore={dynamicConfidence}
-      />
+
 
       {/* Top Hero Banner */}
       <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -130,7 +154,7 @@ export default function ConnectTheDotsView({ onNavigate, onOpenEvidence, dateFil
             <Sparkles className={`w-4 h-4 ${analyzing ? 'animate-spin' : ''}`} /> Run Chain Analysis
           </button>
           <button
-            onClick={fetchPatterns}
+            onClick={() => fetchPatterns(activeTab)}
             disabled={loading}
             className="px-3 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition flex items-center gap-1.5"
           >
@@ -150,7 +174,7 @@ export default function ConnectTheDotsView({ onNavigate, onOpenEvidence, dateFil
         ].map(tab => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
+            onClick={() => handleTabClick(tab.id)}
             className={`px-3 py-1.5 text-xs font-bold rounded-xl transition shrink-0 ${
               activeTab === tab.id
                 ? 'bg-orange-600 text-white shadow-2xs'
@@ -185,9 +209,17 @@ export default function ConnectTheDotsView({ onNavigate, onOpenEvidence, dateFil
       {!loading && !analyzing && !error && filteredPatterns.length === 0 && (
         <div className="p-12 text-center bg-white rounded-2xl border border-stone-200 space-y-3">
           <ShieldAlert className="w-10 h-10 text-amber-500 mx-auto" />
-          <h3 className="text-base font-bold text-slate-900">No Multi-Event Patterns Detected</h3>
-          <p className="text-xs text-slate-500 max-w-md mx-auto">
-            Insufficient correlated event sequences stored in PostgreSQL to construct multi-event signal chains. Try ingesting public competitor announcements or running the source adapters.
+          <h3 className="text-base font-bold text-slate-900">
+            {activeTab === 'FUNDING_EXPANSION'
+              ? 'No verified Funding → Expansion patterns found.'
+              : activeTab === 'HIRING_PRODUCT'
+              ? 'No verified Hiring → Product patterns found.'
+              : activeTab === 'PRICING_PRODUCT'
+              ? 'No verified Pricing → Product patterns found.'
+              : 'No verified multi-event patterns detected'}
+          </h3>
+          <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
+            We only display patterns supported by verified public evidence. Try another time range or run historical signal analysis.
           </p>
           <button
             onClick={handleRunAnalysis}
@@ -212,8 +244,11 @@ export default function ConnectTheDotsView({ onNavigate, onOpenEvidence, dateFil
                 {/* Pattern Header */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-stone-100 pb-4">
                   <div>
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex flex-wrap items-center gap-2 mb-1.5">
                       {getConfidenceBadge(pattern.confidence)}
+                      <span className="text-[10px] font-black text-orange-700 bg-orange-50 border border-orange-200 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                        {PATTERN_LABELS[pattern.patternType] || pattern.displayLabel || 'Pattern Relationship'}
+                      </span>
                       <span className="text-xs font-extrabold text-slate-900 bg-slate-100 px-2.5 py-0.5 rounded-md border border-slate-200">
                         {pattern.competitor?.name || 'Competitor'}
                       </span>

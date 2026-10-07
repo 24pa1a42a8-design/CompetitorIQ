@@ -23,6 +23,33 @@ const generateReportSchema = z.object({
 });
 
 export const executiveReportController = {
+  async getLatestReport(req, res) {
+    try {
+      const organizationId = req.headers['x-organization-id'] || 'default-org';
+      const reportType = req.query.reportType || 'EXECUTIVE_SUMMARY';
+      const windowDays = req.query.windowDays ? Number(req.query.windowDays) : 90;
+      const competitorIds = req.query.competitorIds ? String(req.query.competitorIds).split(',').map(s => s.trim()).filter(Boolean) : [];
+
+      const result = await executiveReportService.getLatestReport({
+        organizationId,
+        reportType,
+        windowDays,
+        competitorIds
+      });
+
+      return res.json(result);
+    } catch (err) {
+      logger.error({ err: err.message }, 'Failed to fetch latest executive report');
+      return res.status(err.status || 500).json({
+        success: false,
+        error: {
+          code: 'GET_LATEST_REPORT_FAILED',
+          message: err.message || 'Internal server error'
+        }
+      });
+    }
+  },
+
   async getReports(req, res) {
     try {
       const organizationId = req.headers['x-organization-id'] || 'default-org';
@@ -85,11 +112,13 @@ export const executiveReportController = {
       const organizationId = req.headers['x-organization-id'] || 'default-org';
       const body = generateReportSchema.parse(req.body || {});
 
+      const forceRefresh = Boolean(req.body?.forceRefresh || req.query?.forceRefresh);
       const result = await executiveReportService.generateReport({
         organizationId,
         competitorIds: body.competitorIds || [],
         reportType: body.reportType || 'EXECUTIVE_SUMMARY',
-        windowDays: body.windowDays || 90
+        windowDays: body.windowDays || 90,
+        forceRefresh
       });
 
       return res.json({

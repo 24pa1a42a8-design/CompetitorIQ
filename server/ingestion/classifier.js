@@ -9,47 +9,55 @@ function escapeRegex(string) {
 
 const CATEGORY_PATTERNS = [
   {
-    type: 'PARTNERSHIP',
-    keywords: [
-      'partner', 'partners', 'partnership', 'partnerships', 'alliance', 'alliances',
-      'collaboration', 'joint venture', 'strategic agreement', 'multi-cloud deal',
-      'agreement', 'consortium', 'jointly', 'cooperation', 'teaming'
-    ]
-  },
-  {
-    type: 'FUNDING',
-    keywords: [
-      'funding', 'series a', 'series b', 'series c', 'valuation', 'investor',
-      'venture', 'capital', 'raises', 'raised', 'seed round', 'acquisition',
-      'acquired', 'investment'
-    ]
-  },
-  {
     type: 'PRICING',
     keywords: [
-      'pricing', 'price', 'tier', 'subscription', 'plan', 'discount', 'billing',
-      'usage-based', 'credits', 'cost', 'freemium', 'licensing'
-    ]
-  },
-  {
-    type: 'PRODUCT',
-    keywords: [
-      'product', 'launch', 'launches', 'released', 'release', 'releases', 'version',
-      'v2', 'v3', 'platform', 'service', 'general availability', 'ga release', 'unveiled', 'unveils'
-    ]
-  },
-  {
-    type: 'FEATURE',
-    keywords: [
-      'feature', 'capability', 'update', 'enhancement', 'preview', 'beta',
-      'integration api', 'module'
+      'pricing', 'price', 'pricing model', 'tier', 'subscription', 'cost', 'billing',
+      'credits', 'licensing', 'discount', 'rate', 'rates', 'per user', 'per month', 'finops', 'savings'
     ]
   },
   {
     type: 'HIRING',
     keywords: [
       'hiring', 'jobs', 'roles', 'recruiting', 'recruits', 'talent', 'headcount',
-      'careers', 'openings', 'hired'
+      'careers', 'openings', 'hired', 'architect', 'specialists', 'engineers', 'recruitment'
+    ]
+  },
+  {
+    type: 'EXPANSION',
+    keywords: [
+      'expansion', 'expands', 'expand', 'regional', 'region', 'regions', 'data center',
+      'datacenter', 'data centers', 'datacenters', 'geographic', 'location', 'locations',
+      'infrastructure', 'footprint', 'availability zone', 'availability zones', 'multi-cloud'
+    ]
+  },
+  {
+    type: 'FUNDING',
+    keywords: [
+      'funding', 'invest', 'investment', 'investments', 'consortium', 'capital',
+      'valuation', 'billion', 'million', 'acquisition', 'acquired', 'venture', 'strategic investment'
+    ]
+  },
+  {
+    type: 'FEATURE',
+    keywords: [
+      'feature', 'features', 'capability', 'capabilities', 'update', 'updates',
+      'enhancement', 'preview', 'beta', 'integration', 'api', 'apis', 'sdk', 'sdks',
+      'tooling', 'module', 'security', 'remediation', 'patch', 'vulnerability', 'console'
+    ]
+  },
+  {
+    type: 'PRODUCT',
+    keywords: [
+      'product', 'launch', 'launches', 'launched', 'released', 'release', 'releases',
+      'version', 'unveils', 'unveiled', 'general availability', 'ga release', 'platform',
+      'service', 'introducing', 'introduces', 'announces', 'announced'
+    ]
+  },
+  {
+    type: 'PARTNERSHIP',
+    keywords: [
+      'partner', 'partners', 'partnership', 'partnerships', 'alliance', 'alliances',
+      'collaboration', 'joint venture', 'strategic agreement', 'cooperation', 'teaming'
     ]
   },
   {
@@ -57,20 +65,6 @@ const CATEGORY_PATTERNS = [
     keywords: [
       'ceo', 'cto', 'cfo', 'executive', 'board member', 'appointed', 'appoints',
       'resigned', 'steps down', 'president', 'chief executive'
-    ]
-  },
-  {
-    type: 'EXPANSION',
-    keywords: [
-      'expansion', 'expands', 'expand', 'regional', 'data center', 'datacenter',
-      'apac', 'emea', 'geographic', 'new office', 'hq relocation'
-    ]
-  },
-  {
-    type: 'MESSAGING',
-    keywords: [
-      'positioning', 'headline', 'rebrand', 'tagline', 'campaign', 'slogan',
-      'mission', 'narrative', 'repositioning'
     ]
   }
 ];
@@ -87,7 +81,7 @@ export function classifyEvent(title = '', summary = '', description = '') {
     }
   }
 
-  return 'ANNOUNCEMENT';
+  return 'PRODUCT'; // Default to PRODUCT if no category matches
 }
 
 export default classifyEvent;

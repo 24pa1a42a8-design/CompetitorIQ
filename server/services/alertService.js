@@ -39,7 +39,9 @@ export const alertService = {
     let hindsightContext = { available: false, reason: 'Not attempted' };
     try {
       const queryText = `${compName} ${evalResult.alertType} historical signals`;
-      const recallRes = await hindsightService.recall(queryText, 3);
+      const recallPromise = hindsightService.recall(queryText, 3);
+      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Hindsight recall timeout after 1.5s')), 1500));
+      const recallRes = await Promise.race([recallPromise, timeoutPromise]);
       if (recallRes && recallRes.memories && recallRes.memories.length > 0) {
         hindsightContext = {
           available: true,

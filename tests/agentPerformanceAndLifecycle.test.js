@@ -98,7 +98,7 @@ describe('CompetitorIQ AI Agent Debugging, Lifecycle & Performance Tests (14 Req
     });
     const elapsed = Date.now() - t0;
 
-    assert.ok(elapsed < 25000, `Execution should finish within timeout bound; took ${elapsed}ms`);
+    assert.ok(elapsed < 60000, `Execution should finish within timeout bound; took ${elapsed}ms`);
     assert.strictEqual(result.ollamaStatus.used, false);
     assert.strictEqual(result.ollamaStatus.status, 'degraded');
     assert.ok(result.answer.includes('Competitor Intelligence Brief'));

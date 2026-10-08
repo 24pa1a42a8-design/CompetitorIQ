@@ -34,7 +34,7 @@ export const monitoringController = {
   async runAll(req, res) {
     try {
       const body = runSourceSchema.parse(req.body || {});
-      const organizationId = req.headers['x-organization-id'] || 'default-org';
+      const organizationId = req.organizationId || 'default-org';
 
       logger.info({ organizationId }, 'Manual execution trigger for all monitored competitor sources');
 
@@ -62,7 +62,7 @@ export const monitoringController = {
   async runSingle(req, res) {
     try {
       const { sourceId } = req.params;
-      const organizationId = req.headers['x-organization-id'] || 'default-org';
+      const organizationId = req.organizationId || 'default-org';
 
       const sourceState = monitoringScheduler.sources.get(sourceId);
       if (!sourceState) {

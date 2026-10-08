@@ -24,11 +24,15 @@ export const conversationRepository = {
     });
   },
 
-  async findConversationById(id) {
+  async findConversationById(id, organizationId = null) {
     const prisma = getPrismaClient();
     if (!prisma) return null;
-    return executeWithRetry(() => prisma.agentConversation.findUnique({
-      where: { id },
+    const where = { id };
+    if (organizationId) {
+      where.organizationId = organizationId;
+    }
+    return executeWithRetry(() => prisma.agentConversation.findFirst({
+      where,
       include: {
         messages: {
           orderBy: { createdAt: 'asc' }

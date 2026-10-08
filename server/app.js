@@ -19,6 +19,7 @@ import competitiveComparisonRoutes from './routes/competitiveComparisonRoutes.js
 import executiveReportRoutes from './routes/executiveReportRoutes.js';
 import monitoringRoutes from './routes/monitoringRoutes.js';
 import searchRoutes from './routes/searchRoutes.js';
+import authRoutes from './routes/authRoutes.js';
 import { authMiddleware } from './middlewares/authMiddleware.js';
 
 const app = express();
@@ -26,7 +27,7 @@ const app = express();
 // Security headers (configure CSP to allow Vite dev resources)
 app.use(helmet({ contentSecurityPolicy: false }));
 
-// CORS configuration (supports env.FRONTEND_URL, localhost, 127.0.0.1 on all ports)
+// CORS configuration (supports env.FRONTEND_URL, localhost, 127.0.0.1 on explicit ports)
 const allowedOrigins = [
   env.FRONTEND_URL,
   'http://localhost:5173',
@@ -45,7 +46,7 @@ app.use(cors({
     ) {
       return callback(null, true);
     }
-    return callback(null, true);
+    return callback(new Error(`CORS request from origin '${origin}' rejected by security policy`));
   },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'x-request-id', 'x-organization-id'],
@@ -67,6 +68,7 @@ app.use('/api/ingestion', ingestionLimiter);
 app.use('/api/agent', agentLimiter);
 
 // API Routes
+app.use('/api/auth', authRoutes);
 app.use('/api/health', healthRoutes);
 app.use('/api/hindsight', hindsightRoutes);
 app.use('/api/ingestion', ingestionRoutes);

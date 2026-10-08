@@ -18,7 +18,7 @@ export const agentController = {
   async query(req, res, next) {
     try {
       const parsed = queryBodySchema.parse(req.body);
-      const organizationId = req.user?.organizationId || req.headers['x-organization-id'] || 'default-org';
+      const organizationId = req.organizationId || req.user?.organizationId || 'default-org';
       const userId = req.user?.id || null;
       const requestId = req.id || `req-${Date.now()}`;
 
@@ -58,7 +58,7 @@ export const agentController = {
 
   async getConversations(req, res, next) {
     try {
-      const organizationId = req.user?.organizationId || req.headers['x-organization-id'] || 'default-org';
+      const organizationId = req.organizationId || req.user?.organizationId || 'default-org';
       const conversations = await conversationRepository.findConversationsByOrg(organizationId);
 
       return res.status(200).json({
@@ -74,7 +74,8 @@ export const agentController = {
   async getConversationMessages(req, res, next) {
     try {
       const { id } = req.params;
-      const conversation = await conversationRepository.findConversationById(id);
+      const organizationId = req.organizationId || req.user?.organizationId || 'default-org';
+      const conversation = await conversationRepository.findConversationById(id, organizationId);
 
       if (!conversation) {
         return res.status(404).json({

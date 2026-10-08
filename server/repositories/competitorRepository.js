@@ -3,11 +3,15 @@ import { getPrismaClient, executeWithDbRetry } from '../config/database.js';
 const executeWithRetry = executeWithDbRetry;
 
 export const competitorRepository = {
-  async findById(id) {
+  async findById(id, organizationId = null) {
     const prisma = getPrismaClient();
     if (!prisma) return null;
-    return executeWithRetry(() => prisma.competitor.findUnique({
-      where: { id },
+    const where = { id };
+    if (organizationId) {
+      where.organizationId = organizationId;
+    }
+    return executeWithRetry(() => prisma.competitor.findFirst({
+      where,
       include: {
         events: { take: 10, orderBy: { eventDate: 'desc' } }
       }
@@ -86,19 +90,27 @@ export const competitorRepository = {
     return prisma.competitor.create({ data });
   },
 
-  async update(id, data) {
+  async update(id, data, organizationId = null) {
     const prisma = getPrismaClient();
     if (!prisma) throw new Error('Database is not configured.');
-    return prisma.competitor.update({
+    if (organizationId) {
+      const existing = await this.findById(id, organizationId);
+      if (!existing) throw new Error('Competitor not found or access denied.');
+    }
+    return executeWithRetry(() => prisma.competitor.update({
       where: { id },
       data
-    });
+    }));
   },
 
-  async delete(id) {
+  async delete(id, organizationId = null) {
     const prisma = getPrismaClient();
     if (!prisma) throw new Error('Database is not configured.');
-    return prisma.competitor.delete({ where: { id } });
+    if (organizationId) {
+      const existing = await this.findById(id, organizationId);
+      if (!existing) throw new Error('Competitor not found or access denied.');
+    }
+    return executeWithRetry(() => prisma.competitor.delete({ where: { id } }));
   }
 };
 

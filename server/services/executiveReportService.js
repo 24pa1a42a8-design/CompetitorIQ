@@ -63,20 +63,12 @@ export const executiveReportService = {
 
     // 2. Fetch bounded events from PostgreSQL with safe fallback (optimized relations)
     const tEvtStart = Date.now();
-    let events = await executeWithDbRetry(() => prisma.competitorEvent.findMany({
+    const events = await executeWithDbRetry(() => prisma.competitorEvent.findMany({
       where: { organizationId },
       take: 100,
       orderBy: { eventDate: 'desc' },
       include: { competitor: true, source: true }
     })).catch(() => []);
-
-    if (events.length === 0) {
-      events = await executeWithDbRetry(() => prisma.competitorEvent.findMany({
-        take: 100,
-        orderBy: { eventDate: 'desc' },
-        include: { competitor: true, source: true }
-      })).catch(() => []);
-    }
     console.log(`[TIMING] Events fetch: ${Date.now() - tEvtStart}ms`);
 
     // Match events in requested window or recent bounded set
@@ -628,8 +620,8 @@ export const executiveReportService = {
     });
   },
 
-  async getReportById(id) {
-    const analysis = await analysisRepository.findById(id);
+  async getReportById(id, organizationId = null) {
+    const analysis = await analysisRepository.findById(id, organizationId);
     if (!analysis) {
       const error = new Error(`Executive Report record not found with ID ${id}`);
       error.status = 404;

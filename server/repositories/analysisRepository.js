@@ -5,9 +5,9 @@ export const analysisRepository = {
     const prisma = getPrismaClient();
     if (!prisma) return [];
 
-    const orgList = [organizationId, 'default-org', 'microsoft-demo-org', 'test-org'].filter(Boolean);
+    const targetOrg = organizationId || 'default-org';
     const where = {
-      organizationId: { in: orgList }
+      organizationId: targetOrg
     };
 
     if (options.type) {
@@ -28,35 +28,26 @@ export const analysisRepository = {
     const take = parseInt(options.limit, 10) || 50;
     const skip = parseInt(options.offset, 10) || 0;
 
-    let results = await executeWithDbRetry(() => prisma.analysis.findMany({
+    return executeWithDbRetry(() => prisma.analysis.findMany({
       where,
       take,
       skip,
       orderBy: { createdAt: 'desc' },
       include: { competitor: true }
     }));
-
-    if (results.length === 0 && !options.competitorId) {
-      const fallbackWhere = { ...where };
-      delete fallbackWhere.organizationId;
-      results = await executeWithDbRetry(() => prisma.analysis.findMany({
-        where: fallbackWhere,
-        take,
-        skip,
-        orderBy: { createdAt: 'desc' },
-        include: { competitor: true }
-      }));
-    }
-
-    return results;
   },
 
-  async findById(id) {
+  async findById(id, organizationId = null) {
     const prisma = getPrismaClient();
     if (!prisma) return null;
 
-    return executeWithDbRetry(() => prisma.analysis.findUnique({
-      where: { id },
+    const where = { id };
+    if (organizationId) {
+      where.organizationId = organizationId;
+    }
+
+    return executeWithDbRetry(() => prisma.analysis.findFirst({
+      where,
       include: { competitor: true }
     }));
   },

@@ -2,7 +2,7 @@ import { getPrismaClient, executeWithDbRetry } from '../config/database.js';
 
 export async function handleGlobalSearch(req, res, next) {
   try {
-    const rawQuery = (req.query.q || req.query.query || '').toString().trim();
+    const rawQuery = (req.query.q || req.query.query || '').toString().trim().slice(0, 100);
     if (!rawQuery) {
       return res.json({
         success: true,
@@ -24,8 +24,9 @@ export async function handleGlobalSearch(req, res, next) {
       });
     }
 
-    const orgId = req.organizationId || 'default-org';
-    const q = rawQuery;
+    const orgId = req.organizationId || req.user?.organizationId || 'default-org';
+    // Sanitize special search characters (% and _)
+    const q = rawQuery.replace(/[%_\\]/g, '\\$&');
 
     // Search Competitors, Events, and Signals in parallel safely
     const [competitors, events, signals] = await Promise.all([
@@ -93,8 +94,7 @@ export async function handleGlobalSearch(req, res, next) {
             organizationId: orgId,
             OR: [
               { title: { contains: q, mode: 'insensitive' } },
-              { summary: { contains: q, mode: 'insensitive' } },
-              { alertType: { contains: q, mode: 'insensitive' } },
+              { message: { contains: q, mode: 'insensitive' } },
               { competitor: { name: { contains: q, mode: 'insensitive' } } }
             ]
           },
@@ -103,8 +103,8 @@ export async function handleGlobalSearch(req, res, next) {
           select: {
             id: true,
             title: true,
-            summary: true,
-            alertType: true,
+            message: true,
+            type: true,
             severity: true,
             status: true,
             createdAt: true,

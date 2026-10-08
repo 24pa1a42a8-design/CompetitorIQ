@@ -25,7 +25,7 @@ const generateReportSchema = z.object({
 export const executiveReportController = {
   async getLatestReport(req, res) {
     try {
-      const organizationId = req.headers['x-organization-id'] || 'default-org';
+      const organizationId = req.organizationId || req.user?.organizationId || 'default-org';
       const reportType = req.query.reportType || 'EXECUTIVE_SUMMARY';
       const windowDays = req.query.windowDays ? Number(req.query.windowDays) : 90;
       const competitorIds = req.query.competitorIds ? String(req.query.competitorIds).split(',').map(s => s.trim()).filter(Boolean) : [];
@@ -52,7 +52,7 @@ export const executiveReportController = {
 
   async getReports(req, res) {
     try {
-      const organizationId = req.headers['x-organization-id'] || 'default-org';
+      const organizationId = req.organizationId || req.user?.organizationId || 'default-org';
       const parsedQuery = getReportsQuerySchema.parse(req.query || {});
 
       const reports = await executiveReportService.getReports(organizationId, parsedQuery);
@@ -89,7 +89,8 @@ export const executiveReportController = {
   async getReportById(req, res) {
     try {
       const { id } = req.params;
-      const report = await executiveReportService.getReportById(id);
+      const organizationId = req.organizationId || req.user?.organizationId || 'default-org';
+      const report = await executiveReportService.getReportById(id, organizationId);
 
       return res.json({
         success: true,
@@ -109,7 +110,7 @@ export const executiveReportController = {
 
   async generate(req, res) {
     try {
-      const organizationId = req.headers['x-organization-id'] || 'default-org';
+      const organizationId = req.organizationId || req.user?.organizationId || 'default-org';
       const body = generateReportSchema.parse(req.body || {});
 
       const forceRefresh = Boolean(req.body?.forceRefresh || req.query?.forceRefresh);

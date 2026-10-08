@@ -4,13 +4,12 @@ import { logger } from '../config/logger.js';
 export function errorHandler(err, req, res, _next) {
   const statusCode = err.statusCode || err.status || 500;
   const errorCode = err.code || 'INTERNAL_SERVER_ERROR';
-  const message = err.message || 'An unexpected error occurred on the server.';
 
   logger.error({
     err: {
       code: errorCode,
       message: err.message,
-      stack: env.NODE_ENV === 'development' ? err.stack : undefined
+      stack: err.stack
     },
     req: {
       method: req.method,
@@ -19,17 +18,28 @@ export function errorHandler(err, req, res, _next) {
     }
   }, 'Unhandled Exception');
 
-  res.status(statusCode).json({
+  const isDev = env.NODE_ENV === 'development';
+  const isUserError = statusCode >= 400 && statusCode < 500;
+
+  const safeMessage = (isDev || isUserError) 
+    ? (err.message || 'An unexpected error occurred on the server.')
+    : 'Internal Server Error';
+
+  const safeCode = (isDev || isUserError) ? errorCode : 'INTERNAL_SERVER_ERROR';
+
+  const responsePayload = {
     success: false,
     data: null,
     error: {
-      code: errorCode,
-      message: message,
-      ...(err.details ? { details: err.details } : {})
+      code: safeCode,
+      message: safeMessage,
+      ...(isDev && err.details ? { details: err.details } : {})
     },
     meta: {
       requestId: req.id || undefined,
       timestamp: new Date().toISOString()
     }
-  });
+  };
+
+  res.status(statusCode).json(responsePayload);
 }

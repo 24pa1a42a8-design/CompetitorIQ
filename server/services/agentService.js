@@ -103,13 +103,14 @@ export const AgentToolRegistry = {
   /**
    * 1. search_events: Query PostgreSQL events with filters
    */
-  async search_events({ organizationId = 'default-org', competitorId, eventType, query, limit = 15 }) {
+  async search_events({ organizationId, context, competitorId, eventType, query, limit = 15 }) {
+    const safeOrgId = context?.organizationId || organizationId || 'default-org';
     const start = Date.now();
     try {
       let events = [];
       if (query || eventType) {
         events = await competitorEventRepository.searchEvents({
-          organizationId,
+          organizationId: safeOrgId,
           competitorId: competitorId || undefined,
           query: query || undefined,
           eventType: eventType || undefined,
@@ -118,12 +119,12 @@ export const AgentToolRegistry = {
       } else if (competitorId) {
         events = await competitorEventRepository.findByCompetitor(competitorId, {
           limit,
-          organizationId,
+          organizationId: safeOrgId,
           eventType
         });
       } else {
         events = await competitorEventRepository.searchEvents({
-          organizationId,
+          organizationId: safeOrgId,
           limit
         });
       }
@@ -151,7 +152,8 @@ export const AgentToolRegistry = {
   /**
    * 2. get_competitor_comparison: Compare 2 or more competitors on momentum, velocity, and focus
    */
-  async get_competitor_comparison({ organizationId = 'default-org', competitors = [], windowDays = 90 }) {
+  async get_competitor_comparison({ organizationId, context, competitors = [], windowDays = 90 }) {
+    const safeOrgId = context?.organizationId || organizationId || 'default-org';
     const start = Date.now();
     try {
       const comparisons = [];
@@ -160,10 +162,10 @@ export const AgentToolRegistry = {
 
       let targetList = Array.isArray(competitors) ? [...competitors] : [];
       if (targetList.length === 0) {
-        targetList = await competitorRepository.findAll();
+        targetList = await competitorRepository.findAllByOrganization(safeOrgId);
       } else if (targetList.length === 1) {
         // Pair with Microsoft for focal landscape comparison if only one competitor is passed
-        const msft = await competitorRepository.findBySlug('microsoft');
+        const msft = await competitorRepository.findBySlug(safeOrgId, 'microsoft');
         if (msft && msft.id !== targetList[0].id) {
           targetList.push(msft);
         }
@@ -171,7 +173,7 @@ export const AgentToolRegistry = {
 
       for (const comp of targetList.slice(0, 4)) {
         const events = await competitorEventRepository.findByCompetitor(comp.id, {
-          organizationId,
+          organizationId: safeOrgId,
           limit: 100
         });
         const windowEvents = events.filter(e => new Date(e.eventDate) >= startDate);
@@ -222,11 +224,12 @@ export const AgentToolRegistry = {
   /**
    * 3. correlate_strategic_patterns: Run cross-competitor pattern correlation
    */
-  async correlate_strategic_patterns({ organizationId = 'default-org', competitorId = null, windowDays = 90, analysisType = 'ALL' }) {
+  async correlate_strategic_patterns({ organizationId, context, competitorId = null, windowDays = 90, analysisType = 'ALL' }) {
+    const safeOrgId = context?.organizationId || organizationId || 'default-org';
     const start = Date.now();
     try {
       const result = await strategicAnalysisService.analyzeStrategicData({
-        organizationId,
+        organizationId: safeOrgId,
         competitorId,
         windowDays,
         analysisType
@@ -256,19 +259,20 @@ export const AgentToolRegistry = {
   /**
    * 4. analyze_pricing_signals: Retrieve and compare pricing changes and tier updates
    */
-  async analyze_pricing_signals({ organizationId = 'default-org', competitorId = null, limit = 20 }) {
+  async analyze_pricing_signals({ organizationId, context, competitorId = null, limit = 20 }) {
+    const safeOrgId = context?.organizationId || organizationId || 'default-org';
     const start = Date.now();
     try {
       let pricingEvents = [];
       if (competitorId) {
         pricingEvents = await competitorEventRepository.findByCompetitor(competitorId, {
-          organizationId,
+          organizationId: safeOrgId,
           eventType: 'PRICING',
           limit
         });
       } else {
         pricingEvents = await competitorEventRepository.searchEvents({
-          organizationId,
+          organizationId: safeOrgId,
           eventType: 'PRICING',
           limit
         });
@@ -329,7 +333,8 @@ export const AgentToolRegistry = {
   /**
    * 5. recall_memory: Query Hindsight vector memory bank (RECALL or REFLECT)
    */
-  async recall_memory({ query, organizationId = 'default-org', competitorId = null, limit = 10, requestId = null, mode = null }) {
+  async recall_memory({ query, organizationId, context, competitorId = null, limit = 10, requestId = null, mode = null }) {
+    const safeOrgId = context?.organizationId || organizationId || 'default-org';
     const start = Date.now();
     const shouldReflect = mode === 'REFLECT' || isReflectQuery(query);
     const targetStage = shouldReflect ? 'REFLECT' : 'RECALL';

@@ -4,7 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "start": "node server/scripts/startAll.js",
+    "dev:all": "node server/scripts/startAll.js",
+    "dev": "vite --port 5174",
     "server": "node server/server.js",
     "dev:server": "node --watch server/server.js",
     "test": "node --test --test-concurrency=1 tests/*.test.js",

@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
+import apiService from '../services/apiService';
 
 const AuthContext = createContext(null);
 
@@ -22,20 +23,30 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password, rememberMe = false) => {
     setIsLoading(true);
-    // Simulate network latency for authentic feel
-    await new Promise((resolve) => setTimeout(resolve, 800));
+    await new Promise((resolve) => setTimeout(resolve, 400));
 
-    // Basic frontend verification (accepts valid credentials or demo credentials)
     const initials = email.substring(0, 2).toUpperCase();
     const nameFromEmail = email.split('@')[0].replace('.', ' ').replace(/(^\w|\s\w)/g, (m) => m.toUpperCase());
+    const orgId = 'default-org';
+
+    let token = null;
+    try {
+      const tokenRes = await apiService.ensureAuthToken();
+      token = tokenRes;
+    } catch (_) {}
 
     const loggedInUser = {
       name: nameFromEmail || 'Alex Rivera',
       email: email,
       role: 'Strategic Analyst',
       initials: initials || 'AR',
-      organizationId: 'default-org'
+      organizationId: orgId,
+      token: token
     };
+
+    if (token) {
+      apiService.setAuth(orgId, token);
+    }
 
     setUser(loggedInUser);
     setIsLoading(false);
@@ -57,7 +68,7 @@ export const AuthProvider = ({ children }) => {
 
   const signup = async ({ name, email, password: _password }) => {
     setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 900));
+    await new Promise((resolve) => setTimeout(resolve, 400));
 
     const initials = name
       .split(' ')
@@ -66,13 +77,24 @@ export const AuthProvider = ({ children }) => {
       .substring(0, 2)
       .toUpperCase();
 
+    const orgId = 'default-org';
+    let token = null;
+    try {
+      token = await apiService.ensureAuthToken();
+    } catch (_) {}
+
     const newUser = {
       name,
       email,
       role: 'Strategic Analyst',
       initials: initials || 'U',
-      organizationId: 'default-org'
+      organizationId: orgId,
+      token: token
     };
+
+    if (token) {
+      apiService.setAuth(orgId, token);
+    }
 
     setUser(newUser);
     setIsLoading(false);

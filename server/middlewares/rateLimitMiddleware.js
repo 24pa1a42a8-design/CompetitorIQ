@@ -59,8 +59,25 @@ export const agentLimiter = rateLimit({
   }
 });
 
+// Specialized Rate Limiter for Authentication: 10 requests per 15 minutes
+export const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  skip: () => process.env.NODE_ENV === 'test',
+  message: {
+    success: false,
+    error: {
+      code: 'AUTH_RATE_LIMIT_EXCEEDED',
+      message: 'Too many authentication attempts. Please try again after 15 minutes.'
+    }
+  }
+});
+
 export default {
   apiLimiter,
   ingestionLimiter,
-  agentLimiter
+  agentLimiter,
+  authLimiter
 };

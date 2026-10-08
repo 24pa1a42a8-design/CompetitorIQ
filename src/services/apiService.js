@@ -39,6 +39,50 @@ class ApiService {
     return 'default-org';
   }
 
+  async ensureAuthToken() {
+    if (this.authToken) return this.authToken;
+    if (typeof window !== 'undefined') {
+      try {
+        const rawAuth = localStorage.getItem('competitor_iq_auth')
+          || sessionStorage.getItem('competitor_iq_auth');
+        if (rawAuth) {
+          const parsed = JSON.parse(rawAuth);
+          if (parsed?.token) {
+            this.authToken = parsed.token;
+            return this.authToken;
+          }
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    // Auto-provision signed JWT for default session
+    try {
+      const orgId = this.getOrganizationId();
+      const res = await fetch(`${this.baseUrl}/auth/token`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ organizationId: orgId, role: 'ANALYST' })
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json?.data?.token) {
+          this.authToken = json.data.token;
+          if (typeof window !== 'undefined') {
+            try {
+              localStorage.setItem('competitor_iq_auth', JSON.stringify({ token: this.authToken, user: json.data.user }));
+            } catch (_) {}
+          }
+          return this.authToken;
+        }
+      }
+    } catch (err) {
+      console.warn('Failed auto-obtaining auth token:', err);
+    }
+    return null;
+  }
+
   getAuthToken() {
     if (this.authToken) return this.authToken;
     if (typeof window !== 'undefined') {
@@ -57,6 +101,10 @@ class ApiService {
   }
 
   async request(endpoint, options = {}) {
+    if (!this.authToken && endpoint !== '/auth/token' && endpoint !== '/auth/login') {
+      await this.ensureAuthToken().catch(() => {});
+    }
+
     const url = `${this.baseUrl}${endpoint}`;
     const dynamicOrgId = options.headers?.['x-organization-id'] || this.getOrganizationId();
     const dynamicToken = options.headers?.Authorization || this.getAuthToken();
@@ -134,6 +182,12 @@ class ApiService {
         throw cancelError;
       }
       console.log(`[API ERROR] requestId=${requestId} duration=${Date.now() - startTime}ms error=${err.message}`);
+      if (err.message === 'Failed to fetch' || (err instanceof TypeError && err.message?.includes('fetch'))) {
+        const connErr = new Error(`Backend Connection Error: Unable to reach CompetitorIQ server at ${this.baseUrl}. Please verify the Express backend is running on port 5000 (npm run server).`);
+        connErr.code = 'BACKEND_UNAVAILABLE';
+        connErr.status = 503;
+        throw connErr;
+      }
       throw err;
     }
   }

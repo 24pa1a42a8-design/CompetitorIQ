@@ -1,6 +1,7 @@
 import test, { before, after } from 'node:test';
 import assert from 'node:assert';
 import app from '../server/app.js';
+import { signJwt } from '../server/utils/authUtils.js';
 
 let serverInstance = null;
 
@@ -23,6 +24,13 @@ after(() => {
 
 test('CompetitorIQ End-to-End User Journeys Verification', async (t) => {
   const BASE_URL = 'http://localhost:5000/api';
+  const authToken = signJwt({ id: 'user-test', organizationId: 'default-org', role: 'ANALYST' });
+  const adminToken = signJwt({ id: 'user-admin', organizationId: 'default-org', role: 'ADMIN' });
+  const authHeaders = {
+    'Authorization': `Bearer ${authToken}`,
+    'Content-Type': 'application/json'
+  };
+
   let conversationId = null;
   let sampleEventId = null;
   let sampleSourceUrl = null;
@@ -40,10 +48,7 @@ test('CompetitorIQ End-to-End User Journeys Verification', async (t) => {
   // Journey 2: Authenticate and retrieve user session context
   await t.test('Journey 2: Authenticate with valid organization boundary', async () => {
     const res = await fetch(`${BASE_URL}/alerts/unread-count`, {
-      headers: {
-        'Authorization': 'Bearer org-default:test-token',
-        'x-organization-id': 'org-default'
-      }
+      headers: authHeaders
     });
     assert.strictEqual(res.status, 200);
     const data = await res.json();
@@ -54,7 +59,7 @@ test('CompetitorIQ End-to-End User Journeys Verification', async (t) => {
 
   // Journey 3: Load dashboard data using actual PostgreSQL database records
   await t.test('Journey 3: Load Dashboard Data (Live Database Records)', async () => {
-    const res = await fetch(`${BASE_URL}/ingestion/events?limit=10`);
+    const res = await fetch(`${BASE_URL}/ingestion/events?limit=10`, { headers: authHeaders });
     assert.strictEqual(res.status, 200);
     const data = await res.json();
     const events = data.events || data.data || [];
@@ -67,7 +72,7 @@ test('CompetitorIQ End-to-End User Journeys Verification', async (t) => {
 
   // Journey 4: View Microsoft (Focal) and its 5 competitors
   await t.test('Journey 4: View Microsoft and Competitors (AWS, Google Cloud, Oracle, IBM, Salesforce)', async () => {
-    const res = await fetch(`${BASE_URL}/competitors`);
+    const res = await fetch(`${BASE_URL}/competitors`, { headers: authHeaders });
     assert.strictEqual(res.status, 200);
     const data = await res.json();
     const competitors = data.data || data;
@@ -84,12 +89,12 @@ test('CompetitorIQ End-to-End User Journeys Verification', async (t) => {
 
   // Journey 5: Open competitor profile
   await t.test('Journey 5: Open Competitor Profile Details', async () => {
-    const compsRes = await fetch(`${BASE_URL}/competitors`);
+    const compsRes = await fetch(`${BASE_URL}/competitors`, { headers: authHeaders });
     const compsData = await compsRes.json();
     const firstComp = (compsData.data || compsData)[0];
     assert.ok(firstComp?.id, 'Competitor must have an ID');
 
-    const profileRes = await fetch(`${BASE_URL}/competitors/${firstComp.id}`);
+    const profileRes = await fetch(`${BASE_URL}/competitors/${firstComp.id}`, { headers: authHeaders });
     assert.strictEqual(profileRes.status, 200);
     const profile = await profileRes.json();
     assert.strictEqual(profile.success, true);
@@ -100,7 +105,7 @@ test('CompetitorIQ End-to-End User Journeys Verification', async (t) => {
   // Journey 6: View structured signals (Pricing, Product, Hiring, Funding)
   await t.test('Journey 6: View Structured Signals with Relations', async () => {
     assert.ok(sampleEventId, 'Must have sample event ID');
-    const eventRes = await fetch(`${BASE_URL}/events/${sampleEventId}`);
+    const eventRes = await fetch(`${BASE_URL}/events/${sampleEventId}`, { headers: authHeaders });
     assert.strictEqual(eventRes.status, 200);
     const eventData = await eventRes.json();
     assert.strictEqual(eventData.success, true);
@@ -113,7 +118,7 @@ test('CompetitorIQ End-to-End User Journeys Verification', async (t) => {
   await t.test('Journey 7: Ask AI Agent a General Question', async () => {
     const agentRes = await fetch(`${BASE_URL}/agent/query`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders,
       body: JSON.stringify({
         query: 'What is an LLM (Large Language Model)?'
       })
@@ -131,7 +136,7 @@ test('CompetitorIQ End-to-End User Journeys Verification', async (t) => {
   await t.test('Journey 8: Ask AI Agent a Competitor Grounded Question', async () => {
     const agentRes = await fetch(`${BASE_URL}/agent/query`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders,
       body: JSON.stringify({
         query: 'What recent activities and pricing updates have been recorded for AWS?',
         conversationId
@@ -150,7 +155,7 @@ test('CompetitorIQ End-to-End User Journeys Verification', async (t) => {
     assert.ok(conversationId, 'Must have conversation ID from previous turns');
     const agentRes = await fetch(`${BASE_URL}/agent/query`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders,
       body: JSON.stringify({
         query: 'Can you summarize that in two bullet points?',
         conversationId
@@ -165,7 +170,7 @@ test('CompetitorIQ End-to-End User Journeys Verification', async (t) => {
 
   // Journey 10: Ground truth evidence and source URL validation
   await t.test('Journey 10: Supporting Evidence & Source Verification', async () => {
-    const alertsRes = await fetch(`${BASE_URL}/alerts?limit=5`);
+    const alertsRes = await fetch(`${BASE_URL}/alerts?limit=5`, { headers: authHeaders });
     const alertsData = await alertsRes.json();
     const alerts = alertsData.data || [];
     assert.ok(alerts.length > 0, 'Must have alerts');
@@ -177,7 +182,7 @@ test('CompetitorIQ End-to-End User Journeys Verification', async (t) => {
 
   // Journey 11: Ingestion / Continuous Monitoring Status
   await t.test('Journey 11: Monitoring Status & Ingestion Health', async () => {
-    const monRes = await fetch(`${BASE_URL}/monitoring/status`);
+    const monRes = await fetch(`${BASE_URL}/monitoring/status`, { headers: authHeaders });
     assert.strictEqual(monRes.status, 200);
     const monData = await monRes.json();
     assert.strictEqual(monData.success, true);
@@ -188,7 +193,8 @@ test('CompetitorIQ End-to-End User Journeys Verification', async (t) => {
   // Journey 12: Handle unavailable or invalid source safely
   await t.test('Journey 12: Graceful Error Handling for Unavailable Source', async () => {
     const res = await fetch(`${BASE_URL}/monitoring/run/non_existent_source_999`, {
-      method: 'POST'
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${adminToken}` }
     });
     // Should return 404 with standard error format
     assert.strictEqual(res.status, 404);
@@ -200,7 +206,7 @@ test('CompetitorIQ End-to-End User Journeys Verification', async (t) => {
 
   // Journey 13: Handle missing records cleanly
   await t.test('Journey 13: Graceful 404 for Missing Records', async () => {
-    const res = await fetch(`${BASE_URL}/events/00000000-0000-0000-0000-000000000000`);
+    const res = await fetch(`${BASE_URL}/events/00000000-0000-0000-0000-000000000000`, { headers: authHeaders });
     assert.strictEqual(res.status, 404);
     const data = await res.json();
     assert.strictEqual(data.success, false);
@@ -210,9 +216,10 @@ test('CompetitorIQ End-to-End User Journeys Verification', async (t) => {
 
   // Journey 14: Organization Data Isolation Enforcement
   await t.test('Journey 14: Strict Organization Boundary Enforcement', async () => {
+    const orgAlphaToken = signJwt({ id: 'user-alpha', organizationId: 'org-alpha', role: 'ANALYST' });
     const res = await fetch(`${BASE_URL}/alerts/unread-count`, {
       headers: {
-        'Authorization': 'Bearer org-alpha:token-123',
+        'Authorization': `Bearer ${orgAlphaToken}`,
         'x-organization-id': 'org-beta' // Cross-tenant tampering attempt
       }
     });

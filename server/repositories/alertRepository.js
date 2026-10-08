@@ -5,9 +5,9 @@ export const alertRepository = {
     const prisma = getPrismaClient();
     if (!prisma) return [];
 
-    const orgList = [organizationId, 'default-org', 'microsoft-demo-org', 'test-org'].filter(Boolean);
+    const targetOrg = organizationId || 'default-org';
     const where = {
-      organizationId: { in: orgList }
+      organizationId: targetOrg
     };
 
     if (options.competitorId) {
@@ -31,7 +31,7 @@ export const alertRepository = {
     const take = parseInt(options.limit, 10) || 50;
     const skip = parseInt(options.offset, 10) || 0;
 
-    let alerts = await executeWithDbRetry(() => prisma.alert.findMany({
+    return executeWithDbRetry(() => prisma.alert.findMany({
       where,
       take,
       skip,
@@ -40,30 +40,19 @@ export const alertRepository = {
         competitor: true
       }
     }));
-
-    if (alerts.length === 0) {
-      const fallbackWhere = { ...where };
-      delete fallbackWhere.organizationId;
-      alerts = await executeWithDbRetry(() => prisma.alert.findMany({
-        where: fallbackWhere,
-        take,
-        skip,
-        orderBy: { createdAt: 'desc' },
-        include: {
-          competitor: true
-        }
-      }));
-    }
-
-    return alerts;
   },
 
-  async findById(id) {
+  async findById(id, organizationId = null) {
     const prisma = getPrismaClient();
     if (!prisma) return null;
 
-    return executeWithDbRetry(() => prisma.alert.findUnique({
-      where: { id },
+    const where = { id };
+    if (organizationId) {
+      where.organizationId = organizationId;
+    }
+
+    return executeWithDbRetry(() => prisma.alert.findFirst({
+      where,
       include: {
         competitor: true,
         event: {
